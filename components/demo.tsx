@@ -1,14 +1,14 @@
 import React from 'react'
 
-interface IProps {
-    altTxt: string;
-  }
+interface DemoProps {
+  altTxt: string;
+}
 
-export default function Demo(props: any) {
+export default function Demo({ altTxt }: DemoProps) {
   return (
     <div>
       <div className='flex justify-center pt-48'>
-        <h1 className='text-6xl'>{props.altTxt}</h1>
+        <h1 className='text-6xl'>{altTxt}</h1>
       </div>
     </div>
   )
