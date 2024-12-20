@@ -1,5 +1,8 @@
 "use client"
 
+import * as React from "react"
+import { usePathname } from 'next/navigation'
+
 import { ChevronRight, type LucideIcon } from "lucide-react"
 
 import {
@@ -34,6 +37,36 @@ export function NavMain({
     pendingNum?:number
   }[]
 }) {
+
+  const pathname = usePathname()
+
+  const [openItems, setOpenItems] = React.useState<string[]>([])
+
+  const isItemOpen = React.useCallback((itemUrl: string) => {
+    return pathname.startsWith(itemUrl)
+  }, [pathname])
+
+  const toggleItem = React.useCallback((title: string) => {
+    setOpenItems(prev => {
+      if (prev.includes(title)) {
+        return prev.filter(item => item !== title)
+      } else {
+        return [...prev, title]
+      }
+    })
+  }, [])
+
+  React.useEffect(() => {
+    const openParents = items
+      .filter(item => item.items && isItemOpen(item.url))
+      .map(item => item.title)
+    
+    setOpenItems(prev => {
+      const newOpenItems = [...new Set([...prev, ...openParents])]
+      return newOpenItems
+    })
+  }, [pathname, isItemOpen])
+
   return (
     <SidebarGroup>
       {/* <SidebarGroupLabel>Platform</SidebarGroupLabel> */}
@@ -42,17 +75,17 @@ export function NavMain({
           <Collapsible
             key={item.title}
             asChild
-            defaultOpen={item.isActive}
+            open={openItems.includes(item.title) || isItemOpen(item.url)}
+            onOpenChange={() => toggleItem(item.title)}
             className="group/collapsible"
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton tooltip={item.title}>
                   {item.icon && <item.icon />}
-                  <span>{item.title}</span> 
                   {
-                    item.items && item.items.length > 0  ? <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /> 
-                    : <></>
+                    item.items && item.items.length > 0  ? <><span>{item.title}</span> <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" /></>
+                    : <a href={item.url}><span>{item.title}</span></a>
                   }
                 </SidebarMenuButton>
                 
@@ -61,7 +94,7 @@ export function NavMain({
                 <SidebarMenuSub>
                   {item.items?.map((subItem) => (
                     <SidebarMenuSubItem key={subItem.title}>
-                      <SidebarMenuSubButton asChild>
+                      <SidebarMenuSubButton asChild  isActive={pathname === subItem.url}>
                         <a href={subItem.url}>
                           <span>{subItem.title}</span>
                         </a>
@@ -70,11 +103,9 @@ export function NavMain({
                   ))}
                 </SidebarMenuSub>
               </CollapsibleContent>
-              {
-                item.title==='Requests' 
-                  ? <SidebarMenuBadge >{item.pendingNum}</SidebarMenuBadge>
-                  : <></>
-              }
+              {item.title === 'Requests' && (
+                <SidebarMenuBadge>{item.pendingNum}</SidebarMenuBadge>
+              )}
             </SidebarMenuItem>
           </Collapsible>
         ))}
