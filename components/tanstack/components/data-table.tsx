@@ -27,27 +27,31 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableToolbar } from "./data-table-toolbar"
-import {SidePanel} from "@/components/tanstack/components/side-panel"
+import { SidePanel } from "@/components/tanstack/components/side-panel"
 import { Button } from "@/components/ui/button"
 import { ChevronRight } from 'lucide-react';
+
+export interface StickyConfig {
+  columns: string[];  // Array of column ids/accessorKeys to make sticky
+  width?: number;     // Width of each sticky column (default: 80)
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  dataType : 'items' | 'vendors' | 'warehouses' | 'locations'
+  dataType: 'items' | 'vendors' | 'warehouses' | 'locations'
+  stickyColumns?: StickyConfig
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   dataType,
+  stickyColumns,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
 
   const [sidePanelOpen, setSidePanelOpen] = React.useState(false)
@@ -68,6 +72,16 @@ export function DataTable<TData, TValue>({
     handleSidePanelClose()
   }
 
+  const isColumnSticky = React.useCallback((columnId: string) => {
+    return stickyColumns?.columns.includes(columnId)
+  }, [stickyColumns])
+
+  const getStickyPosition = React.useCallback((columnId: string) => {
+    if (!stickyColumns) return undefined
+    const columnIndex = stickyColumns.columns.indexOf(columnId)
+    if (columnIndex === -1) return undefined
+    return columnIndex * (stickyColumns.width ?? 80)
+  }, [stickyColumns])
 
   const table = useReactTable({
     data,
@@ -91,31 +105,42 @@ export function DataTable<TData, TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
 
-   // Set initial page size
-   React.useEffect(() => {
+  // Set initial page size
+  React.useEffect(() => {
     table.setPageSize(20)
-  }, [table, 20]) 
+  }, [table, 20])
 
   return (
     <div className="space-y-4">
       <DataTableToolbar table={table} />
       <div className="rounded-md border">
         <div className="flex">
-          <div className={`overflow-auto transition-all ${sidePanelOpen ? 'w-[calc(100%-384px)]' : 'w-full'}`}>
+          <div className={`overflow-auto transition-all ${sidePanelOpen ? 'w-[calc(80vw-384px)]' : 'w-full'}`}>
             <div className="h-[calc(95vh-200px)] overflow-auto">
               <Table>
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id}>
                       {headerGroup.headers.map((header) => {
+                        const isSticky = isColumnSticky(header.column.id)
+                        const stickyPosition = getStickyPosition(header.column.id)
                         return (
-                          <TableHead key={header.id} colSpan={header.colSpan} className="rounded-md border-r">
+                          <TableHead key={header.id} colSpan={header.colSpan}
+                            className={`border-r ${isSticky
+                                ? 'sticky left-0 z-20 bg-background'
+                                : ''
+                              }`}
+                            style={{
+                              left: stickyPosition !== undefined ? `${stickyPosition}px` : undefined,
+                              minWidth: header.column.id === 'select' ? '40px' : undefined
+                            }}
+                          >
                             {header.isPlaceholder
                               ? null
                               : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
                           </TableHead>
                         )
                       })}
@@ -129,14 +154,28 @@ export function DataTable<TData, TValue>({
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
                       >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
+                        {row.getVisibleCells().map((cell) => {
+                          const isSticky = isColumnSticky(cell.column.id)
+                          const stickyPosition = getStickyPosition(cell.column.id)
+
+                          return (
+                            <TableCell
+                              key={cell.id}
+                              className={`${isSticky
+                                  ? 'sticky left-0 z-10 bg-background'
+                                  : ''
+                                }`}
+                              style={{
+                                left: stickyPosition !== undefined ? `${stickyPosition}px` : undefined
+                              }}
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          )
+                        })}
                         <TableCell>
                           <Button
                             variant="ghost"
@@ -160,9 +199,9 @@ export function DataTable<TData, TValue>({
                   )}
                 </TableBody>
               </Table>
-            </div>    
+            </div>
           </div>
-          {sidePanelOpen && ( 
+          {sidePanelOpen && (
             <SidePanel
               isOpen={sidePanelOpen}
               onClose={handleSidePanelClose}

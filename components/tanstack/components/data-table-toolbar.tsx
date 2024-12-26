@@ -1,22 +1,14 @@
 "use client"
 
+import * as React from "react"
 import { Table } from "@tanstack/react-table"
-import { X } from "lucide-react"
-
-import { Plus } from 'lucide-react';
+import { X, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "./data-table-view-options"
-
-// import { priorities, statuses } from "../data/data"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
-
-
-import {
-  Circle,
-  HelpCircle,
-} from "lucide-react"
+import { DataTableColumnSelector } from "./data-table-column-selector"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
@@ -26,19 +18,64 @@ export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
 
+  // Track selected columns and their filter states
+  const [selectedColumns, setSelectedColumns] = React.useState<string[]>([])
 
-  const statuses = [
-    {
-      value: "activated",
-      label: "Activated",
-      icon: HelpCircle,
-    },
-    {
-      value: "disabled",
-      label: "Disabled",
-      icon: Circle,
-    }
-  ]
+  // Get all filterable columns
+  const filterableColumns = React.useMemo(() => {
+    return table.getAllColumns()
+    .filter((column) => 
+      column.id !== 'select' && 
+      typeof column.accessorFn !== 'undefined'
+    )
+    .map((column) => ({
+      label: column.id,
+      value: column.id,
+      disabled: selectedColumns.includes(column.id)
+    }))
+  }, [table, selectedColumns])
+
+  // Get unique options for all columns
+  const columnOptions = React.useMemo(() => {
+    const options: { [key: string]: { label: string; value: string }[] } = {}
+    
+    table.getAllColumns().forEach((column) => {
+      const columnId = column.id
+      const optionSet = new Set()
+      
+      options[columnId] = table.getCoreRowModel().rows.reduce((acc, row) => {
+        const value = row.getValue(columnId)
+        const option = { label: String(value), value: String(value) }
+        const optionKey = `${option.label}-${option.value}`
+        
+        if (!optionSet.has(optionKey)) {
+          optionSet.add(optionKey)
+          acc.push(option)
+        }
+        
+        return acc
+      }, [] as { label: string; value: string }[])
+    })
+    
+    return options
+  }, [table])  
+
+  // Handle adding a new column filter
+  const handleAddColumnFilter = (columnId: string) => {
+    setSelectedColumns((prev) => [...prev, columnId])
+  }
+
+  // Handle removing a column filter
+  const handleRemoveColumnFilter = (columnId: string) => {
+    setSelectedColumns((prev) => prev.filter((id) => id !== columnId))
+    table.getColumn(columnId)?.setFilterValue(undefined)
+  }
+
+  // Reset all filters
+  const handleResetFilters = () => {
+    table.resetColumnFilters()
+    setSelectedColumns([])
+  }
 
   const isFiltered = table.getState().columnFilters.length > 0
 
@@ -53,28 +90,48 @@ export function DataTableToolbar<TData>({
           }
           className="h-8 w-[150px] lg:w-[250px]"
         />
-        {table.getColumn("status") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("status")}
-            title="Status"
-            options={statuses}
-          />
-        )}
-        {/* {table.getColumn("priority") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("priority")}
-            title="Priority"
-            options={priorities}
-          />
-        )} */}
+        
+        <DataTableColumnSelector
+          columns={filterableColumns}
+          onSelect={handleAddColumnFilter}
+        />
+        
+        {selectedColumns.map((columnId) => {
+          const column = table.getColumn(columnId)
+          if (!column) return null
+
+          const options = columnOptions[columnId] || []
+
+          if (!options.length) {
+            return null
+          }
+
+          return (
+            <DataTableFacetedFilter
+              key={columnId}
+              column={column}
+              title={columnId}
+              options={options}
+              selectedValues={new Set(
+                [column.getFilterValue()].flat().filter(Boolean) as string[]
+              )}
+              onSelect={(value) => {
+                column.setFilterValue(value)
+              }}
+              onRemove={() => handleRemoveColumnFilter(columnId)}
+            />
+          )
+        })}     
+
+
         {isFiltered && (
           <Button
             variant="ghost"
-            onClick={() => table.resetColumnFilters()}
-            className="h-8 px-2 lg:px-3"
+            onClick={handleResetFilters}
+            className="h-8 px-2 lg:px-3 text-green-700"
           >
-            Reset
             <X />
+            Clear filters
           </Button>
         )}
       </div>

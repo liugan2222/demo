@@ -1,8 +1,7 @@
-import * as React from "react"
-import { Column } from "@tanstack/react-table"
-import { Check, PlusCircle } from "lucide-react"
+"use client"
 
-import { cn } from "@/lib/utils"
+import * as React from "react"
+import { X, Filter } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -20,6 +19,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
+import { Column } from "@tanstack/react-table"
 
 interface DataTableFacetedFilterProps<TData, TValue> {
   column?: Column<TData, TValue>
@@ -29,22 +30,27 @@ interface DataTableFacetedFilterProps<TData, TValue> {
     value: string
     icon?: React.ComponentType<{ className?: string }>
   }[]
+  selectedValues?: Set<string>
+  onSelect?: (value: string) => void
+  onRemove?: () => void
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
   column,
   title,
   options,
+  selectedValues = new Set(),
+  onSelect,
+  onRemove,
 }: DataTableFacetedFilterProps<TData, TValue>) {
-  const facets = column?.getFacetedUniqueValues()
-  const selectedValues = new Set(column?.getFilterValue() as string[])
+  const [value, setValue] = React.useState("")
 
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 border-dashed">
-          <PlusCircle />
-          {title}
+        <Filter size={16} className="h-4 w-4" />
+          <span className="mr-1">{title}</span>
           {selectedValues?.size > 0 && (
             <>
               <Separator orientation="vertical" className="mx-2 h-4" />
@@ -78,11 +84,26 @@ export function DataTableFacetedFilter<TData, TValue>({
               </div>
             </>
           )}
+          {onRemove && (
+            <div
+              onClick={(e) => {
+                e.stopPropagation()
+                onRemove()
+              }}
+              className="ml-2 rounded-full hover:bg-accent hover:text-accent-foreground"
+            >
+              <X className="h-4 w-4" />
+            </div>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0" align="start">
         <Command>
-          <CommandInput placeholder={title} />
+          <CommandInput
+            placeholder={title}
+            value={value}
+            onValueChange={setValue}
+          />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup>
@@ -92,15 +113,9 @@ export function DataTableFacetedFilter<TData, TValue>({
                   <CommandItem
                     key={option.value}
                     onSelect={() => {
-                      if (isSelected) {
-                        selectedValues.delete(option.value)
-                      } else {
-                        selectedValues.add(option.value)
+                      if (onSelect) {
+                        onSelect(option.value)
                       }
-                      const filterValues = Array.from(selectedValues)
-                      column?.setFilterValue(
-                        filterValues.length ? filterValues : undefined
-                      )
                     }}
                   >
                     <div
@@ -111,30 +126,25 @@ export function DataTableFacetedFilter<TData, TValue>({
                           : "opacity-50 [&_svg]:invisible"
                       )}
                     >
-                      <Check />
+                      <span className="h-4 w-4 shrink-0" />
                     </div>
                     {option.icon && (
                       <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
                     )}
                     <span>{option.label}</span>
-                    {facets?.get(option.value) && (
-                      <span className="ml-auto flex h-4 w-4 items-center justify-center font-mono text-xs">
-                        {facets.get(option.value)}
-                      </span>
-                    )}
                   </CommandItem>
                 )
               })}
             </CommandGroup>
-            {selectedValues.size > 0 && (
+            {selectedValues?.size > 0 && (
               <>
                 <CommandSeparator />
                 <CommandGroup>
                   <CommandItem
                     onSelect={() => column?.setFilterValue(undefined)}
-                    className="justify-center text-center"
+                    className="justify-center text-center text-green-700"
                   >
-                    Clear filters
+                    Reset filter
                   </CommandItem>
                 </CommandGroup>
               </>

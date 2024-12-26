@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { z } from "zod"
 
 import { itemSchema } from '@/components/tanstack/data/itemSchema'
-import { columns } from "@/components/tanstack/components/columns"
+import { columns } from "@/components/database-tabs/database-items/components/columns"
 import { DataTable } from "@/components/tanstack/components/data-table"
 
 // Type for our items
@@ -48,7 +48,12 @@ export function DatabaseItems() {
 
   return (
     <div className="p-4">
-      <DataTable data={items} columns={columns} dataType='items'/>
+      <DataTable data={items} columns={columns} dataType='items'
+        stickyColumns={{
+          columns: ['select', 'image', 'id'],
+          width: 80
+        }}
+      />
     </div>
   )
 }
