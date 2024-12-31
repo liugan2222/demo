@@ -80,7 +80,7 @@ export function DataTable<TData, TValue>({
     if (!stickyColumns) return undefined
     const columnIndex = stickyColumns.columns.indexOf(columnId)
     if (columnIndex === -1) return undefined
-    return columnIndex * (stickyColumns.width ?? 80)
+    return (40 + (columnIndex-1) * (stickyColumns.width ?? 100))
   }, [stickyColumns])
 
   const table = useReactTable({
@@ -115,8 +115,8 @@ export function DataTable<TData, TValue>({
       <DataTableToolbar table={table} />
       <div className="rounded-md border">
         <div className="flex">
-          <div className={`overflow-auto transition-all ${sidePanelOpen ? 'w-[calc(80vw-384px)]' : 'w-full'}`}>
-            <div className="h-[calc(95vh-200px)] overflow-auto">
+          <div className={`relative ${sidePanelOpen ? 'w-[calc(80vw-384px)]' : 'w-full'}`}>
+            <div className="sticky top-0 z-30 bg-background border-b">
               <Table>
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
@@ -127,12 +127,13 @@ export function DataTable<TData, TValue>({
                         return (
                           <TableHead key={header.id} colSpan={header.colSpan}
                             className={`border-r ${isSticky
-                                ? 'sticky left-0 z-20 bg-background'
+                                ? 'sticky z-30 bg-background shadow-[1px_0_0_0_#e5e7eb]'
                                 : ''
                               }`}
                             style={{
                               left: stickyPosition !== undefined ? `${stickyPosition}px` : undefined,
-                              minWidth: header.column.id === 'select' ? '40px' : undefined
+                              minWidth: header.column.columnDef.minSize || 100,
+                              width: header.column.columnDef.size || 'auto',
                             }}
                           >
                             {header.isPlaceholder
@@ -144,9 +145,14 @@ export function DataTable<TData, TValue>({
                           </TableHead>
                         )
                       })}
+                      <TableHead style={{ width: 80 }}></TableHead>
                     </TableRow>
                   ))}
                 </TableHeader>
+              </Table>
+            </div>  
+            <div className="h-[calc(95vh-200px)] overflow-auto">
+              <Table>
                 <TableBody>
                   {table.getRowModel().rows?.length ? (
                     table.getRowModel().rows.map((row) => (
@@ -162,11 +168,13 @@ export function DataTable<TData, TValue>({
                             <TableCell
                               key={cell.id}
                               className={`${isSticky
-                                  ? 'sticky left-0 z-10 bg-background'
+                                  ? 'sticky z-20 bg-background shadow-[1px_0_0_0_#e5e7eb]'
                                   : ''
                                 }`}
                               style={{
-                                left: stickyPosition !== undefined ? `${stickyPosition}px` : undefined
+                                left: stickyPosition !== undefined ? `${stickyPosition}px` : undefined,
+                                minWidth: cell.column.columnDef.minSize || 100,
+                                width: cell.column.columnDef.size || 'auto',
                               }}
                             >
                               {flexRender(
@@ -176,7 +184,7 @@ export function DataTable<TData, TValue>({
                             </TableCell>
                           )
                         })}
-                        <TableCell>
+                        <TableCell style={{ width: 80 }}>
                           <Button
                             variant="ghost"
                             className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
@@ -190,7 +198,7 @@ export function DataTable<TData, TValue>({
                   ) : (
                     <TableRow>
                       <TableCell
-                        colSpan={columns.length}
+                        colSpan={columns.length + 1}
                         className="h-24 text-center"
                       >
                         No results.

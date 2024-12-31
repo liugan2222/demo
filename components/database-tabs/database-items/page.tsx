@@ -51,7 +51,7 @@ export function DatabaseItems() {
       <DataTable data={items} columns={columns} dataType='items'
         stickyColumns={{
           columns: ['select', 'image', 'id'],
-          width: 80
+          width: 100
         }}
       />
     </div>

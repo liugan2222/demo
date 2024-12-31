@@ -33,24 +33,33 @@ export const columns: ColumnDef<Item>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
+    size: 40,
+    minSize: 40,
+    maxSize: 40,
   },
   {
     accessorKey: "image",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Image" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("image")}</div>,
+    cell: ({ row }) => row.getValue("image"),
     enableSorting: false,
     enableHiding: false,
+    size: 100,
+    minSize: 100,
+    maxSize: 100,
   }, 
   {
     accessorKey: "id",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ID" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
+    cell: ({ row }) => row.getValue("id"),
     // enableSorting: false,
     // enableHiding: false,
+    size: 100,
+    minSize: 100,
+    maxSize: 100,
   },
 
   {
@@ -58,35 +67,47 @@ export const columns: ColumnDef<Item>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    cell: ({ row }) => <div className="max-w-[100px]">{row.getValue("name")}</div>,
+    cell: ({ row }) => row.getValue("name"),
+    size: 'auto',
+    minSize: 100,
   },
   {
     accessorKey: "gtin",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GTIN" />
     ),
-    cell: ({ row }) => <div className="max-w-[100px]">{row.getValue("gtin")}</div>,
+    cell: ({ row }) => row.getValue("gtin"),
+    size: 100,
+    minSize: 100,
+    maxSize: 100,
   },
   {
     accessorKey: "weight",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Weight" />
     ),
-    cell: ({ row }) => <div className="max-w-[100px]">{row.getValue("weight")}</div>,
+    cell: ({ row }) => row.getValue("weight"),
+    size: 'auto',
+    minSize: 100,
   },
   {
     accessorKey: "vendor",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Vendor" />
     ),
-    cell: ({ row }) => <div className="max-w-[100px]">{row.getValue("vendor")}</div>,
+    cell: ({ row }) => row.getValue("vendor"),
+    size: 'auto',
+    minSize: 100,
   },
   {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => <div className="max-w-[100px]">{row.getValue("status")==="Activated" ? <Badge variant="default">{row.getValue("status")}</Badge> : <Badge variant="destructive">{row.getValue("status")}</Badge>}</div>,
+    cell: ({ row }) => {row.getValue("status")==="Activated" ? <Badge variant="default">{row.getValue("status")}</Badge> : <Badge variant="destructive">{row.getValue("status")}</Badge>},
+    size: 100,
+    minSize: 100,
+    maxSize: 100,
   },
   {
     accessorKey: "createdAt",
@@ -96,12 +117,9 @@ export const columns: ColumnDef<Item>[] = [
     cell: ({ row }) => {
       const date = row.getValue("createdAt") as Date;
       const formattedDate = date.toLocaleString(); // Or use any other date formatting method
-      return <div className="max-w-[150px]">{formattedDate}</div>;
+      return <div className="min-w-[150px]">{formattedDate}</div>;
     },
+    size: 'auto',
+    minSize: 100,
   }, 
-
-  // {
-  //   id: "actions",
-  //   cell: ({ row }) => <DataTableRowActions row={row} />,
-  // },
 ]
