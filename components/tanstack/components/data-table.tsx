@@ -80,8 +80,15 @@ export function DataTable<TData, TValue>({
     if (!stickyColumns) return undefined
     const columnIndex = stickyColumns.columns.indexOf(columnId)
     if (columnIndex === -1) return undefined
-    return (40 + (columnIndex-1) * (stickyColumns.width ?? 100))
-  }, [stickyColumns])
+    // return (40 + (columnIndex-1) * (stickyColumns.width ?? 100))
+    let position = 0
+    for (let i = 0; i < columnIndex; i++) {
+      const prevColumnId = stickyColumns.columns[i]
+      const column = columns.find(col => col.id === prevColumnId)
+      position += column?.size || stickyColumns.width || 100
+    }
+    return position
+  }, [stickyColumns, columns])
 
   const table = useReactTable({
     data,
