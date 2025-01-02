@@ -84,11 +84,11 @@ export function DataTable<TData, TValue>({
     let position = 0
     for (let i = 0; i < columnIndex; i++) {
       const prevColumnId = stickyColumns.columns[i]
-      const column = columns.find(col => col.id === prevColumnId)
+      const column = columns.find(col => col.id === prevColumnId || col.accessorKey === prevColumnId)
       position += column?.size || stickyColumns.width || 100
     }
     return position
-  }, [stickyColumns, columns])
+  }, [stickyColumns])
 
   const table = useReactTable({
     data,
