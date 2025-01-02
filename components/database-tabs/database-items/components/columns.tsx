@@ -42,7 +42,7 @@ export const columns: ColumnDef<Item>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Image" />
     ),
-    cell: ({ row }) => row.getValue("image"),
+    cell: ({ row }) => <div>{row.getValue("image")}</div>,
     enableSorting: false,
     enableHiding: false,
     size: 100,
@@ -54,7 +54,7 @@ export const columns: ColumnDef<Item>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ID" />
     ),
-    cell: ({ row }) => row.getValue("id"),
+    cell: ({ row }) => <div>{row.getValue("id")}</div>,
     // enableSorting: false,
     // enableHiding: false,
     size: 100,
@@ -67,44 +67,47 @@ export const columns: ColumnDef<Item>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    cell: ({ row }) => row.getValue("name"),
-    size: 'auto',
+    cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    size: 200,
     minSize: 100,
+    enableResizing: true,
   },
   {
     accessorKey: "gtin",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GTIN" />
     ),
-    cell: ({ row }) => row.getValue("gtin"),
-    size: 100,
+    cell: ({ row }) => <div>{row.getValue("gtin")}</div>,
+    size: 150,
     minSize: 100,
-    maxSize: 100,
+    maxSize: 150,
   },
   {
     accessorKey: "weight",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Weight" />
     ),
-    cell: ({ row }) => row.getValue("weight"),
-    size: 'auto',
+    cell: ({ row }) => <div>{row.getValue("weight")}</div>,
+    size: 120,
     minSize: 100,
+    enableResizing: true,
   },
   {
     accessorKey: "vendor",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Vendor" />
     ),
-    cell: ({ row }) => row.getValue("vendor"),
-    size: 'auto',
+    cell: ({ row }) => <div>{row.getValue("vendor")}</div>,
+    size: 150,
     minSize: 100,
+    enableResizing: true,
   },
   {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => {row.getValue("status")==="Activated" ? <Badge variant="default">{row.getValue("status")}</Badge> : <Badge variant="destructive">{row.getValue("status")}</Badge>},
+    cell: ({ row }) => <div>{row.getValue("status")==="Activated" ? <Badge variant="default">{row.getValue("status")}</Badge> : <Badge variant="destructive">{row.getValue("status")}</Badge>}</div>,
     size: 100,
     minSize: 100,
     maxSize: 100,
@@ -117,9 +120,10 @@ export const columns: ColumnDef<Item>[] = [
     cell: ({ row }) => {
       const date = row.getValue("createdAt") as Date;
       const formattedDate = date.toLocaleString(); // Or use any other date formatting method
-      return <div className="min-w-[150px]">{formattedDate}</div>;
+      return <div>{formattedDate}</div>;
     },
-    size: 'auto',
+    size: 150,
     minSize: 100,
+    enableResizing: true,
   }, 
 ]

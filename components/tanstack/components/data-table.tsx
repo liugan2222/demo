@@ -108,7 +108,7 @@ export function DataTable<TData, TValue>({
   // Set initial page size
   React.useEffect(() => {
     table.setPageSize(20)
-  }, [table, 20])
+  }, [table])
 
   return (
     <div className="space-y-4">
@@ -117,41 +117,44 @@ export function DataTable<TData, TValue>({
         <div className="flex">
           <div className={`relative ${sidePanelOpen ? 'w-[calc(80vw-384px)]' : 'w-full'}`}>
             <div className="sticky top-0 z-30 bg-background border-b">
-              <Table>
-                <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        const isSticky = isColumnSticky(header.column.id)
-                        const stickyPosition = getStickyPosition(header.column.id)
-                        return (
-                          <TableHead key={header.id} colSpan={header.colSpan}
-                            className={`border-r ${isSticky
-                                ? 'sticky z-30 bg-background shadow-[1px_0_0_0_#e5e7eb]'
-                                : ''
-                              }`}
-                            style={{
-                              left: stickyPosition !== undefined ? `${stickyPosition}px` : undefined,
-                              minWidth: header.column.columnDef.minSize || 100,
-                              width: header.column.columnDef.size || 'auto',
-                            }}
-                          >
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                          </TableHead>
-                        )
-                      })}
-                      <TableHead style={{ width: 80 }}></TableHead>
-                    </TableRow>
-                  ))}
-                </TableHeader>
-              </Table>
+              <div className="overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
+                          const isSticky = isColumnSticky(header.column.id)
+                          const stickyPosition = getStickyPosition(header.column.id)
+                          return (
+                            <TableHead key={header.id} colSpan={header.colSpan}
+                              className={`border-r ${isSticky
+                                  ? 'sticky z-30 bg-background shadow-[1px_0_0_0_#e5e7eb]'
+                                  : ''
+                                }`}
+                              style={{
+                                left: stickyPosition !== undefined ? `${stickyPosition}px` : undefined,
+                                width: header.column.getSize(),
+                                minWidth: header.column.columnDef.minSize,
+                                maxWidth: header.column.columnDef.maxSize,
+                              }}
+                            >
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                            </TableHead>
+                          )
+                        })}
+                        <TableHead style={{ width: 80 }}></TableHead>
+                      </TableRow>
+                    ))}
+                  </TableHeader>
+                </Table>
+              </div>
             </div>  
-            <div className="h-[calc(95vh-200px)] overflow-auto">
+            <div className="h-[calc(91vh-200px)] overflow-auto">
               <Table>
                 <TableBody>
                   {table.getRowModel().rows?.length ? (
@@ -173,8 +176,9 @@ export function DataTable<TData, TValue>({
                                 }`}
                               style={{
                                 left: stickyPosition !== undefined ? `${stickyPosition}px` : undefined,
-                                minWidth: cell.column.columnDef.minSize || 100,
-                                width: cell.column.columnDef.size || 'auto',
+                                width: cell.column.getSize(),
+                                minWidth: cell.column.columnDef.minSize,
+                                maxWidth: cell.column.columnDef.maxSize,
                               }}
                             >
                               {flexRender(
