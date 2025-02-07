@@ -38,7 +38,7 @@ export function NavMain({
   }[]
 }) {
 
-  const pathname = usePathname()
+  const pathname = usePathname()|| ''
 
   const [openItems, setOpenItems] = React.useState<string[]>([])
 

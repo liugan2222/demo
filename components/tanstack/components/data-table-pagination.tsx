@@ -1,3 +1,4 @@
+import React, { useState } from "react"
 import { Table } from "@tanstack/react-table"
 import {
   ChevronLeft,
@@ -15,6 +16,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
+import { EyeOff, Eye } from "lucide-react"
+
+import { CustomAlertDialog } from "@/components/ui/custom-alert-dialog"
+
 interface DataTablePaginationProps<TData> {
   table: Table<TData>
 }
@@ -22,12 +27,70 @@ interface DataTablePaginationProps<TData> {
 export function DataTablePagination<TData>({
   table,
 }: DataTablePaginationProps<TData>) {
+
+  const [showDisableDialog, setShowDisableDialog] = useState(false)
+  const [showEnableDialog, setShowEnableDialog] = useState(false)
+
+  const selectedRows = table.getFilteredSelectedRowModel().rows
+  const hasActivated = selectedRows.some(row => (row.original as any).status === "Activated")
+  const hasDisabled = selectedRows.some(row => (row.original as any).status === "Disabled")
+
+  const handleDisable = () => {
+    setShowDisableDialog(true)
+  }
+
+  const handleEnable = () => {
+    setShowEnableDialog(true)
+  }
+
+  const handleConfirmDisable = () => {
+    // TODO: Implement the logic to update the status of selected items to "Disabled"
+    setShowDisableDialog(false)
+  }
+
+  const handleConfirmEnable = () => {
+    // TODO: Implement the logic to update the status of selected items to "Activated"
+    setShowEnableDialog(false)
+  }
+
   return (
     <div className="flex items-center justify-between px-2">
-      <div className="flex-1 text-sm text-muted-foreground">
+      {/* <div className="flex-1 text-sm text-muted-foreground">
         {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected.
+      </div> */}
+
+      <div className="flex items-center space-x-2">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {selectedRows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+        {selectedRows.length > 0 && (
+          <>
+            {hasActivated && (
+              <Button
+                variant="destructive"
+                size="default"
+                onClick={handleDisable}
+                className="h-8 px-2 lg:px-3 rounded"
+              >
+                <EyeOff size={16}/>
+                Disable
+              </Button>
+            )}
+            {hasDisabled && (
+              <Button
+                size="default"
+                onClick={handleEnable}
+                className="h-8 px-2 lg:px-3 rounded"
+              >
+                <Eye size={16}/>
+                Enable
+              </Button>
+            )}
+          </>
+        )}
       </div>
+
       <div className="flex items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
@@ -105,6 +168,25 @@ export function DataTablePagination<TData>({
           </Button>
         </div>
       </div>
+
+      <CustomAlertDialog
+        open={showDisableDialog}
+        onOpenChange={setShowDisableDialog}
+        title={`Are you sure you want to disable ${selectedRows.length} items?`}
+        description="These items will remain viewable only in the base data but will be hidden in any other modules for future entries."
+        onCancel={() => setShowDisableDialog(false)}
+        onConfirm={handleConfirmDisable}
+      />
+
+      <CustomAlertDialog
+        open={showEnableDialog}
+        onOpenChange={setShowEnableDialog}
+        title={`Are you sure you want to enable ${selectedRows.length} items?`}
+        description="These items will be visible in any other modules for future entries."
+        onCancel={() => setShowEnableDialog(false)}
+        onConfirm={handleConfirmEnable}
+      />
+
     </div>
   )
 }

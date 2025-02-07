@@ -5,11 +5,11 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 
-import { Item } from "@/components/tanstack/data/itemSchema"
+import { Itempation } from "@/components/tanstack/schema/pationSchema/itempationSchema"
 import { DataTableColumnHeader } from "@/components/tanstack/components/data-table-column-header"
 // import { DataTableRowActions } from "@/components/tanstack/components/data-table-row-actions"
 
-export const columns: ColumnDef<Item>[] = [
+export const columns: ColumnDef<Itempation>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -37,93 +37,109 @@ export const columns: ColumnDef<Item>[] = [
     minSize: 40,
     maxSize: 40,
   },
-  {
-    accessorKey: "image",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Image" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("image")}</div>,
-    enableSorting: false,
-    enableHiding: false,
-    size: 100,
-    minSize: 100,
-    maxSize: 100,
-  }, 
-  {
-    accessorKey: "id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="ID" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("id")}</div>,
-    // enableSorting: false,
-    // enableHiding: false,
-    size: 100,
-    minSize: 100,
-    maxSize: 100,
-  },
+
+  // TODO item Image
 
   {
-    accessorKey: "name",
+    accessorKey: "item",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
+      <DataTableColumnHeader column={column} title="Item" />
     ),
-    cell: ({ row }) => <div>{row.getValue("name")}</div>,
-    size: 200,
-    minSize: 100,
-    enableResizing: true,
+    cell: ({ row }) => <div>{row.getValue("item")}</div>,
+    size: 500,
+    minSize: 150,
   },
+
   {
     accessorKey: "gtin",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="GTIN" />
     ),
     cell: ({ row }) => <div>{row.getValue("gtin")}</div>,
-    size: 150,
-    minSize: 100,
-    maxSize: 150,
-  },
-  {
-    accessorKey: "weight",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Weight" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("weight")}</div>,
-    size: 120,
-    minSize: 100,
-    enableResizing: true,
-  },
+    size: 500,
+    minSize: 150,
+  },    
+
   {
     accessorKey: "vendor",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Vendor" />
     ),
     cell: ({ row }) => <div>{row.getValue("vendor")}</div>,
-    size: 150,
-    minSize: 100,
-    enableResizing: true,
+    size: 500,
+    minSize: 150,
   },
+
+  {
+    accessorKey: "itemNumber",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Item Number" />
+    ),
+    cell: ({ row }) => <div>{row.getValue("itemNumber")}</div>,
+    size: 200,
+    minSize: 100,
+    // enableResizing: true,  aoto column width but unusing now
+  }, 
+
   {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => <div>{row.getValue("status")==="Activated" ? <Badge variant="default">{row.getValue("status")}</Badge> : <Badge variant="destructive">{row.getValue("status")}</Badge>}</div>,
-    size: 100,
+    cell: ({ row }) => <div>{row.getValue("status")==="Active" ? <Badge variant="default">Active</Badge> : <Badge variant="destructive">Inactive</Badge>}</div>,
+    size: 240,
     minSize: 100,
-    maxSize: 100,
   },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="CreatedAt" />
-    ),
-    cell: ({ row }) => {
-      const date = row.getValue("createdAt") as Date;
-      const formattedDate = date.toLocaleString(); // Or use any other date formatting method
-      return <div>{formattedDate}</div>;
-    },
-    size: 150,
-    minSize: 100,
-    enableResizing: true,
-  }, 
+
+  // {
+  //   accessorKey: "createdBy",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Created By" />
+  //   ),
+  //   cell: ({ row }) => <div>{row.getValue("createdBy")}</div>,
+  //   size: 100,
+  //   minSize: 100,
+  //   enableResizing: true,
+  // }, 
+
+  // {
+  //   accessorKey: "createdAt",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Created At" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const date = row.getValue("createdAt") as Date;
+  //     const formattedDate = date.toLocaleString();
+  //     return <div>{formattedDate}</div>;
+  //   },
+  //   size: 150,
+  //   minSize: 100,
+  //   enableResizing: true,
+  // }, 
+
+  // {
+  //   accessorKey: "modifiedBy",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Modified By" />
+  //   ),
+  //   cell: ({ row }) => <div>{row.getValue("modifiedBy")}</div>,
+  //   size: 100,
+  //   minSize: 100,
+  //   enableResizing: true,
+  // }, 
+
+  // {
+  //   accessorKey: "modifiedAt",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Modified At" />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const date = row.getValue("modifiedAt") as Date;
+  //     const formattedDate = date.toLocaleString();
+  //     return <div>{formattedDate}</div>;
+  //   },
+  //   size: 150,
+  //   minSize: 100,
+  //   enableResizing: true,
+  // }, 
 ]

@@ -24,7 +24,7 @@ const data = {
   navMain: [
     {
       title: "Home",
-      url: "/",
+      url: "/dashboard",
       icon: House,
       isActive: true,
     },
@@ -44,8 +44,12 @@ const data = {
           url: "/database/items",
         },
         {
-          title: "Suppliers",
-          url: "/database/suppliers",
+          title: "Vendors",
+          url: "/database/vendors",
+        },
+        {
+          title: "Warehouses",
+          url: "/database/warehouses",
         },
         {
           title: "Locations",

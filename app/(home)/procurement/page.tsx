@@ -1,9 +1,9 @@
-import Demo from "@/components/demo"
+import {Procurement} from "@/components/procurement/page"
 
 
 
 export default function Page() {
   return (
-    <Demo altTxt="This is the screen reserved for the Procurement."></Demo>
+    <Procurement />
   )
 }
