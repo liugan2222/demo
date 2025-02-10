@@ -232,7 +232,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
 
                         <FormField
                           control={form.control}
-                          name={`items.${index}.warehouseNumber`}
+                          name={`items.${index}.internalId`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Warehouse Number<span className="text-red-500">*</span></FormLabel>

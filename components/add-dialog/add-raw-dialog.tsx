@@ -64,10 +64,10 @@ const createEmptyItem = () => ({
   supplierId: '',
   internalId: '',
   caseUomId: '',
-  quantityIncluded: null,
+  quantityIncluded: -1,
   quantityUomId: '',
-  shippingWeight: -1,
-  productWeight: -1,
+  IndividualsPerPackage: null,
+  productWeight: null,
   brandName: null,
   produceVariety: null,
   hsCode: null,
@@ -315,7 +315,7 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
 
                         <FormField
                           control={form.control}
-                          name={`items.${index}.quantityIncluded`}
+                          name={`items.${index}.IndividualsPerPackage`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Quantity Per Package</FormLabel>
@@ -365,7 +365,7 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
 
                         <FormField
                           control={form.control}
-                          name={`items.${index}.shippingWeight`}
+                          name={`items.${index}.quantityIncluded`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Gross Weight Per Package<span className="text-red-500">*</span></FormLabel>
@@ -390,7 +390,7 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.productWeight`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Net Weight Per Package<span className="text-red-500">*</span></FormLabel>
+                              <FormLabel>Net Weight Per Package</FormLabel>
                               <FormControl>
                                 <Input 
                                   {...field} 
@@ -539,7 +539,7 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.shelfLifeDescription`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Certification Code</FormLabel>
+                              <FormLabel>Shelf Life</FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ''} />
                               </FormControl>

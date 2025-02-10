@@ -1,3 +1,5 @@
+"use client"
+
 import React, {useEffect , useState, useCallback} from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,7 +15,7 @@ import { NumberField } from './components/field/number-field'
 import { TextField } from './components/field/text-field'
 
 import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
-import { getItemById , getVendorList } from '@/lib/api';
+import { getItemById , getVendorList, updateItem } from '@/lib/api';
 
 interface ItemFormProps {
   selectedItem: Itemform 
@@ -100,6 +102,9 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
   const onSubmit = async (data: Itemform) => {
     try {
       console.log('Form submitted with data:', data)
+      if (data.productId) {
+        await updateItem(data.productId, data)
+      }
       // Call the onSave callback with the form data
       await onSave(data)
     } catch (error) {
@@ -112,12 +117,16 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
   }
 
   const onError = (errors: any) => {
-    console.error('Form validation errors:', errors)
+    console.log('Form validation errors:', errors)
+    console.log("Current form values:", form.getValues())
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col h-full">
+      <form 
+        onSubmit={form.handleSubmit(onSubmit, onError)}
+        className="flex flex-col h-full"
+      >
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
             <TextField form={form} name="productName" label="Item" required isEditing={isEditing} />
@@ -202,7 +211,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               )}
             />
 
-            <NumberField form={form} name="quantityIncluded" label="Quantity Per Package" isEditing={isEditing} />
+            <NumberField form={form} name="IndividualsPerPackage" label="Quantity Per Package" isEditing={isEditing} />
 
             {/* weightUnits select */}
             <FormField
@@ -243,7 +252,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               )}
             />
 
-            <NumberField form={form} name="shippingWeight" label="Gross Weight Per Package" required isEditing={isEditing} />
+            <NumberField form={form} name="quantityIncluded" label="Gross Weight Per Package" required isEditing={isEditing} />
             <NumberField form={form} name="productWeight" label="Net Weight Per Package" required isEditing={isEditing} />
             <TextField form={form} name="brandName" label="Brand" isEditing={isEditing} />
             <TextField form={form} name="produceVariety" label="Produce Variety" isEditing={isEditing} />

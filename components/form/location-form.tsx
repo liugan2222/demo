@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { locationformSchema, Locationform } from '@/components/tanstack/schema/formSchema/locationformSchema'
 import { TextField } from './components/field/text-field'
 
-import { getLocationById } from '@/lib/api';
+import { getLocationById, updateLocation } from '@/lib/api';
 
 
 interface LocationFormProps {
@@ -58,6 +58,9 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing }: Loca
   const onSubmit = async (data: Locationform) => {
     try {
       console.log('Form submitted with data:', data)
+      if (data.facilityId && data.locationSeqId) {
+        await updateLocation(data.facilityId, data.locationSeqId, data)
+      }
       // Call the onSave callback with the form data
       await onSave(data)
     } catch (error) {

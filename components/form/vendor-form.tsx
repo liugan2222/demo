@@ -15,7 +15,7 @@ import { FacilitiesSection } from "./components/facilities-section"
 import { vendorformSchema, Vendorform } from '@/components/tanstack/schema/formSchema/vendorformSchema'
 
 import { useCountries, useCurrencies } from "@/hooks/use-cached-data"
-import { getStatesAndProvinces, getVendorById } from '@/lib/api';
+import { getStatesAndProvinces, getVendorById, updateVendor } from '@/lib/api';
 
 
 interface VendorFormProps {
@@ -101,6 +101,9 @@ useEffect(() => {
   const onSubmit = async (data: Vendorform) => {
     try {
       console.log('Form submitted with data:', data)
+      if (data.supplierId) {
+        await updateVendor(data.supplierId, data)
+      }
       // Call the onSave callback with the form data
       await onSave(data)
     } catch (error) {

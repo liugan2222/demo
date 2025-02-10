@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState } from "react"
 import { Table } from "@tanstack/react-table"
 import {
@@ -20,20 +22,30 @@ import { EyeOff, Eye } from "lucide-react"
 
 import { CustomAlertDialog } from "@/components/ui/custom-alert-dialog"
 
+import { Vendorpation } from "@/components/tanstack/schema/pationSchema/vendorpationSchema"
+import { Itempation } from "@/components/tanstack/schema/pationSchema/itempationSchema"
+import { Warehousepation } from "@/components/tanstack/schema/pationSchema/warehousepationSchema"
+import { Locationpation } from "@/components/tanstack/schema/pationSchema/locationpationSchema"
+import { vendorActive, vendorDeactive, itemActive, itemDeactive, warehouseActive, warehouseDeactive, locationActive, locationDeactive } from '@/lib/api';
+
 interface DataTablePaginationProps<TData> {
-  table: Table<TData>
+  table: Table<TData>,
+  dataType: 'items' | 'vendors' | 'warehouses' | 'locations' | 'procurements' | 'receivings',
+  onRefresh: () => void
 }
 
 export function DataTablePagination<TData>({
   table,
+  dataType,
+  onRefresh: onRefresh,
 }: DataTablePaginationProps<TData>) {
 
   const [showDisableDialog, setShowDisableDialog] = useState(false)
   const [showEnableDialog, setShowEnableDialog] = useState(false)
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
-  const hasActivated = selectedRows.some(row => (row.original as any).status === "Activated")
-  const hasDisabled = selectedRows.some(row => (row.original as any).status === "Disabled")
+  const hasActivated = selectedRows.some(row => (row.original as any).status === "Active")
+  const hasDisabled = selectedRows.some(row => (row.original as any).status === "Inactive")
 
   const handleDisable = () => {
     setShowDisableDialog(true)
@@ -43,15 +55,132 @@ export function DataTablePagination<TData>({
     setShowEnableDialog(true)
   }
 
-  const handleConfirmDisable = () => {
-    // TODO: Implement the logic to update the status of selected items to "Disabled"
-    setShowDisableDialog(false)
+  const handleConfirmDisable = async() => {
+    try {
+      if (dataType === "items") {
+        const productIds = selectedRows.map((row) => (row.original as Itempation).productId).filter(Boolean) as string[]
+        if (productIds.length > 0) {
+          await itemDeactive(productIds)
+          console.log(`Successfully deactivated ${productIds.length} items`)
+          // refresh the table data or show a success message here
+        } else {
+          console.warn("No valid productIds found in selected rows")
+        }
+      } else if (dataType === "warehouses") {
+        // Handle warehouse deactivation
+        const warehouseIds = selectedRows.map((row) => (row.original as Warehousepation).facilityId).filter(Boolean) as string[]
+        if (warehouseIds.length > 0) {
+          await warehouseDeactive(warehouseIds)
+          console.log(`Successfully deactivated ${warehouseIds.length} items`)
+        } else {
+          console.warn("No valid warehouseIds found in selected rows")
+        }
+      } else if (dataType === "locations") {
+        // Handle location deactivation
+        const locationsByFacility = selectedRows.reduce(
+          (acc, row) => {
+            const location = row.original as Locationpation
+            if (location.facilityId && location.locationSeqId) {
+              if (!acc[location.facilityId]) {
+                acc[location.facilityId] = []
+              }
+              acc[location.facilityId].push(location.locationSeqId)
+            }
+            return acc
+          },
+          {} as Record<string, string[]>,
+        )
+
+        for (const [facilityId, locationSeqIds] of Object.entries(locationsByFacility)) {
+          if (locationSeqIds.length > 0) {
+            await locationDeactive(facilityId, locationSeqIds)
+            console.log(`Successfully deactivated ${locationSeqIds.length} locations for facility ${facilityId}`)
+          }
+        }
+      } else if (dataType === "vendors") {
+        // Handle vendor deactivation
+        const supplierIds = selectedRows.map((row) => (row.original as Vendorpation).supplierId).filter(Boolean) as string[]
+        if (supplierIds.length > 0) {
+          await vendorDeactive(supplierIds)
+          console.log(`Successfully deactivated ${supplierIds.length} items`)
+        } else {
+          console.warn("No valid supplierIds found in selected rows")
+        }
+      }
+
+      onRefresh()
+
+      setShowDisableDialog(false)
+    } catch (error) {
+      console.error("Error deactivating items:", error)
+      // You might want to show an error message to the user here
+    }
   }
 
-  const handleConfirmEnable = () => {
-    // TODO: Implement the logic to update the status of selected items to "Activated"
-    setShowEnableDialog(false)
+  const handleConfirmEnable = async() => {
+    // Implement the logic to update the status of selected items to "Activated"
+    try {
+      if (dataType === "items") {
+        const productIds = selectedRows.map((row) => (row.original as Itempation).productId).filter(Boolean) as string[]
+        if (productIds.length > 0) {
+          await itemActive(productIds)
+          console.log(`Successfully deactivated ${productIds.length} items`)
+          // refresh the table data or show a success message here
+        } else {
+          console.warn("No valid productIds found in selected rows")
+        }
+      } else if (dataType === "warehouses") {
+        // Handle warehouse deactivation
+        const warehouseIds = selectedRows.map((row) => (row.original as Warehousepation).facilityId).filter(Boolean) as string[]
+        if (warehouseIds.length > 0) {
+          await warehouseActive(warehouseIds)
+          console.log(`Successfully deactivated ${warehouseIds.length} items`)
+        } else {
+          console.warn("No valid warehouseIds found in selected rows")
+        }
+      } else if (dataType === "locations") {
+        // Handle location deactivation
+        const locationsByFacility = selectedRows.reduce(
+          (acc, row) => {
+            const location = row.original as Locationpation
+            if (location.facilityId && location.locationSeqId) {
+              if (!acc[location.facilityId]) {
+                acc[location.facilityId] = []
+              }
+              acc[location.facilityId].push(location.locationSeqId)
+            }
+            return acc
+          },
+          {} as Record<string, string[]>,
+        )
+
+        for (const [facilityId, locationSeqIds] of Object.entries(locationsByFacility)) {
+          if (locationSeqIds.length > 0) {
+            await locationActive(facilityId, locationSeqIds)
+            console.log(`Successfully deactivated ${locationSeqIds.length} locations for facility ${facilityId}`)
+          }
+        }
+      } else if (dataType === "vendors") {
+        // Handle vendor deactivation
+        const supplierIds = selectedRows.map((row) => (row.original as Vendorpation).supplierId).filter(Boolean) as string[]
+        if (supplierIds.length > 0) {
+          await vendorActive(supplierIds)
+          console.log(`Successfully deactivated ${supplierIds.length} items`)
+        } else {
+          console.warn("No valid supplierIds found in selected rows")
+        }
+      }
+
+      onRefresh()
+
+      setShowEnableDialog(false)
+    } catch (error) {
+      console.error("Error deactivating items:", error)
+      // You might want to show an error message to the user here
+    }    
   }
+
+  console.log('select :', selectedRows)
 
   return (
     <div className="flex items-center justify-between px-2">

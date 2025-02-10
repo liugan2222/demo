@@ -14,7 +14,7 @@ import { NumberField } from './components/field/number-field'
 import { TextField } from './components/field/text-field'
 
 import { useCountries } from "@/hooks/use-cached-data"
-import { getStatesAndProvinces, getWarehouseById } from '@/lib/api';
+import { getStatesAndProvinces, getWarehouseById, updateWarehouse } from '@/lib/api';
 
 interface WarehouseFormProps {
   selectedItem: Warehouseform 
@@ -42,10 +42,6 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
       businessContacts: selectedItem.businessContacts || [{}], 
     },
   })
-
-  // useEffect(() => {
-  //   form.reset(selectedItem)
-  // }, [selectedItem, form])
 
   useEffect(() => {
     const fetchVendorData = async () => {
@@ -79,6 +75,9 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
   const onSubmit = async (data: Warehouseform) => {
     try {
       console.log('Form submitted with data:', data)
+      if (data.facilityId) {
+        await updateWarehouse(data.facilityId, data)
+      }
       // Call the onSave callback with the form data
       await onSave(data)
     } catch (error) {
@@ -124,7 +123,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
        
             <TextField form={form} name="facilityName" label="Warehouse" required isEditing={isEditing} />
             <TextField form={form} name="gln" label="GLN" isEditing={isEditing} />
-            <TextField form={form} name="warehouseNumber" label="Warehouse Number" isEditing={isEditing} />
+            <TextField form={form} name="internalId" label="Warehouse Number" isEditing={isEditing} />
             <NumberField form={form} name="facilitySize" label="Capacity" isEditing={isEditing} />
 
             <FormField

@@ -7,7 +7,7 @@ export const warehouseformSchema = z.object({
   facilityName: z.string().min(1, "Warehouse name is required"),  // Warehouse
   // address: z.string().nullable().optional(),
   gln: z.string().nullable().optional(),    // GLN
-  warehouseNumber: z.string().nullable().optional(),    // internalId   Warehouse Number
+  internalId: z.string().nullable().optional(),    // internalId   Warehouse Number
   facilitySize: z.number().nullable().optional(), // capacity Capacity
   active: z.string().nullable().optional(),
 

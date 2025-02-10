@@ -12,10 +12,10 @@ export const itemformSchema = z.object({
   supplierName: z.string().nullable().optional(),  
   internalId: z.string().min(1, "Item number is required"), // Item number
   caseUomId: z.string().min(1, "Packaging type is required"), // Packaging Type
-  quantityIncluded: z.number().nullable().optional(),     // Quantity Per Package
+  quantityIncluded: z.number().min(0, "Gross weight must be positive"),   // Gross Weight Per Package
   quantityUomId: z.string().min(1, "Weight units is required"), // Weight Units
-  shippingWeight: z.number().min(0, "Gross weight must be positive"),   // Gross Weight Per Package
-  productWeight: z.number().min(0, "Net weight must be positive"),   // Net Weight Per Package
+  IndividualsPerPackage: z.number().nullable().optional(),     // Quantity Per Package
+  productWeight: z.number().nullable().optional(),   // Net Weight Per Package
   brandName: z.string().nullable().optional(), // Brand
   produceVariety: z.string().nullable().optional(), // Produce Variety
   hsCode: z.string().nullable().optional(), // HS Code
@@ -25,7 +25,7 @@ export const itemformSchema = z.object({
   materialCompositionDescription: z.string().nullable().optional(),    // Material Composition
   countryOfOrigin: z.string().nullable().optional(),    // Country of Origin
   certificationCodes: z.string().nullable().optional(),    // Certification Code
-  shelfLifeDescription: z.number().nullable().optional(),    // Shelf Life
+  shelfLifeDescription: z.string().nullable().optional(),    // Shelf Life
   handlingInstructions: z.string().nullable().optional(),   // Handling Instructions
   storageConditions: z.string().nullable().optional(),      // Storage Conditions
   active: z.string().nullable().optional(),     // status

@@ -31,9 +31,6 @@ import { SidePanel } from "@/components/tanstack/components/side-panel"
 import { Button } from "@/components/ui/button"
 import { ChevronRight } from 'lucide-react';
 
-// import { updateVendor, updateItem, updateWarehouse, updateLocation } from '@/lib/api'
-
-
 // export interface StickyConfig {
 //   columns: string[];  // Array of column ids/accessorKeys to make sticky
 //   width?: number;     // Width of each sticky column (default: 80)
@@ -86,26 +83,8 @@ export function DataTable<TData, TValue>({
   }
 
   const handleSave = async (updatedItem: TData) => {
-    console.log('vendor edit: ',updatedItem)
+    console.log('updatedItem: ',updatedItem)
     try {
-
-      if (dataType === 'items') {
-        console.log('item edit')
-      } else if (dataType === 'vendors') {
-        console.log('vendor edit: ',updatedItem)
-        // await updateVendor(updatedItem.supplierId, updatedItem)
-      }   else if (dataType === 'warehouses') {
-        console.log('warehouse edit')
-      } else if (dataType === 'locations') {
-
-      } else if (dataType === 'procurements') {
-        
-      } else if (dataType === 'receivings') {
-        
-      }  
-      // Here you would typically make an API call to update the item
-      console.log('Saving updated item:', updatedItem)
-      
       // If the save is successful, close the panel and refresh the data
       handleSidePanelClose()
       
@@ -275,7 +254,7 @@ export function DataTable<TData, TValue>({
           )}
         </div>
       </div>
-      <DataTablePagination table={table} />
+      <DataTablePagination table={table} dataType={dataType} onRefresh={onRefresh || (() => {})}/>
     </div>
   )
 }

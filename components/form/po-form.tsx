@@ -1,5 +1,5 @@
 "use client"
-import React, {useEffect, useState } from 'react'
+import React, {useEffect, useState, useCallback } from 'react'
 
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -19,8 +19,20 @@ import { Plus, X } from "lucide-react"
 import { poformSchema, Poform } from '@/components/tanstack/schema/formSchema/poformSchema'
 import { TextField } from './components/field/text-field'
 
-import { getPoById, getVendorById, getItemList } from '@/lib/api';
+import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
+import { getPoById, getVendorById, getItemList, updatePo, getVendorList } from '@/lib/api';
 
+// Define the Uom
+interface Uom {
+  uomId: string;
+  abbreviation: string;
+}
+
+// Define the Vendor
+interface Vendor {
+  supplierId: string;
+  supplierShortName: string;
+}
 
 interface PoFormProps {
   selectedItem: Poform 
@@ -32,7 +44,11 @@ interface PoFormProps {
 export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProps) {
 
   const [loading, setLoading] = useState(true)
-  const [products, setProducts] = useState<any[]>([]) // TODO: Add proper type
+  const [products, setProducts] = useState<any[]>([]) 
+  const [vendors, setVendors] = useState<Vendor[]>([])
+
+  const { data: packageType = [] } = usePackageType(true)
+  const { data: weightUom = [] } = useWeightUom(true)
 
   const form = useForm<Poform>({
     resolver: zodResolver(poformSchema),
@@ -44,17 +60,34 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
     name: "orderItems",
   })
 
+  const fetchVendors = useCallback(async () => {
+    try {
+      const vendorList = await getVendorList()
+      setVendors(vendorList)
+    } catch (error) {
+      console.error("Error fetching warehouses:", error)
+    }
+  }, [])  
+
   useEffect(() => {
-    const fetchVendorData = async () => {
+    const fetchPoData = async () => {
       if (selectedItem.orderId) {
         try {
           setLoading(true)
-          const poData = await getPoById(selectedItem.orderId)
-          // Fetch vendor data if supplierId exists
+          const poData = await getPoById(selectedItem.orderId, true)
+          console.log('poData : ',poData)
+          // Fetch vendor data
           if (poData.supplierId) {
             const vendorData = await getVendorById(poData.supplierId)
             poData.supplierName = vendorData.supplierName
           }
+          if (poData.orderItems) {
+              poData.orderItems = poData.orderItems.map((orderItem) => ({
+              ...orderItem,
+              amount: Number(orderItem.quantity / (orderItem.quantityIncluded || 1)),
+            }))
+          }
+
           // form.reset(warehouseData)
           // Update form values with fetched data
           Object.keys(poData).forEach((key) => {
@@ -69,7 +102,8 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
         setLoading(false)
       }
     }
-    fetchVendorData()
+    fetchVendors()
+    fetchPoData()
     const fetchData = async () => {
       try {
         const [productList] = await Promise.all([getItemList()])
@@ -79,15 +113,15 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
       }
     }
     fetchData()
-    // fetch items
-
-
-  }, [selectedItem.orderId, form])
+  }, [selectedItem.orderId, form, fetchVendors])
 
 
   const onSubmit = async (data: Poform) => {
     try {
       console.log('Form submitted with data:', data)
+      if (data.orderId) {
+        await updatePo(data.orderId, data)
+      }
       // Call the onSave callback with the form data
       await onSave(data)
     } catch (error) {
@@ -113,8 +147,8 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
       productId: "",
       productName: null,
       internalId: null,
-      quantity: 0,
-      weight: 0,
+      quantity: null,
+      amount: 0,
       shippingWeight: null,
       productWeight: null,
       description: null,
@@ -122,7 +156,34 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
       caseUomId: null,
       fulfillmentStatusId: "ORDERED",
       fulfillments: [],
+      quantityIncluded:null
     })
+  }
+
+  // Helper function to find the abbreviation for a given uomId
+  const findUomName = (uomId: string | undefined, uoms: Uom[]): string => {
+    if (!uomId) return 'Units';
+    const uom = uoms.find(uom => uom.uomId === uomId);
+    return uom ? uom.abbreviation : 'Units';
+  }
+
+  const handleProductSelect = (index: number, productId: string) => {
+    const product = products.find((p) => p.productId === productId)
+    if (product) {
+      form.setValue(`orderItems.${index}.productName`, product.name)
+      form.setValue(`orderItems.${index}.caseUomId`, product.caseUomId)
+      form.setValue(`orderItems.${index}.quantityUomId`, product.quantityUomId)
+      form.setValue(`orderItems.${index}.quantityIncluded`, product.quantityIncluded)
+      // TODO  form.setValue(`orderItems.${index}.smallImageUrl`, product.smallImageUrl)
+    }
+  }
+
+  const handleAmountChange = (index: number, amount: number) => {
+    form.setValue(`orderItems.${index}.amount`, amount)
+    const quantityIncluded = form.getValues(`orderItems.${index}.quantityIncluded`)
+    if (quantityIncluded) {
+      form.setValue(`orderItems.${index}.quantity`, amount * quantityIncluded) 
+    }
   }
 
   if (loading) {
@@ -147,8 +208,11 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                   {item.fulfillmentStatusId || "ORDERED"}
                 </Badge>
                 <h4 className="text-base font-medium mt-1">{item.productName}</h4>
+                {/* <p className="text-sm text-gray-600">
+                  {item.quantity?(item.quantity/(item.quantityIncluded?item.quantityIncluded:1)):''} {findUomName(item.caseUomId ?? '', packageType)} , {item.quantity} {findUomName(item.quantityUomId ?? '', weightUom)}
+                </p> */}
                 <p className="text-sm text-gray-600">
-                  {item.quantity} units - {item.productId}
+                  {`${item.quantity ? (item.quantity / (item.quantityIncluded ? item.quantityIncluded : 1)) : ''} ${findUomName(item.caseUomId ?? '', packageType)} , ${item.quantity} ${findUomName(item.quantityUomId ?? '', weightUom)}`}
                 </p>
               </div>
             </div>
@@ -164,7 +228,9 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                     </div>
                     <div>
                       <p className="text-gray-500">Quantity</p>
-                      <p className="font-medium">{fulfillment.allocatedQuantity} units</p>
+                      <p className="font-medium"> 
+                        {`${fulfillment.allocatedQuantity ? (fulfillment.allocatedQuantity / (item.quantityIncluded ? item.quantityIncluded : 1)) : ''} ${findUomName(item.caseUomId ?? '', packageType)} , ${fulfillment.allocatedQuantity} ${findUomName(item.quantityUomId ?? '', weightUom)}`}
+                      </p>
                     </div>
                     <div>
                       <p className="text-gray-500">Date</p>
@@ -219,11 +285,14 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                   <h4 className="text-base font-medium mt-1">
                     {form.watch(`orderItems.${index}.productName`) || "Select a product"}
                   </h4>
-                  <p className="text-sm text-gray-600">{form.watch(`orderItems.${index}.quantity`) || 0} units</p>
+                  <p className="text-sm text-gray-600">
+                    {`${form.watch(`orderItems.${index}.amount`) || 0} ${findUomName(form.watch(`orderItems.${index}.caseUomId`) ?? "", packageType)}, ${form.watch(`orderItems.${index}.quantity`) || 0} ${findUomName(form.watch(`orderItems.${index}.quantityUomId`) ?? "", weightUom)}`}
+                  </p>
                 </div>
-                <Button type="button" variant="ghost" size="sm" className="ml-auto" onClick={() => remove(index)}>
+                {/* <Button type="button" variant="ghost" size="sm" className="ml-auto" onClick={() => remove(index)}>
                   <X className="h-4 w-4" />
-                </Button>
+                  Remove Item
+                </Button> */}
               </div>
             </AccordionTrigger>
             <AccordionContent>
@@ -238,7 +307,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                         value={field.value}
                         onValueChange={(value) => {
                           field.onChange(value)
-                          // TODO: Update product name and unit when product is selected
+                          handleProductSelect(index, value)
                         }}
                       >
                         <FormControl>
@@ -248,8 +317,8 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                         </FormControl>
                         <SelectContent>
                           {products.map((product) => (
-                            <SelectItem key={product.id} value={product.id}>
-                              {product.name}
+                            <SelectItem key={product.productId} value={product.productId}>
+                              {product.productName}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -261,20 +330,59 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
 
                 <FormField
                   control={form.control}
-                  name={`orderItems.${index}.quantity`}
+                  name={`orderItems.${index}.amount`}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Order quantity</FormLabel>
                       <div className="flex gap-2">
                         <FormControl>
-                          <Input type="number" {...field} onChange={(e) => field.onChange(Number(e.target.value))} />
+                          <Input 
+                            type="number" {...field} 
+                            onChange={(e) => {
+                              const value = Number(e.target.value)
+                              handleAmountChange(index, value)
+                            }}
+                          />
                         </FormControl>
-                        <div className="flex items-center px-3 border rounded-md bg-muted">Cases</div>
+                        <div className="flex items-center px-3 border rounded-md bg-muted">
+                          {findUomName(form.watch(`orderItems.${index}.caseUomId`) ?? '', packageType)}
+                        </div>
                       </div>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name={`orderItems.${index}.quantity`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Order weight</FormLabel>
+                      <div className="flex gap-2">
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.valueAsNumber || null)}
+                            disabled
+                          />
+                        </FormControl>
+                        <div className="flex items-center px-3 border rounded-md bg-muted">
+                          {findUomName(form.watch(`orderItems.${index}.quantityUomId`) ?? '', weightUom)}
+                        </div>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="mt-4 pl-28">
+                <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
+                  <X className="h-4 w-4 mr-2" />
+                  Remove Item
+                </Button>
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -291,9 +399,47 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
             {/* Header Information */}
             <div className="grid grid-cols-1 gap-6">
               <TextField form={form} name="orderId" label="PO #" isEditing={isEditing} />
-              <TextField form={form} name="orderDate" label="Order Date" isEditing={isEditing} />
               <TextField form={form} name="statusId" label="Status" isEditing={false} />
-              <TextField form={form} name="supplierName" label="Vendor" isEditing={isEditing} />
+              <TextField form={form} name="orderDate" label="Order Date" isEditing={isEditing} />
+
+              {/* vendor select */}
+            <FormField
+              control={form.control}
+              name='supplierId'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Vendor
+                  </FormLabel>
+                  <FormControl>
+                    {isEditing ? (
+                      <Select
+                        value={field.value ?? undefined}
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a Vendor" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {vendors?.map((vendor) => (
+                            <SelectItem key={vendor.supplierId} value={vendor.supplierId}>
+                              {vendor.supplierShortName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="mt-1 text-sm font-medium">
+                        <TextField form={form} name="supplierName" label="Vendor" isEditing={false} />
+                      </div>
+                    )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             </div>
 
             <FormField

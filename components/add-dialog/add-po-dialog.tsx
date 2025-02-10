@@ -38,8 +38,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 // Import the warehouseSchema
 import { poformSchema, Poform } from '@/components/tanstack/schema/formSchema/poformSchema'
-// import { AdditemForm } from './components/additem-form'
 
+import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
 import { addPo, getVendorList,getItemList } from '@/lib/api';
 
 const createEmptyPo = () => ({
@@ -63,7 +63,7 @@ const createEmptyPo = () => ({
   modifiedAt: null,
   modifiedBy: null,
 
-  orderItems: []
+  orderItems: [createEmptyItem()]
 });
 
 const createEmptyItem = () => ({
@@ -71,13 +71,19 @@ const createEmptyItem = () => ({
   productId: '',
   productName: null,
   description: null,
-  quantity: -1,
+  quantity: null,
   caseUomId: null,
-  weight: null,
+  amount: -1,
   quantityUomId: null,
   quantityIncluded: null,
   fulfillments: []
 });
+
+// Define the Uom
+interface Uom {
+  uomId: string;
+  abbreviation: string;
+}
 
 interface AddDialogProps {
   onAdded: () => void;
@@ -88,6 +94,9 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
   const [vendors, setVendors] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [expandedItems, setExpandedItems] = useState<string[]>(['item-0'])
+
+  const { data: packageType = [] } = usePackageType(true)
+  const { data: weightUom = [] } = useWeightUom(true)
 
   const form = useForm<Poform>({
     resolver: zodResolver(poformSchema),
@@ -174,11 +183,19 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
     }
   }
   
-  const handleQuantityChange = (index: number, quantity: number) => {
-    form.setValue(`orderItems.${index}.quantity`, quantity)
-    const quantityIncluded = form.getValues(`orderItems.${index}.quantityIncluded`);
-    if (quantityIncluded) form.setValue(`orderItems.${index}.weight`, quantity /quantityIncluded) 
-    
+  const handleAmountChange = (index: number, amount: number) => {
+    form.setValue(`orderItems.${index}.amount`, amount)
+    const quantityIncluded = form.getValues(`orderItems.${index}.quantityIncluded`)
+    if (quantityIncluded) {
+      form.setValue(`orderItems.${index}.quantity`, amount * quantityIncluded) 
+    }
+  }
+
+  // Helper function to find the abbreviation for a given uomId
+  const findUomName = (uomId: string | undefined, uoms: Uom[]): string => {
+    if (!uomId) return 'Units';
+    const uom = uoms.find(uom => uom.uomId === uomId);
+    return uom ? uom.abbreviation : 'Units';
   }  
 
   return (
@@ -219,7 +236,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                     control={form.control}
                     name="orderDate"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col">
+                      <FormItem >
                         <FormLabel>Order Date</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
@@ -352,7 +369,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
 
                             <FormField
                               control={form.control}
-                              name={`orderItems.${index}.quantity`}
+                              name={`orderItems.${index}.amount`}
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>
@@ -365,12 +382,12 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                                         {...field}
                                         onChange={(e) => {
                                           const value = Number(e.target.value)
-                                          handleQuantityChange(index, value)
+                                          handleAmountChange(index, value)
                                         }}
                                       />
                                     </FormControl>
                                     <div className="flex items-center px-3 border rounded-md bg-muted">
-                                      {form.watch(`orderItems.${index}.caseUomId`) || "Units"}
+                                      {findUomName(form.watch(`orderItems.${index}.caseUomId`) ?? '', packageType)}
                                     </div>
                                   </div>
                                   <FormMessage />
@@ -380,7 +397,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
 
                             <FormField
                               control={form.control}
-                              name={`orderItems.${index}.weight`}
+                              name={`orderItems.${index}.quantity`}
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>Order weight</FormLabel>
@@ -389,7 +406,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                                       <Input type="number" {...field} value={field.value ?? ''}  disabled />
                                     </FormControl>
                                     <div className="flex items-center px-3 border rounded-md bg-muted">
-                                      {form.watch(`orderItems.${index}.quantityUomId`) || "Units"}
+                                      {findUomName(form.watch(`orderItems.${index}.quantityUomId`) ?? '', weightUom)}
                                     </div>
                                   </div>
                                   <FormMessage />

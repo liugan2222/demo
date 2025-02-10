@@ -278,12 +278,58 @@ export async function addPo(item: any) {
   return response.data
 }
 
-export async function getPoById(id: string) {
-  const response =  await api.get(`/proxy/BffPurchaseOrders/${id}`)
+export async function getPoById(id: string, includesProductDetails?: boolean) {
+  const params = {} as Record<string, any>;
+  if (includesProductDetails !== undefined) {
+    params.includesProductDetails = includesProductDetails;
+  }
+  const response = await api.get(`/proxy/BffPurchaseOrders/${id}`, { params });
   return response.data;
 }
 
 export async function updatePo(id: string, item: Partial<Poform>) {
   const response = await api.put<Poform>(`/proxy/BffPurchaseOrders/${id}`, item)
+  return response.data
+}
+
+/* active deactive */
+
+export async function vendorDeactive(item: string[]) {
+  const response = await api.post<string[]>(`/proxy/BffSuppliers/batchDeactivateSuppliers`, item)
+  return response.data
+}
+
+export async function vendorActive(item: string[]) {
+  const response = await api.post<string[]>(`/proxy/BffSuppliers/batchActivateSuppliers`, item)
+  return response.data
+}
+
+export async function itemDeactive(item: string[]) {
+  const response = await api.put<string[]>(`/proxy/BffRawItems/batchDeactivateRawItems`, item)
+  return response.data
+}
+
+export async function itemActive(item: string[]) {
+  const response = await api.put<string[]>(`/proxy/BffRawItems/batchActivateRawItems`, item)
+  return response.data
+}
+
+export async function warehouseDeactive(item: string[]) {
+  const response = await api.put<string[]>(`/proxy/BffFacilities/batchDeactivateFacilities`, item)
+  return response.data
+}
+
+export async function warehouseActive(item: string[]) {
+  const response = await api.put<string[]>(`/proxy/BffFacilities/batchActivateFacilities`, item)
+  return response.data
+}
+
+export async function locationDeactive(facilityId: string ,item: string[]) {
+  const response = await api.put<string[]>(`/proxy/BffFacilities/${facilityId}/Locations/batchDeactivateLocations`, item)
+  return response.data
+}
+
+export async function locationActive(facilityId: string ,item: string[]) {
+  const response = await api.put<string[]>(`/proxy/BffFacilities/${facilityId}/Locations/batchActivateLocations`, item)
   return response.data
 }
