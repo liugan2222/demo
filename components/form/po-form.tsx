@@ -80,11 +80,16 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
           if (poData.supplierId) {
             const vendorData = await getVendorById(poData.supplierId)
             poData.supplierName = vendorData.supplierName
+            poData.statusId= poData.fulfillmentStatusId?(poData.fulfillmentStatusId):(poData.statusId?poData.statusId:'')
           }
           if (poData.orderItems) {
               poData.orderItems = poData.orderItems.map((orderItem) => ({
               ...orderItem,
-              amount: Number(orderItem.quantity / (orderItem.quantityIncluded || 1)),
+              amount: Number(orderItem.quantity / (orderItem.product.quantityIncluded || 1)),
+              internalId: orderItem.product.internalId,
+              description: orderItem.product.description,
+              quantityUomId: orderItem.product.quantityUomId,
+              caseUomId: orderItem.product.caseUomId
             }))
           }
 
@@ -132,6 +137,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
   const getFulfillmentStatusColor = (status: string | null | undefined) => {
     const statusColors: Record<string, string> = {
       ORDERED: "bg-blue-100 text-blue-800",
+      NOT_FULFILLED: "bg-gray-100 text-gray-800",
       PARTIALLY_FULFILLED: "bg-yellow-100 text-yellow-800",
       FULFILLED: "bg-green-100 text-green-800",
       CANCELLED: "bg-red-100 text-red-800",
@@ -378,8 +384,9 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                   )}
                 />
               </div>
-              <div className="mt-4 pl-28">
-                <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)}>
+              {/* <div className="mt-4 pl-28"> */}
+              <div className="flex justify-end p-4">
+                <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}>
                   <X className="h-4 w-4 mr-2" />
                   Remove Item
                 </Button>
@@ -403,43 +410,43 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
               <TextField form={form} name="orderDate" label="Order Date" isEditing={isEditing} />
 
               {/* vendor select */}
-            <FormField
-              control={form.control}
-              name='supplierId'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Vendor
-                  </FormLabel>
-                  <FormControl>
-                    {isEditing ? (
-                      <Select
-                        value={field.value ?? undefined}
-                        onValueChange={field.onChange}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a Vendor" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {vendors?.map((vendor) => (
-                            <SelectItem key={vendor.supplierId} value={vendor.supplierId}>
-                              {vendor.supplierShortName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <div className="mt-1 text-sm font-medium">
-                        <TextField form={form} name="supplierName" label="Vendor" isEditing={false} />
-                      </div>
-                    )}
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name='supplierId'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Vendor
+                    </FormLabel>
+                    <FormControl>
+                      {isEditing ? (
+                        <Select
+                          value={field.value ?? undefined}
+                          onValueChange={field.onChange}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a Vendor" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {vendors?.map((vendor) => (
+                              <SelectItem key={vendor.supplierId} value={vendor.supplierId}>
+                                {vendor.supplierShortName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="mt-1 text-sm font-medium">
+                          {form.getValues("supplierName") || "No vendor selected"}
+                        </div>
+                      )}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <FormField

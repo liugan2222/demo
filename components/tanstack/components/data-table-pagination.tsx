@@ -44,8 +44,8 @@ export function DataTablePagination<TData>({
   const [showEnableDialog, setShowEnableDialog] = useState(false)
 
   const selectedRows = table.getFilteredSelectedRowModel().rows
-  const hasActivated = selectedRows.some(row => (row.original as any).status === "Active")
-  const hasDisabled = selectedRows.some(row => (row.original as any).status === "Inactive")
+  const hasActivated = selectedRows.some(row => (row.original as any).status === "Activated")
+  const hasDisabled = selectedRows.some(row => (row.original as any).status === "Disabled")
 
   const handleDisable = () => {
     setShowDisableDialog(true)

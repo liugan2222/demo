@@ -50,42 +50,37 @@ export function VendorForm({ selectedItem, onSave, onCancel, isEditing }: Vendor
     defaultValues: {
       ...selectedItem,
       businessContacts: selectedItem.businessContacts || [{}], // Initialize with empty object if undefined
+      facilities: selectedItem.facilities || [],
     },
   })
-
-//   useEffect(() => {
-//   const fetchVendorData = async () => {
-//     if (selectedItem.supplierId) {
-//       try {
-//         const vendorData = await getVendorById(selectedItem.supplierId)
-//         form.reset(vendorData)
-//       } catch (error) {
-//         console.error("Error fetching vendor data:", error)
-//       }
-//     }
-//   }
-
-//   fetchVendorData()
-// }, [selectedItem.supplierId, form])
 
 useEffect(() => {
   const fetchVendorData = async () => {
     if (selectedItem.supplierId) {
       try {
         setLoading(true)
-        const vendorData = await getVendorById(selectedItem.supplierId)
+        const vendorData = await getVendorById(selectedItem.supplierId, true)
         // Ensure businessContacts exists with at least one empty object
         const formattedData = {
           ...vendorData,
-          businessContacts: vendorData.businessContacts?.length 
-            ? vendorData.businessContacts 
-            : [{}]
+          businessContacts: vendorData.businessContacts?.length  ? vendorData.businessContacts  : [{}],
+          facilities: vendorData.facilities || [],
         }
         form.reset(formattedData)
 
         // If there's a country selected, fetch its states
         if (formattedData.businessContacts?.[0]?.countryGeoId) {
           await handleContactCountryChange(formattedData.businessContacts[0].countryGeoId)
+        }
+
+        // Fetch states for each facility
+        if (formattedData.facilities?.length) {
+          const facilityStates = await Promise.all(
+            formattedData.facilities.map((facility) =>
+              getStatesAndProvinces(facility.businessContacts[0]?.countryGeoId || ""),
+            ),
+          )
+          setStates(facilityStates.flat())
         }
       } catch (error) {
         console.error("Error fetching vendor data:", error)
@@ -162,26 +157,9 @@ useEffect(() => {
       <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col h-full">
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
-            {/* <FormField
-              control={form.control}
-              name='supplierId'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                   ID
-                  </FormLabel>
-                  <FormControl>
-                    {<div className="mt-1 text-sm font-medium">
-                        {field.value?.toString() ?? ''}
-                      </div>}
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
             <TextField form={form} name="supplierShortName" label="Vendor" required isEditing={isEditing} />
             <TextField form={form} name="supplierName" label="Full Name" required isEditing={isEditing} />
-            <TextField form={form} name="internalId" label="Vendor number" isEditing={false} />
+            <TextField form={form} name="internalId" label="Vendor number" isEditing={isEditing} />
             <TextField form={form} name="telephone" label="Tel" required isEditing={isEditing} />
             <TextField form={form} name="email" label="Email" isEditing={isEditing} />
             <TextField form={form} name="gs1CompanyPrefix" label="GCP" isEditing={isEditing} />
@@ -480,7 +458,6 @@ useEffect(() => {
             {/* Facilities Section */}
             <FacilitiesSection
               form={form}
-              index={0} // Since we're editing a single vendor, index is 0
               isEditing={isEditing}
               countries={countries}
               states={states}

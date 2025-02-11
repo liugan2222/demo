@@ -72,7 +72,7 @@ export const columns: ColumnDef<Warehousepation>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => <div>{row.getValue("status")==="Active" ? <Badge variant="default">Active</Badge> : <Badge variant="destructive">Inactive</Badge>}</div>,
+    cell: ({ row }) => <div>{row.getValue("status")==="Activated" ? <Badge variant="default">Activated</Badge> : <Badge variant="destructive">Disabled</Badge>}</div>,
     size: 200,
     minSize: 100,
   }

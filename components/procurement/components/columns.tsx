@@ -65,9 +65,24 @@ export const columns: ColumnDef<Popation>[] = [
       <DataTableColumnHeader column={column} title="Order Date" />
     ),
     cell: ({ row }) => {
-      const date = row.getValue("orderDate") as Date;
-      const formattedDate = date.toLocaleString(); 
-      return <div>{formattedDate}</div>;
+      const dateStr = row.getValue("orderDate") as string
+      if (!dateStr) return <div>-</div>
+
+      const date = new Date(dateStr)
+      if (isNaN(date.getTime())) return <div>Invalid date</div>
+
+      const formattedDate = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+        month: "2-digit",
+        day: "2-digit",
+        year: "numeric",
+      }).format(date)
+
+      // Convert "02/10/2025, 10:00 AM" to "10:00 AM, 02/10/2025"
+      const [datePart, timePart] = formattedDate.split(", ")
+      return <div>{`${timePart}, ${datePart}`}</div>
     },
     size: 430,
     minSize: 100,

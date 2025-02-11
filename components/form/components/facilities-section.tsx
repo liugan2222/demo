@@ -10,7 +10,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 interface FacilitiesSectionProps {
   form: UseFormReturn<any>
-  index: number
   isEditing: boolean
   countries: Array<{ geoId: string; geoName: string }>
   states: Array<{ geoId: string; geoName: string }>
@@ -19,15 +18,15 @@ interface FacilitiesSectionProps {
 
 export function FacilitiesSection({
   form,
-  index,
   isEditing,
   countries,
   states,
   onCountryChange,
 }: FacilitiesSectionProps) {
+
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: `items.${index}.facilities`,
+    name: "facilities",
   })
 
   // If in edit mode, show all fields expanded
@@ -43,14 +42,18 @@ export function FacilitiesSection({
             onClick={() =>
               append({
                 facilityName: "",
-                phoneNumber: "",
-                countryGeoId: "",
-                physicalLocationAddress: "",
-                city: "",
-                stateProvinceGeoId: "",
-                zipCode: "",
                 ffrn: "",
                 gln: "",
+                businessContacts: [
+                  {
+                    phoneNumber: "",
+                    countryGeoId: "",
+                    physicalLocationAddress: "",
+                    city: "",
+                    stateProvinceGeoId: "",
+                    zipCode: "",
+                  },
+                ],
               })
             }
             className="flex items-center gap-2"
@@ -72,7 +75,7 @@ export function FacilitiesSection({
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name={`items.${index}.facilities.${facilityIndex}.facilityName`}
+                name={`facilities.${facilityIndex}.facilityName`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -88,11 +91,11 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
-                name={`items.${index}.facilities.${facilityIndex}.phoneNumber`}
+                name={`facilities.${facilityIndex}.businessContacts.0.phoneNumber`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Phone number<span className="text-red-500">*</span>
+                      Phone number
                     </FormLabel>
                     <FormControl>
                       <Input {...field} />
@@ -104,7 +107,7 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
-                name={`items.${index}.facilities.${facilityIndex}.countryGeoId`}
+                name={`facilities.${facilityIndex}.businessContacts.0.countryGeoId`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -137,7 +140,7 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
-                name={`items.${index}.facilities.${facilityIndex}.physicalLocationAddress`}
+                name={`facilities.${facilityIndex}.businessContacts.0.physicalLocationAddress`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -153,7 +156,7 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
-                name={`items.${index}.facilities.${facilityIndex}.city`}
+                name={`facilities.${facilityIndex}.businessContacts.0.city`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -169,7 +172,7 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
-                name={`items.${index}.facilities.${facilityIndex}.stateProvinceGeoId`}
+                name={`facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -196,7 +199,7 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
-                name={`items.${index}.facilities.${facilityIndex}.zipCode`}
+                name={`facilities.${facilityIndex}.businessContacts.0.zipCode`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
@@ -212,7 +215,7 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
-                name={`items.${index}.facilities.${facilityIndex}.ffrn`}
+                name={`facilities.${facilityIndex}.ffrn`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>FFRN</FormLabel>
@@ -226,7 +229,7 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
-                name={`items.${index}.facilities.${facilityIndex}.gln`}
+                name={`facilities.${facilityIndex}.gln`}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>GLN</FormLabel>
@@ -255,14 +258,16 @@ export function FacilitiesSection({
               <div className="flex flex-col items-start">
                 <span className="font-medium">{field.facilityName}</span>
                 <span className="text-sm text-muted-foreground">
-                  {field.physicalLocationAddress}, {field.city}, {field.state},{field.country}, {field.zipCode}
+                  {field.businessContacts[0]?.physicalLocationAddress}, {field.businessContacts[0]?.city}{" "}
+                  {field.businessContacts[0]?.state},{field.businessContacts[0]?.country},{" "}
+                  {field.businessContacts[0]?.zipCode}
                 </span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-2 pt-2">
               <div className="grid grid-cols-[auto,1fr] gap-x-2">
                 <span className="text-muted-foreground">Phone:</span>
-                <span>{field.phoneNumber}</span>
+                <span>{field.businessContacts[0]?.phoneNumber}</span>
                 <span className="text-muted-foreground">FFRN:</span>
                 <span>{field.ffrn || "-"}</span>
                 <span className="text-muted-foreground">GLN:</span>

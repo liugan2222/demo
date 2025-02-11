@@ -98,13 +98,13 @@ export async function getVendors(size: number = 9999) {
     //   };
     //   return transformedVendor;
     // });
-    
-    const transformedVendors = response.data.content.map((item: any) => ({
+    const content = response.data.content || [];
+    const transformedVendors = (content as any[]).map((item: any) => ({
       vendor: item.supplierShortName, 
       tel: item.telephone, 
       gcp: item.gs1CompanyPrefix, 
       vendorNumber: item.internalId,
-      status: item.active=='Y'?'Active':'Inactive',
+      status: item.active=='Y'?'Activated':'Disabled',
       ...item,
     }));
     return transformedVendors;
@@ -115,8 +115,12 @@ export async function addVendor(vendor: any) {
   return response.data
 }
 
-export async function getVendorById(id: string) {
-  const response =  await api.get(`/proxy/BffSuppliers/${id}`)
+export async function getVendorById(id: string, includesFacilities?: boolean) {
+  const params = {} as Record<string, any>;
+  if (includesFacilities !== undefined) {
+    params.includesFacilities = includesFacilities;
+  }
+  const response =  await api.get(`/proxy/BffSuppliers/${id}`, { params });
   return response.data;
 }
 
@@ -136,11 +140,12 @@ export async function getItems(size: number = 9999) {
     totalPages: number;
   }>('/proxy/BffRawItems', { params: { size } });
 
-    const transformedItems = response.data.content.map((item: any) => ({
+    const content = response.data.content || [];
+    const transformedItems = (content as any[]).map((item: any) => ({
       item: item.productName, 
       vendor: item.supplierName, 
       itemNumber: item.internalId, 
-      status: item.active=='Y'?'Active':'Inactive',
+      status: item.active=='Y'?'Activated':'Disabled',
       ...item,
     }));
     return transformedItems;
@@ -173,7 +178,8 @@ export async function getWarehouses(size: number = 9999, ownerPartyId: string ='
     totalPages: number;
   }>('/proxy/BffFacilities', { params: { size , ownerPartyId} });
 
-    const transformedWarehouses = response.data.content.map((item: any) => {
+    const content = response.data.content || [];
+    const transformedWarehouses = (content as any[]).map((item: any) => {
       // Extract businessContacts if it exists
       const businessContacts = item.businessContacts || [];
 
@@ -203,7 +209,7 @@ export async function getWarehouses(size: number = 9999, ownerPartyId: string ='
         warehouse: item.facilityName,
         address: address, // Use the concatenated address
         warehouseNumber: item.internalId,
-        status: item.active === 'Y' ? 'Active' : 'Inactive',
+        status: item.active === 'Y' ? 'Activated' : 'Disabled',
         ...item
       };
     });
@@ -228,11 +234,12 @@ export async function updateWarehouse(id: string, warehouse: Partial<Warehousefo
 /*  Location  */
 export async function getLocations() {
   const response =  await api.get(`/proxy/BffLists/Locations`)
-  const transformedItems = response.data.map((item: any) => ({
+  const content = response.data.content || [];
+  const transformedItems = (content as any[]).map((item: any) => ({
     location: item.locationName,
     locationNumber: item.locationCode,
     warehouse: item.facilityName,
-    status: item.active=='Y'?'Active':'Inactive',
+    status: item.active=='Y'?'Activated':'Disabled',
     ...item,
   }));
 
@@ -263,11 +270,11 @@ export async function getPos(size: number = 9999) {
     number: number;
     totalPages: number;
   }>('/proxy/BffPurchaseOrders', { params: { size } });
-
-    const transformedItems = response.data.content.map((item: any) => ({
+    const content = response.data.content || [];
+    const transformedItems = (content as any[]).map((item: any) => ({
       poNumber: item.orderId, 
       vendor: item.supplierName, 
-      orderStatus: item.statusId,
+      orderStatus: item.fulfillmentStatusId?(item.fulfillmentStatusId):(item.statusId?item.statusId:''),
       ...item,
     }));
     return transformedItems;

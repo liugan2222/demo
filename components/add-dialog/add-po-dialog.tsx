@@ -203,7 +203,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Add Warehouse
+          Add PO
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px]">

@@ -46,9 +46,9 @@ export function DatabaseVendors() {
     return <div className="p-11 text-red-500">Error: {error}</div>
   }
 
-  if (vendors.length === 0) {
-    return <div className="p-11">No vendors found.</div>;
-  }
+  // if (vendors.length === 0) {
+  //   return <div className="p-11">No vendors found.</div>;
+  // }
 
   return (
     <div className="p-11">

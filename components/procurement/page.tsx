@@ -47,7 +47,7 @@ export function Procurement() {
   }
 
   return (
-    <div className="p-12">
+    <div className="p-11">
       <DataTable data={procurements} columns={columns} dataType='procurements'  onRefresh={fetchProcurements}/>
     </div>
   )

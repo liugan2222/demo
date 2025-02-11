@@ -40,12 +40,12 @@ const data = {
       icon: Database,
       items: [
         {
-          title: "Items",
-          url: "/database/items",
-        },
-        {
           title: "Vendors",
           url: "/database/vendors",
+        },
+        {
+          title: "Items",
+          url: "/database/items",
         },
         {
           title: "Warehouses",

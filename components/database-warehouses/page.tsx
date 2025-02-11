@@ -68,7 +68,7 @@ export function DatabaseWarehouses() {
   }
 
   if (error) {
-    return <div className="p-5 text-red-500">Error: {error}</div>
+    return <div className="p-11 text-red-500">Error: {error}</div>
   }
 
   return (
