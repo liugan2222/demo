@@ -1,4 +1,4 @@
-import { Plus, X } from "lucide-react"
+import { Plus, X, Check, ChevronsUpDown} from "lucide-react"
 import type { UseFormReturn } from "react-hook-form"
 import { useFieldArray } from "react-hook-form"
 
@@ -7,6 +7,9 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 interface FacilitiesSectionProps {
   form: UseFormReturn<any>
@@ -172,26 +175,53 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
-                name={`facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`}
+                name={`items.0.preferredCurrencyUomId`}
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      State/province<span className="text-red-500">*</span>
-                    </FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a state" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {states.map((state) => (
-                          <SelectItem key={state.geoId} value={state.geoId}>
-                            {state.geoName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <FormItem className="flex flex-col">
+                    <FormLabel>State/province</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                          >
+                            {field.value
+                              ? states?.find((state) => state.geoId === field.value)?.geoName
+                              : "Select a state"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Search state/province..." />
+                          <CommandList>
+                            <CommandEmpty>No state/province found.</CommandEmpty>
+                            <CommandGroup>
+                              {states?.map((state) => (
+                                <CommandItem
+                                  value={state.geoName}
+                                  key={`${state.geoId}-${facilityIndex}`}
+                                  onSelect={() => {
+                                    field.onChange(state.geoId)
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === state.geoId ? "opacity-100" : "opacity-0",
+                                    )}
+                                  />
+                                  {state.geoName}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                     <FormMessage />
                   </FormItem>
                 )}

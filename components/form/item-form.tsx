@@ -137,7 +137,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name='supplierId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
+                  <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
                     Vendor
                   </FormLabel>
                   <FormControl>
@@ -178,7 +178,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name='caseUomId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
+                  <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
                     Packaging Type
                   </FormLabel>
                   <FormControl>
@@ -211,7 +211,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               )}
             />
 
-            <NumberField form={form} name="IndividualsPerPackage" label="Quantity Per Package" isEditing={isEditing} />
+            <NumberField form={form} name="individualsPerPackage" label="Quantity Per Package" isEditing={isEditing} />
 
             {/* weightUnits select */}
             <FormField
@@ -219,7 +219,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name='quantityUomId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
+                  <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
                     Weight Units
                   </FormLabel>
                   <FormControl>
@@ -253,7 +253,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
             />
 
             <NumberField form={form} name="quantityIncluded" label="Gross Weight Per Package" required isEditing={isEditing} />
-            <NumberField form={form} name="productWeight" label="Net Weight Per Package" required isEditing={isEditing} />
+            <NumberField form={form} name="productWeight" label="Net Weight Per Package"  isEditing={isEditing} />
             <TextField form={form} name="brandName" label="Brand" isEditing={isEditing} />
             <TextField form={form} name="produceVariety" label="Produce Variety" isEditing={isEditing} />
             <TextField form={form} name="hsCode" label="HS Code" isEditing={isEditing} />

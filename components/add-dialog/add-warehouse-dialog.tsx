@@ -185,7 +185,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                     <AccordionTrigger className="hover:no-underline">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">
-                          Item {index + 1}
+                          Warehouse {index + 1}
                         </span>
                         {form.getValues(`items.${index}.facilityName`) && (
                           <span className="text-sm text-muted-foreground">

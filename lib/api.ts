@@ -234,7 +234,7 @@ export async function updateWarehouse(id: string, warehouse: Partial<Warehousefo
 /*  Location  */
 export async function getLocations() {
   const response =  await api.get(`/proxy/BffLists/Locations`)
-  const content = response.data.content || [];
+  const content = response.data || [];
   const transformedItems = (content as any[]).map((item: any) => ({
     location: item.locationName,
     locationNumber: item.locationCode,

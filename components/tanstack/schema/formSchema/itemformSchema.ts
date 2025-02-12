@@ -12,9 +12,9 @@ export const itemformSchema = z.object({
   supplierName: z.string().nullable().optional(),  
   internalId: z.string().min(1, "Item number is required"), // Item number
   caseUomId: z.string().min(1, "Packaging type is required"), // Packaging Type
-  quantityIncluded: z.number().min(0, "Gross weight must be positive"),   // Gross Weight Per Package
+  quantityIncluded: z.number().gt(0, "Gross weight must be greater than 0"),   // Gross Weight Per Package
   quantityUomId: z.string().min(1, "Weight units is required"), // Weight Units
-  IndividualsPerPackage: z.number().nullable().optional(),     // Quantity Per Package
+  individualsPerPackage: z.number().nullable().optional(),     // Quantity Per Package
   productWeight: z.number().nullable().optional(),   // Net Weight Per Package
   brandName: z.string().nullable().optional(), // Brand
   produceVariety: z.string().nullable().optional(), // Produce Variety

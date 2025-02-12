@@ -173,7 +173,7 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                     <AccordionTrigger className="hover:no-underline">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">
-                          Item {index + 1}
+                          Location {index + 1}
                         </span>
                         {form.getValues(`items.${index}.locationName`) && (
                           <span className="text-sm text-muted-foreground">
@@ -266,7 +266,7 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.areaId`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Brand</FormLabel>
+                              <FormLabel>Warehouse Zone</FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ''} />
                               </FormControl>

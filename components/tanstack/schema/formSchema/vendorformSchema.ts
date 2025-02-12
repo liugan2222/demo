@@ -15,7 +15,7 @@ export const vendorformSchema = z.object({
   email: z.string().nullable().optional(),            // Email
   gs1CompanyPrefix: z.string().nullable().optional(),      // GCP
   gln: z.string().nullable().optional(),                // gln
-  internalId: z.string().nullable().optional(),   // vendorNumber
+  internalId: z.string().min(1, "Vendor number is required"),   // vendorNumber
   active: z.string().nullable().optional(),     // status
   preferredCurrencyUomId: z.string().nullable().optional(),   // Currency
   taxId: z.string().nullable().optional(),      // Tax ID / VAT Number

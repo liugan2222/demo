@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -64,9 +64,9 @@ const createEmptyItem = () => ({
   supplierId: '',
   internalId: '',
   caseUomId: '',
-  quantityIncluded: -1,
+  quantityIncluded: 0,
   quantityUomId: '',
-  IndividualsPerPackage: null,
+  individualsPerPackage: null,
   productWeight: null,
   brandName: null,
   produceVariety: null,
@@ -107,7 +107,7 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
     mode: 'onChange', // Enable real-time validation
   })
 
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "items",
   })
@@ -315,7 +315,7 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
 
                         <FormField
                           control={form.control}
-                          name={`items.${index}.IndividualsPerPackage`}
+                          name={`items.${index}.individualsPerPackage`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Quantity Per Package</FormLabel>
@@ -575,8 +575,20 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                             </FormItem>
                           )}
                         />
-
                       </div>
+                      {index > 0 && (
+                        <div className="flex justify-end mt-6 border-t pt-4">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="default"
+                            onClick={() => remove(index)}
+                          >
+                            <X className="h-4 w-4" />
+                            Remove Item
+                          </Button>
+                        </div>
+                      )}
                     </AccordionContent>
                   </AccordionItem>
                 ))}

@@ -413,20 +413,20 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                                 </FormItem>
                               )}
                             />
-
-                            {index > 0 && (
+                          </div>
+                          {index > 0 && (
+                            <div className="flex justify-end mt-6 border-t pt-4">
                               <Button
                                 type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="mt-2"
+                                variant="destructive"
+                                size="default"
                                 onClick={() => remove(index)}
                               >
-                                <X className="h-4 w-4 mr-2" />
-                                Remove Item
+                                <X className="h-4 w-4" />
+                                Remove PO
                               </Button>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </AccordionContent>
                       </AccordionItem>
                     ))}
