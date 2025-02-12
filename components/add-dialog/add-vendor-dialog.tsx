@@ -3,13 +3,12 @@
 import React, { useState, useCallback } from 'react'
 import { z } from 'zod'
 import { Plus, Check, ChevronsUpDown } from "lucide-react"
-import { useForm, useFieldArray } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -26,12 +25,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
@@ -51,10 +44,10 @@ interface Country {
 }
 
 // Define the Currency type
-interface Currency {
-  uomId: string;
-  abbreviation: string;
-}
+// interface Currency {
+//   uomId: string;
+//   abbreviation: string;
+// }
 
 const createEmptyVendor = () => ({
   supplierId: null,
