@@ -131,7 +131,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
               name="businessContacts.0.countryGeoId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Country</FormLabel>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Country</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Select
@@ -155,7 +155,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="mt-1 text-sm font-medium">
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
                         {findCountryName(getFormValue('businessContacts.0.countryGeoId'), countries)}
                       </div>
                     )}
@@ -170,7 +170,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
               name="businessContacts.0.physicalLocationAddress"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address</FormLabel>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Address</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input
@@ -179,7 +179,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     ) : (
-                      <div className="mt-1 text-sm font-medium">
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
                         {getFormValue('businessContacts.0.physicalLocationAddress')}
                       </div>
                     )}
@@ -194,7 +194,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
               name="businessContacts.0.city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>City</FormLabel>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">City</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input
@@ -203,7 +203,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     ) : (
-                      <div className="mt-1 text-sm font-medium">
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
                         {getFormValue('businessContacts.0.city')}
                       </div>
                     )}
@@ -218,7 +218,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
               name="businessContacts.0.stateProvinceGeoId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>State/province</FormLabel>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">State/province</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Select
@@ -241,7 +241,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="mt-1 text-sm font-medium">
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
                         {findCountryName(getFormValue('businessContacts.0.stateProvinceGeoId'), contactstates)}
                       </div>
                     )}
@@ -256,7 +256,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
               name="businessContacts.0.zipCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Postal code</FormLabel>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Postal code</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input
@@ -265,7 +265,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     ) : (
-                      <div className="mt-1 text-sm font-medium">
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
                         {getFormValue('businessContacts.0.zipCode')}
                       </div>
                     )}

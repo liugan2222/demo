@@ -16,7 +16,7 @@ export const sonitemSchema = z.object({
   caseUomId: z.string().nullable().optional(),    // Quantity Units
 
   quantity: z.number().nullable().optional(), // Quantity  
-  amount: z.number().min(0, "Quantity must be positive"),      //    quantity/(quantityIncluded*piecesIncluded) 
+  amount: z.number().gt(0, "Quantity must be greater than 0"),      //    quantity/(quantityIncluded*piecesIncluded) 
 
   quantityIncluded: z.number().nullable().optional(), 
 

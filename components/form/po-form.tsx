@@ -13,8 +13,12 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
 
-import { Plus, X } from "lucide-react"
+import { Plus, X, CalendarIcon } from "lucide-react"
+
+import { format } from "date-fns"
 
 import { poformSchema, Poform } from '@/components/tanstack/schema/formSchema/poformSchema'
 import { TextField } from './components/field/text-field'
@@ -47,8 +51,32 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
   const [products, setProducts] = useState<any[]>([]) 
   const [vendors, setVendors] = useState<Vendor[]>([])
 
+  
   const { data: packageType = [] } = usePackageType(true)
   const { data: weightUom = [] } = useWeightUom(true)
+  
+  const [totalCases, setTotalCases] = useState(0);
+  const [totalWeight, setTotalWeight] = useState(0);
+  const [totalCasesUnit, setTotalCasesUnit] = useState('Units');
+  const [totalWeightUnit, setTotalWeightUnit] = useState('Units');
+  
+  const calculateTotals = useCallback((items: Poform['orderItems']) => {
+    let cases = 0;
+    let weight = 0;
+    
+    items?.forEach(item => {
+      cases += item.amount || 0;
+      weight += item.quantity || 0;
+    });
+
+    setTotalCases(cases);
+    if (items.length > 0) {
+      setTotalCasesUnit(findUomName(items[0].caseUomId ?? "", packageType))
+      setTotalWeightUnit(findUomName(items[0].quantityUomId ?? "", weightUom))
+    }
+    setTotalWeight(weight);
+  }, []);
+
 
   const form = useForm<Poform>({
     resolver: zodResolver(poformSchema),
@@ -85,19 +113,21 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
           if (poData.orderItems) {
               poData.orderItems = poData.orderItems.map((orderItem) => ({
               ...orderItem,
-              amount: Number(orderItem.quantity / (orderItem.product.quantityIncluded || 1)),
+              amount: Number(orderItem.quantity / (orderItem.product.quantityIncluded)),
               internalId: orderItem.product.internalId,
               description: orderItem.product.description,
               quantityUomId: orderItem.product.quantityUomId,
               caseUomId: orderItem.product.caseUomId
             }))
+            console.log('orderItems ',poData.orderItems)
+            calculateTotals(poData.orderItems)
           }
 
-          // form.reset(warehouseData)
+          form.reset(poData)
           // Update form values with fetched data
-          Object.keys(poData).forEach((key) => {
-            form.setValue(key as keyof Poform, poData[key])
-          })
+          // Object.keys(poData).forEach((key) => {
+          //   form.setValue(key as keyof Poform, poData[key])
+          // })
         } catch (error) {
           console.error("Error fetching vendor data:", error)
         } finally {
@@ -190,6 +220,10 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
     if (quantityIncluded) {
       form.setValue(`orderItems.${index}.quantity`, amount * quantityIncluded) 
     }
+
+    const items = form.getValues("orderItems");
+    // do calculateTotals 
+    calculateTotals(items);
   }
 
   if (loading) {
@@ -218,7 +252,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                   {item.quantity?(item.quantity/(item.quantityIncluded?item.quantityIncluded:1)):''} {findUomName(item.caseUomId ?? '', packageType)} , {item.quantity} {findUomName(item.quantityUomId ?? '', weightUom)}
                 </p> */}
                 <p className="text-sm text-gray-600">
-                  {`${item.quantity ? (item.quantity / (item.quantityIncluded ? item.quantityIncluded : 1)) : ''} ${findUomName(item.caseUomId ?? '', packageType)} , ${item.quantity} ${findUomName(item.quantityUomId ?? '', weightUom)}`}
+                  {`${item.amount ? item.amount : ''} ${findUomName(item.caseUomId ?? '', packageType)} , ${item.quantity} ${findUomName(item.quantityUomId ?? '', weightUom)}`}
                 </p>
               </div>
             </div>
@@ -344,6 +378,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                         <FormControl>
                           <Input 
                             type="number" {...field} 
+                            value={field.value ?? ""}
                             onChange={(e) => {
                               const value = Number(e.target.value)
                               handleAmountChange(index, value)
@@ -386,7 +421,16 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
               </div>
               {/* <div className="mt-4 pl-28"> */}
               <div className="flex justify-end p-4">
-                <Button type="button" variant="destructive" size="sm" onClick={() => remove(index)}>
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  size="sm" 
+                  onClick={() => {
+                      remove(index); 
+                      const items = form.getValues("orderItems"); 
+                      calculateTotals(items); 
+                    }}
+                  >
                   <X className="h-4 w-4 mr-2" />
                   Remove Item
                 </Button>
@@ -407,7 +451,42 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
             <div className="grid grid-cols-1 gap-6">
               <TextField form={form} name="orderId" label="PO #" isEditing={isEditing} />
               <TextField form={form} name="statusId" label="Status" isEditing={false} />
-              <TextField form={form} name="orderDate" label="Order Date" isEditing={isEditing} />
+              
+              {/* Updated orderDate field */}
+              <FormField
+                control={form.control}
+                name="orderDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Order Date</FormLabel>
+                    <FormControl>
+                      {isEditing ? (
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
+                              {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value ? new Date(field.value) : undefined}
+                              onSelect={(date) => field.onChange(date?.toISOString())}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      ) : (
+                        <div className="text-[#121619] text-sm font-normal leading-tight">
+                          {field.value ? format(new Date(field.value), "h:mm a, MM/dd/yyyy") : "No date set"}
+                        </div>
+                      )}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               {/* vendor select */}
               <FormField
@@ -415,7 +494,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                 name='supplierId'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
+                    <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">
                       Vendor
                     </FormLabel>
                     <FormControl>
@@ -438,7 +517,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                           </SelectContent>
                         </Select>
                       ) : (
-                        <div className="mt-1 text-sm font-medium">
+                        <div className="text-[#121619] text-sm font-normal leading-tight">
                           {form.getValues("supplierName") || "No vendor selected"}
                         </div>
                       )}
@@ -454,12 +533,12 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
               name="memo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Order Notes</FormLabel>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Order Notes</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Textarea {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value)} />
                     ) : (
-                      <div className="text-sm text-gray-700">{field.value || "No notes available"}</div>
+                      <div className="text-[#121619] text-sm font-normal leading-tight">{field.value || "No notes available"}</div>
                     )}
                   </FormControl>
                   <FormMessage />
@@ -471,6 +550,13 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
             <div className="space-y-4">{isEditing ? renderEditItems() : renderReadOnlyItems()}</div>
           </div>
         </ScrollArea>
+
+        <div className="flex text-sm">
+          <div className="flex flex-col justify-start space-x-2 p-4">
+            <p className="text-gray-600">Total ordered quantity & weight</p>
+            <p className="font-medium">{`${totalCases || 0} ${totalCasesUnit}, ${totalWeight || 0} ${totalWeightUnit}`}</p>
+          </div>
+        </div> 
 
         {isEditing && (
           <div className="flex justify-end space-x-2 p-4 border-t">

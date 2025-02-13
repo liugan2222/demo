@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
 
 import { itemformSchema, Itemform } from '@/components/tanstack/schema/formSchema/itemformSchema'
 import { NumberField } from './components/field/number-field'
@@ -137,7 +138,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name='supplierId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight after:content-['*'] after:ml-0.5 after:text-red-500">
                     Vendor
                   </FormLabel>
                   <FormControl>
@@ -160,7 +161,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="mt-1 text-sm font-medium">
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
                         {findVendorName(field.value?.toString() ?? '', vendors)}
                       </div>
                     )}
@@ -178,7 +179,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name='caseUomId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight after:content-['*'] after:ml-0.5 after:text-red-500">
                     Packaging Type
                   </FormLabel>
                   <FormControl>
@@ -201,7 +202,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="mt-1 text-sm font-medium">
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
                         {findUomName(field.value?.toString() ?? '', packageType)}
                       </div>
                     )}
@@ -211,7 +212,43 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               )}
             />
 
-            <NumberField form={form} name="individualsPerPackage" label="Quantity Per Package" isEditing={isEditing} />
+            <FormField
+              control={form.control}
+              name="individualsPerPackage"
+              render={({ field: { value, onChange, ...field } }) => (
+                <FormItem>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">
+                    Quantity Per Package
+                  </FormLabel>
+                  <FormControl>
+                    {isEditing ? (
+                      <Input 
+                        type="number"
+                        {...field}
+                        value={value?.toString() ?? ''}
+                        onChange={(e) => {
+                          // const val = e.target.value === '' ? null : Number(e.target.value)
+                          // onChange(val)
+                          const value = e.target.value;
+                          // Ensure only integer values are allowed
+                          if (value === '' || /^[0-9]+$/.test(value)) {
+                            onChange(value ? parseInt(value, 10) : null);
+                          }
+                        }}
+                        onWheel={(e) => e.currentTarget.blur()}
+                        min={0}
+                        step="any"
+                      />
+                    ) : (
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                        {value?.toString() ?? ''}
+                      </div>
+                    )}
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* weightUnits select */}
             <FormField
@@ -219,7 +256,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name='quantityUomId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="after:content-['*'] after:ml-0.5 after:text-red-500">
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight after:content-['*'] after:ml-0.5 after:text-red-500">
                     Weight Units
                   </FormLabel>
                   <FormControl>
@@ -242,7 +279,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="mt-1 text-sm font-medium">
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
                         {findUomName(field.value?.toString() ?? '', weightUom)}
                       </div>
                     )}
@@ -264,13 +301,13 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Description</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Textarea {...field} value={field.value ?? ''} 
                        onChange={(e) => field.onChange(e.target.value)}/>
                     ) : (
-                      <div className="mt-1 text-sm font-medium">
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
                         {field.value?.toString() ?? ''}
                       </div>
                     )}

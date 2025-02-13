@@ -24,7 +24,7 @@ export function NumberField<T extends Record<string, any>>({
       name={name}
       render={({ field: { value, onChange, ...field } }) => (
         <FormItem>
-          <FormLabel className={required ? "after:content-['*'] after:ml-0.5 after:text-red-500" : ""}>
+          <FormLabel className={required ? "text-zinc-600 text-sm font-normal  leading-tight after:content-['*'] after:ml-0.5 after:text-red-500" : "text-zinc-600 text-sm font-normal  leading-tight "}>
             {label}
           </FormLabel>
           <FormControl>

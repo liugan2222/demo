@@ -24,7 +24,7 @@ export function TextField<T extends Record<string, any>>({
       name={name}
       render={({ field }) => (
         <FormItem>
-          <FormLabel className={required ? "after:content-['*'] after:ml-0.5 after:text-red-500" : ""}>
+          <FormLabel className={required ? "text-zinc-600 text-sm font-normal  leading-tight  after:content-['*'] after:ml-0.5 after:text-red-500" : "text-zinc-600 text-sm font-normal  leading-tight"}>
             {label}
           </FormLabel>
           <FormControl>
@@ -36,7 +36,7 @@ export function TextField<T extends Record<string, any>>({
                 required={required}
               />
             ) : (
-              <div className="mt-1 text-sm font-medium">
+              <div className="text-[#121619] text-sm font-normal leading-tight">
                 {field.value?.toString() ?? ''}
               </div>
             )}

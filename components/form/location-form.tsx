@@ -93,13 +93,13 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing }: Loca
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Description</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Textarea {...field} value={field.value ?? ''} 
                        onChange={(e) => field.onChange(e.target.value)}/>
                     ) : (
-                      <div className="mt-1 text-sm font-medium">
+                      <div className="text-[#121619] text-sm font-normal leading-tight">
                         {field.value?.toString() ?? ''}
                       </div>
                     )}

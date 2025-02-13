@@ -73,7 +73,7 @@ const createEmptyItem = () => ({
   description: null,
   quantity: null,
   caseUomId: null,
-  amount: -1,
+  amount: 0,
   quantityUomId: null,
   quantityIncluded: null,
   fulfillments: []
@@ -250,8 +250,15 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                           <PopoverContent className="w-auto p-0" align="start">
                             <Calendar
                               mode="single"
-                              selected={field.value ? new Date(field.value) : new Date()} 
-                              onSelect={(date) => field.onChange(date?.toISOString())}
+                              onSelect={(date) => {
+                                if (date) {
+                                  const now = new Date();
+                                  date.setHours(now.getHours());
+                                  date.setMinutes(now.getMinutes());
+                                  date.setSeconds(now.getSeconds());
+                                  field.onChange(date.toISOString());
+                                }
+                              }}
                               initialFocus
                             />
                           </PopoverContent>

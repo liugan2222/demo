@@ -235,7 +235,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                             name={`items.0.facilities.${facilityIndex}.ffrn`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>FFRN<span className="text-red-500">*</span></FormLabel>
+                                <FormLabel>FFRN</FormLabel>
                                 <FormControl>
                                   <Input {...field} value={field.value ?? ''} />
                                 </FormControl>
@@ -249,7 +249,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                             name={`items.0.facilities.${facilityIndex}.gln`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>GLN<span className="text-red-500">*</span></FormLabel>
+                                <FormLabel>GLN</FormLabel>
                                 <FormControl>
                                   <Input {...field} value={field.value ?? ''} />
                                 </FormControl>

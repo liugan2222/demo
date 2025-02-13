@@ -325,8 +325,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                                   type="number" 
                                   value={field.value ?? ''} 
                                   onChange={(e) => {
-                                    const value = e.target.value ? parseFloat(e.target.value) : null;
-                                    field.onChange(value);
+                                    const value = e.target.value;
+                                    // Ensure only integer values are allowed
+                                    if (value === '' || /^[0-9]+$/.test(value)) {
+                                      field.onChange(value ? parseInt(value, 10) : null);
+                                    }
                                   }}
                                 />
                               </FormControl>
