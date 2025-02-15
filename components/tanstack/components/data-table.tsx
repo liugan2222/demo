@@ -175,7 +175,7 @@ export function DataTable<TData, TValue>({
                           //   }}
                           // >
                           <TableHead key={header.id} colSpan={header.colSpan} 
-                            className="rounded-md border-r"
+                            className="rounded-md border-r table-header-content"
                             style={{
                               width: header.column.getSize(),
                               minWidth: header.column.columnDef.minSize,
@@ -204,6 +204,7 @@ export function DataTable<TData, TValue>({
                         {row.getVisibleCells().map((cell) => (
                           <TableCell 
                             key={cell.id}
+                            className="table-body-content"
                             style={{
                               width: cell.column.getSize(),
                               minWidth: cell.column.columnDef.minSize,
@@ -216,10 +217,10 @@ export function DataTable<TData, TValue>({
                             )}
                           </TableCell>
                         ))}
-                        <TableCell>
+                        <TableCell className="table-body-content">
                           <Button
                             variant="ghost"
-                            className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                            className="flex h-8 w-8 p-0 data-[state=open]:bg-muted "
                             onClick={() => handleActionClick(row.original)}
                           >
                             <ChevronRight size={10} />

@@ -84,3 +84,67 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+	/* - border radius/sm | {@1._tailwindcss.$radius.rounded-sm}
+	- border radius/default | {@1._tailwindcss.$radius.rounded}
+	- border radius/md | {@1._tailwindcss.$radius.rounded}
+	- border radius/lg | {@1._tailwindcss.$radius.rounded-md}
+	- border radius/xl | {@1._tailwindcss.$radius.rounded-md}
+	- border radius/full | {@1._tailwindcss.$radius.rounded-full} | */
+
+
+/* use for components */
+.badge-page {
+  padding: 0.5rem 0.625rem;         /* px-2.5 py-0.5 */
+  border-radius: 9999px;           /* rounded-full */
+  border: 1px solid #d4d4d8;       /* border border-zinc-300 */
+  justify-content: center;         /* justify-center */
+  align-items: center;             /* items-center */
+  gap: 0.625rem;                   /* gap-2.5 */
+  background-color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.75rem /* 12px */;
+  line-height: 1rem /* 16px */;
+  --tw-text-opacity: 1;
+}
+
+.badge-activated {
+  color: rgb(21 128 61 / var(--tw-text-opacity, 1)) /* #15803d */;
+}
+
+.badge-disabled {
+  color: rgb(220 38 38 / var(--tw-text-opacity, 1)) /* #dc2626 */;
+}
+
+.badge-notFulfilled {
+  color: #18181b;
+}
+
+.badge-partiallyFulfilled {
+  color: #ea580c;
+}
+
+.badge-fullfilled {
+  color: #15803d;
+}
+
+.table-header-content {
+  overflow: hidden;
+  color: var(--base-muted-foreground, #52525B);
+  text-overflow: ellipsis;
+  font-family: var(--typography-font-family-font-sans, Inter);
+  font-size: var(--typography-base-sizes-small-font-size, 14px);
+  font-style: normal;
+  font-weight: var(--font-weight-medium, 500);
+  line-height: var(--typography-base-sizes-small-line-height, 20px);
+}
+
+.table-body-content {
+  font-family: var(--typography-font-family-font-sans, Inter);
+  font-size: var(--typography-base-sizes-small-font-size, 14px);
+  font-style: normal;
+  font-weight: var(--font-weight-normal, 400);
+  line-height: var(--typography-base-sizes-small-line-height, 20px);
+}
+

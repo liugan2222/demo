@@ -380,7 +380,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel>
-                                    Order quantity<span className="text-red-500">*</span>
+                                    Order Quantity<span className="text-red-500">*</span>
                                   </FormLabel>
                                   <div className="flex gap-2">
                                     <FormControl>
@@ -407,7 +407,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                               name={`orderItems.${index}.quantity`}
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>Order weight</FormLabel>
+                                  <FormLabel>Order Weight</FormLabel>
                                   <div className="flex gap-2">
                                     <FormControl>
                                       <Input type="number" {...field} value={field.value ?? ''}  disabled />

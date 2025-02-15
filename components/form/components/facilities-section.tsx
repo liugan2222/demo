@@ -98,7 +98,7 @@ export function FacilitiesSection({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Phone number
+                      Phone Number
                     </FormLabel>
                     <FormControl>
                       <Input {...field} />
@@ -178,7 +178,7 @@ export function FacilitiesSection({
                 name={`items.0.preferredCurrencyUomId`}
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>State/province</FormLabel>
+                    <FormLabel>State/Province</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -233,7 +233,7 @@ export function FacilitiesSection({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Postal code<span className="text-red-500">*</span>
+                      Postal Code<span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input {...field} />

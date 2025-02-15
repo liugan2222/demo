@@ -2,8 +2,10 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 
-// import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge"
 // import { Checkbox } from "@/components/ui/checkbox"
+
+import "@/app/globals.css";
 
 import { Popation } from '@/components/tanstack/schema/pationSchema/popationSchema'
 import { DataTableColumnHeader } from "@/components/tanstack/components/data-table-column-header"
@@ -94,7 +96,12 @@ export const columns: ColumnDef<Popation>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Order Status" />
     ),
-    cell: ({ row }) => <div>{row.getValue("orderStatus")}</div>,
+    cell: ({ row }) => {
+      const status = row.getValue("orderStatus");
+      return (
+        <div><Badge className={status === "NOT_FULFILLED" ? "badge-page badge-notFulfilled" : (status  === "PARTIALLY_FULFILLED" ? "badge-page badge-partiallyFulfilled" : "badge-page badge-fullfilled")}>{row.getValue("orderStatus")}</Badge></div>
+      );
+    },
     size: 300,
     minSize: 150,
     enableResizing: true,

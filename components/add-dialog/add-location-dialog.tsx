@@ -245,7 +245,7 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select a vendor" />
+                                    <SelectValue placeholder="Select a warehouse" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>

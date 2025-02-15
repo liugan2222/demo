@@ -280,7 +280,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select a Country" />
+                                    <SelectValue placeholder="Select a country" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -329,11 +329,11 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.businessContacts.0.stateProvinceGeoId`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>State/province</FormLabel>
+                              <FormLabel>State/Province</FormLabel>
                               <Select value={field.value ?? undefined} onValueChange={field.onChange}>
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select a State/province" />
+                                    <SelectValue placeholder="Select a state/province" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -354,7 +354,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.businessContacts.0.zipCode`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Postal code</FormLabel>
+                              <FormLabel>Postal Code</FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ""} />
                               </FormControl>

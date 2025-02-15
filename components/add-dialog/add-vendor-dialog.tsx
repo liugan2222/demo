@@ -234,7 +234,7 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                   name={`items.0.supplierName`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full name<span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>Full Name<span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value ?? ''} />
                       </FormControl>
@@ -248,7 +248,7 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                   name={`items.0.internalId`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Vendor number<span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>Vendor Number<span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value ?? ''} />
                       </FormControl>
@@ -507,7 +507,7 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a Country" />
+                            <SelectValue placeholder="Select a country" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -556,11 +556,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                   name={`items.0.businessContacts.0.stateProvinceGeoId`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>State/province</FormLabel>
+                      <FormLabel>State/Province</FormLabel>
                       <Select value={field.value ?? undefined} onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a State/province" />
+                            <SelectValue placeholder="Select a state/province" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -581,7 +581,7 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                   name={`items.0.businessContacts.0.zipCode`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Postal code</FormLabel>
+                      <FormLabel>Postal Code</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value ?? ""} />
                       </FormControl>

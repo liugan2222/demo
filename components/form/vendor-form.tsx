@@ -159,7 +159,7 @@ useEffect(() => {
           <div className="space-y-4 p-4">
             <TextField form={form} name="supplierShortName" label="Vendor" required isEditing={isEditing} />
             <TextField form={form} name="supplierName" label="Full Name" required isEditing={isEditing} />
-            <TextField form={form} name="internalId" label="Vendor number" isEditing={isEditing} />
+            <TextField form={form} name="internalId" label="Vendor Number" isEditing={isEditing} />
             <TextField form={form} name="telephone" label="Tel" required isEditing={isEditing} />
             <TextField form={form} name="email" label="Email" isEditing={isEditing} />
             <TextField form={form} name="gs1CompanyPrefix" label="GCP" isEditing={isEditing} />
@@ -275,7 +275,7 @@ useEffect(() => {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a Country" />
+                            <SelectValue placeholder="Select a country" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -350,7 +350,7 @@ useEffect(() => {
               name="businessContacts.0.stateProvinceGeoId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">State/province</FormLabel>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">State/Province</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Select
@@ -361,7 +361,7 @@ useEffect(() => {
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a State/province" />
+                            <SelectValue placeholder="Select a state/province" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -388,7 +388,7 @@ useEffect(() => {
               name="businessContacts.0.zipCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Postal code</FormLabel>
+                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Postal Code</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input

@@ -514,7 +514,7 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.countryOfOrigin`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Country of Origin</FormLabel>
+                              <FormLabel>Country Of Origin</FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ''} />
                               </FormControl>

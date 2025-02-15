@@ -274,7 +274,7 @@ export async function getPos(size: number = 9999) {
     const transformedItems = (content as any[]).map((item: any) => ({
       poNumber: item.orderId, 
       vendor: item.supplierName, 
-      orderStatus: item.fulfillmentStatusId?(item.fulfillmentStatusId):(item.statusId?item.statusId:''),
+      orderStatus: item.fulfillmentStatusId?(item.fulfillmentStatusId):(item.statusId?item.statusId:'NOT_FULFILLED'),
       ...item,
     }));
     return transformedItems;

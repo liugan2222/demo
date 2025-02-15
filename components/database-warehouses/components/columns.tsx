@@ -5,6 +5,8 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 
+import "@/app/globals.css";
+
 import { Warehousepation } from '@/components/tanstack/schema/pationSchema/warehousepationSchema'
 import { DataTableColumnHeader } from "@/components/tanstack/components/data-table-column-header"
 
@@ -72,7 +74,7 @@ export const columns: ColumnDef<Warehousepation>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => <div>{row.getValue("status")==="Activated" ? <Badge variant="default">Activated</Badge> : <Badge variant="destructive">Disabled</Badge>}</div>,
+    cell: ({ row }) => <div>{row.getValue("status")==="Activated" ? <Badge className="badge-page badge-activated">Activated</Badge> : <Badge className="badge-page badge-disabled">Disabled</Badge>}</div>,
     size: 200,
     minSize: 100,
   }

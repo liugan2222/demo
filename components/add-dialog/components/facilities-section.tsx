@@ -109,7 +109,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>
-                                Facility name<span className="text-red-500">*</span>
+                                Facility Name<span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ""} />
@@ -124,7 +124,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                             name={`items.0.facilities.${facilityIndex}.businessContacts.0.phoneNumber`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Phone number</FormLabel>
+                                <FormLabel>Phone Number</FormLabel>
                                 <FormControl>
                                   <Input {...field} value={field.value ?? ""} />
                                 </FormControl>
@@ -147,7 +147,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select a Country" />
+                                      <SelectValue placeholder="Select a country" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -196,11 +196,11 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                             name={`items.0.facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>State/province</FormLabel>
+                                <FormLabel>State/Province</FormLabel>
                                 <Select value={field.value ?? undefined} onValueChange={field.onChange}>
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select a State/province" />
+                                      <SelectValue placeholder="Select a state/province" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -221,7 +221,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                             name={`items.0.facilities.${facilityIndex}.businessContacts.0.zipCode`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Postal code</FormLabel>
+                                <FormLabel>Postal Code</FormLabel>
                                 <FormControl>
                                   <Input {...field} value={field.value ?? ""} />
                                 </FormControl>

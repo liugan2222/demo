@@ -319,7 +319,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
 
             <TextField form={form} name="dimensionsDescription" label="Dimensions" isEditing={isEditing} />
             <TextField form={form} name="materialCompositionDescription" label="Material Composition" isEditing={isEditing} />
-            <TextField form={form} name="countryOfOrigin" label="Country of Origin" isEditing={isEditing} />
+            <TextField form={form} name="countryOfOrigin" label="Country Of Origin" isEditing={isEditing} />
             <TextField form={form} name="certificationCodes" label="Certification Code" isEditing={isEditing} />
             <TextField form={form} name="shelfLifeDescription" label="Shelf Life" isEditing={isEditing} />
             <TextField form={form} name="handlingInstructions" label="Handling Instructions" isEditing={isEditing} />

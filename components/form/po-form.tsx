@@ -373,7 +373,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                   name={`orderItems.${index}.amount`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Order quantity</FormLabel>
+                      <FormLabel>Order Quantity</FormLabel>
                       <div className="flex gap-2">
                         <FormControl>
                           <Input 
@@ -399,7 +399,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                   name={`orderItems.${index}.quantity`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Order weight</FormLabel>
+                      <FormLabel>Order Weight</FormLabel>
                       <div className="flex gap-2">
                         <FormControl>
                           <Input
