@@ -390,7 +390,7 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing }: Recei
                 name="createdAt"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="form-label font-common">Order Date</FormLabel>
+                    <FormLabel className="form-label font-common">Recieved at</FormLabel>
                     <FormControl>
                       <div className="form-control font-common">
                         {field.value ? format(new Date(field.value), "h:mm a, MM/dd/yyyy") : "No date set"}
