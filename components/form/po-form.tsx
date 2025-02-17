@@ -11,7 +11,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
@@ -22,6 +21,7 @@ import { format } from "date-fns"
 
 import { poformSchema, Poform } from '@/components/tanstack/schema/formSchema/poformSchema'
 import { TextField } from './components/field/text-field'
+import "@/app/globals.css";
 
 import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
 import { getPoById, getVendorById, getItemList, updatePo, getVendorList } from '@/lib/api';
@@ -102,7 +102,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
       if (selectedItem.orderId) {
         try {
           setLoading(true)
-          const poData = await getPoById(selectedItem.orderId, true)
+          const poData = await getPoById(selectedItem.orderId, true, true)
           console.log('poData : ',poData)
           // Fetch vendor data
           if (poData.supplierId) {
@@ -166,13 +166,13 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
 
   const getFulfillmentStatusColor = (status: string | null | undefined) => {
     const statusColors: Record<string, string> = {
-      ORDERED: "bg-blue-100 text-blue-800",
-      NOT_FULFILLED: "bg-gray-100 text-gray-800",
-      PARTIALLY_FULFILLED: "bg-yellow-100 text-yellow-800",
-      FULFILLED: "bg-green-100 text-green-800",
-      CANCELLED: "bg-red-100 text-red-800",
+      ORDERED: "text-base  bg-blue-100 text-blue-800",
+      NOT_FULFILLED: "text-base bg-gray-100 text-gray-800",
+      PARTIALLY_FULFILLED: "text-base bg-yellow-100 text-yellow-800",
+      FULFILLED: "text-base bg-green-100 text-green-800",
+      CANCELLED: "text-base bg-red-100 text-red-800",
     }
-    return statusColors[status || "ORDERED"] || "bg-gray-100 text-gray-800"
+    return statusColors[status || "NOT_FULFILLED"] || "text-base bg-gray-100 text-gray-800"
   } 
 
   const handleAddItem = () => {
@@ -190,7 +190,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
       description: null,
       quantityUomId: null,
       caseUomId: null,
-      fulfillmentStatusId: "ORDERED",
+      fulfillmentStatusId: "NOT_FULFILLED",
       fulfillments: [],
       quantityIncluded:null
     })
@@ -244,13 +244,10 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                 />
               </div>
               <div className="flex-1 text-left">
-                <Badge className={getFulfillmentStatusColor(item.fulfillmentStatusId)}>
-                  {item.fulfillmentStatusId || "ORDERED"}
-                </Badge>
+                <h4 className={getFulfillmentStatusColor(item.fulfillmentStatusId)}>
+                  {item.fulfillmentStatusId || "NOT_FULFILLED"}
+                </h4>
                 <h4 className="text-base font-medium mt-1">{item.productName}</h4>
-                {/* <p className="text-sm text-gray-600">
-                  {item.quantity?(item.quantity/(item.quantityIncluded?item.quantityIncluded:1)):''} {findUomName(item.caseUomId ?? '', packageType)} , {item.quantity} {findUomName(item.quantityUomId ?? '', weightUom)}
-                </p> */}
                 <p className="text-sm text-gray-600">
                   {`${item.amount ? item.amount : ''} ${findUomName(item.caseUomId ?? '', packageType)} , ${item.quantity} ${findUomName(item.quantityUomId ?? '', weightUom)}`}
                 </p>
@@ -258,36 +255,40 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
             </div>
           </AccordionTrigger>
           <AccordionContent>
-            <div className="pl-28 space-y-4">
+            <div className="space-y-4">
               {item.fulfillments?.map((fulfillment, fIndex) => (
                 <Card key={fIndex} className="p-4">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-500">Receiving ID</p>
-                      <p className="font-medium">{fulfillment.receiptId}</p>
+                  <div className="grid grid-cols-1 gap-4 text-sm">
+                    <div className="flex items-center">
+                      <p className="text-gray-500 w-24 shrink-0 text-right pr-2">Receiving ID:</p>
+                      <div className="flex-1">
+                        <p className="font-medium whitespace-normal word-wrap break-word text-left">{fulfillment.receiptId}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-gray-500">Quantity</p>
-                      <p className="font-medium"> 
-                        {`${fulfillment.allocatedQuantity ? (fulfillment.allocatedQuantity / (item.quantityIncluded ? item.quantityIncluded : 1)) : ''} ${findUomName(item.caseUomId ?? '', packageType)} , ${fulfillment.allocatedQuantity} ${findUomName(item.quantityUomId ?? '', weightUom)}`}
-                      </p>
+                    <div className="flex items-center">
+                      <p className="text-gray-500 w-24 shrink-0 text-right pr-2">Quantity:</p>
+                      <div className="flex-1">
+                        <p className="font-medium whitespace-normal word-wrap break-word text-left"> 
+                          {`${fulfillment.allocatedQuantity ? (fulfillment.allocatedQuantity / (item.quantityIncluded ? item.quantityIncluded : 1)) : ''} ${findUomName(item.caseUomId ?? '', packageType)} , ${fulfillment.allocatedQuantity} ${findUomName(item.quantityUomId ?? '', weightUom)}`}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-gray-500">Date</p>
-                      {/* <p className="font-medium">{new Date(fulfillment.receivedAt).toLocaleString()}</p> */}
-                      <p className="font-medium">{fulfillment.receivedAt}</p>
+                    <div className="flex items-center">
+                      <p className="text-gray-500 w-24 shrink-0 text-right pr-2">Date:</p>
+                      <div className="flex-1">
+                        {/* TODO */}
+                        <p className="font-medium whitespace-normal word-wrap break-word text-left">{fulfillment.receivedAt}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-gray-500">QA Status</p>
-                      <Badge
-                        className={
-                          fulfillment.shipmentQaInspectionStatusId === "PASSED"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                        }
-                      >
-                        {fulfillment.shipmentQaInspectionStatusId}
-                      </Badge>
+                    <div className="flex items-center">
+                      <p className="text-gray-500 w-24 shrink-0 text-right pr-2">QA Status:</p>
+                      <div className="flex-1">
+                        <p className={
+                          fulfillment.shipmentQaInspectionStatusId === 'INSPECTED'?'font-medium whitespace-normal word-wrap break-word text-left badge-fullfilled':(fulfillment.shipmentQaInspectionStatusId=='PARTIALLY_INSPECTED'?'font-medium whitespace-normal word-wrap break-word text-left badge-partiallyFulfilled': 'font-medium whitespace-normal word-wrap break-word text-left badge-notFulfilled')}
+                        >
+                          {fulfillment.shipmentQaInspectionStatusId}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </Card>
@@ -321,7 +322,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                   />
                 </div>
                 <div className="flex-1 text-left">
-                  <Badge className={getFulfillmentStatusColor("ORDERED")}>ORDERED</Badge>
+                  <h4 className={getFulfillmentStatusColor(form.watch(`orderItems.${index}.fulfillmentStatusId`))}>form.watch(`orderItems.${index}.fulfillmentStatusId`)</h4>
                   <h4 className="text-base font-medium mt-1">
                     {form.watch(`orderItems.${index}.productName`) || "Select a product"}
                   </h4>
@@ -458,7 +459,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                 name="orderDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Order Date</FormLabel>
+                    <FormLabel className="form-label font-common">Order Date</FormLabel>
                     <FormControl>
                       {isEditing ? (
                         <Popover>
@@ -478,7 +479,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                           </PopoverContent>
                         </Popover>
                       ) : (
-                        <div className="text-[#121619] text-sm font-normal leading-tight">
+                        <div className="form-control font-common">
                           {field.value ? format(new Date(field.value), "h:mm a, MM/dd/yyyy") : "No date set"}
                         </div>
                       )}
@@ -494,7 +495,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                 name='supplierId'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">
+                    <FormLabel className="form-label font-common">
                       Vendor
                     </FormLabel>
                     <FormControl>
@@ -517,7 +518,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                           </SelectContent>
                         </Select>
                       ) : (
-                        <div className="text-[#121619] text-sm font-normal leading-tight">
+                        <div className="form-control font-common">
                           {form.getValues("supplierName") || "No vendor selected"}
                         </div>
                       )}
@@ -533,12 +534,12 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
               name="memo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Order Notes</FormLabel>
+                  <FormLabel className="form-label font-common">Order Notes</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Textarea {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value)} />
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">{field.value || "No notes available"}</div>
+                      <div className="form-control font-common">{field.value || "No notes available"}</div>
                     )}
                   </FormControl>
                   <FormMessage />

@@ -1,9 +1,9 @@
-import Demo from "@/components/demo"
+import {Receiving} from "@/components/receiving/page"
 
 
 
 export default function Page() {
   return (
-    <Demo altTxt="This is the screen reserved for the Receiving."></Demo>
+    <Receiving />
   )
 }

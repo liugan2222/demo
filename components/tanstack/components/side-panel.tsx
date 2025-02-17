@@ -6,6 +6,7 @@ import { VendorForm } from "@/components/form/vendor-form"
 import { WarehouseForm } from "@/components/form/warehouse-form"
 import { LocationForm } from "@/components/form/location-form"
 import { PoForm } from "@/components/form/po-form"
+import { ReceiveForm } from "@/components/form/receive-form"
 
 interface SidePanelProps {
   isOpen: boolean
@@ -41,6 +42,8 @@ export function SidePanel({
         return <LocationForm selectedItem={selectedItem} onSave={onSave} onCancel={onClose} isEditing={isEditing}/>
       case 'procurements':
       return <PoForm selectedItem={selectedItem} onSave={onSave} onCancel={onClose} isEditing={isEditing}/>  
+      case 'receivings':
+      return <ReceiveForm selectedItem={selectedItem} onSave={onSave} onCancel={onClose} isEditing={isEditing}/>  
       default:
         return <div>Unsupported item type</div>
     }

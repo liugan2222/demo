@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 
 import { TextField } from './components/field/text-field'
 import { FacilitiesSection } from "./components/facilities-section"
+import "@/app/globals.css";
 
 import { vendorformSchema, Vendorform } from '@/components/tanstack/schema/formSchema/vendorformSchema'
 
@@ -170,7 +171,7 @@ useEffect(() => {
               name='preferredCurrencyUomId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">
+                  <FormLabel className="form-label font-common">
                     Currency
                   </FormLabel>
                   <FormControl>
@@ -193,7 +194,7 @@ useEffect(() => {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {findCurrencyAbbreviation(field.value?.toString() ?? '', currencies)}
                       </div>
                     )}
@@ -215,7 +216,7 @@ useEffect(() => {
               name="businessContacts.0.businessName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Contact Name</FormLabel>
+                  <FormLabel className="form-label font-common">Contact Name</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input
@@ -224,7 +225,7 @@ useEffect(() => {
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {getFormValue('businessContacts.0.businessName')}
                       </div>
                     )}
@@ -239,7 +240,7 @@ useEffect(() => {
               name="businessContacts.0.phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Contact Phone</FormLabel>
+                  <FormLabel className="form-label font-common">Contact Phone</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input
@@ -248,7 +249,7 @@ useEffect(() => {
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {getFormValue('businessContacts.0.phoneNumber')}
                       </div>
                     )}
@@ -263,7 +264,7 @@ useEffect(() => {
               name="businessContacts.0.countryGeoId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Country</FormLabel>
+                  <FormLabel className="form-label font-common">Country</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Select
@@ -287,7 +288,7 @@ useEffect(() => {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {findCountryName(getFormValue('businessContacts.0.countryGeoId'), countries)}
                       </div>
                     )}
@@ -302,7 +303,7 @@ useEffect(() => {
               name="businessContacts.0.physicalLocationAddress"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Address</FormLabel>
+                  <FormLabel className="form-label font-common">Address</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input
@@ -311,7 +312,7 @@ useEffect(() => {
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {getFormValue('businessContacts.0.physicalLocationAddress')}
                       </div>
                     )}
@@ -326,7 +327,7 @@ useEffect(() => {
               name="businessContacts.0.city"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">City</FormLabel>
+                  <FormLabel className="form-label font-common">City</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input
@@ -335,7 +336,7 @@ useEffect(() => {
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {getFormValue('businessContacts.0.city')}
                       </div>
                     )}
@@ -350,7 +351,7 @@ useEffect(() => {
               name="businessContacts.0.stateProvinceGeoId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">State/Province</FormLabel>
+                  <FormLabel className="form-label font-common">State/Province</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Select
@@ -373,7 +374,7 @@ useEffect(() => {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {findCountryName(getFormValue('businessContacts.0.stateProvinceGeoId'), contactstates)}
                       </div>
                     )}
@@ -388,7 +389,7 @@ useEffect(() => {
               name="businessContacts.0.zipCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Postal Code</FormLabel>
+                  <FormLabel className="form-label font-common">Postal Code</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input
@@ -397,7 +398,7 @@ useEffect(() => {
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {getFormValue('businessContacts.0.zipCode')}
                       </div>
                     )}
@@ -412,7 +413,7 @@ useEffect(() => {
               name="businessContacts.0.contactRole"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Contact Role</FormLabel>
+                  <FormLabel className="form-label font-common">Contact Role</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input
@@ -421,7 +422,7 @@ useEffect(() => {
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {getFormValue('businessContacts.0.contactRole')}
                       </div>
                     )}
@@ -436,7 +437,7 @@ useEffect(() => {
               name="businessContacts.0.email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Contact Email</FormLabel>
+                  <FormLabel className="form-label font-common">Contact Email</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Input
@@ -445,7 +446,7 @@ useEffect(() => {
                         onChange={(e) => field.onChange(e.target.value)}
                       />
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {getFormValue('businessContacts.0.email')}
                       </div>
                     )}

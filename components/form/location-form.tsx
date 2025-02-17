@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 import { locationformSchema, Locationform } from '@/components/tanstack/schema/formSchema/locationformSchema'
 import { TextField } from './components/field/text-field'
+import "@/app/globals.css";
 
 import { getLocationById, updateLocation } from '@/lib/api';
 
@@ -93,13 +94,13 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing }: Loca
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Description</FormLabel>
+                  <FormLabel className="form-label font-common">Description</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Textarea {...field} value={field.value ?? ''} 
                        onChange={(e) => field.onChange(e.target.value)}/>
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {field.value?.toString() ?? ''}
                       </div>
                     )}

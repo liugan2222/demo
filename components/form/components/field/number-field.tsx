@@ -2,6 +2,7 @@ import React from 'react'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { UseFormReturn, FieldPath } from "react-hook-form"
+import "@/app/globals.css";
 
 interface NumberFieldProps<T extends Record<string, any>> {
   form: UseFormReturn<T>
@@ -24,7 +25,7 @@ export function NumberField<T extends Record<string, any>>({
       name={name}
       render={({ field: { value, onChange, ...field } }) => (
         <FormItem>
-          <FormLabel className={required ? "text-zinc-600 text-sm font-normal  leading-tight after:content-['*'] after:ml-0.5 after:text-red-500" : "text-zinc-600 text-sm font-normal  leading-tight "}>
+          <FormLabel className={required ? "form-label font-common after:content-['*'] after:ml-0.5 after:text-red-500" : "form-label font-common "}>
             {label}
           </FormLabel>
           <FormControl>

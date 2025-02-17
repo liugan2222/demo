@@ -5,6 +5,7 @@ import { Itemform } from '@/components/tanstack/schema/formSchema/itemformSchema
 import { Warehouseform } from '@/components/tanstack/schema/formSchema/warehouseformSchema'
 import { Locationform } from '@/components/tanstack/schema/formSchema/locationformSchema'
 import { Poform } from '@/components/tanstack/schema/formSchema/poformSchema'
+import { Receiveform } from '@/components/tanstack/schema/formSchema/receiveformSchema'
 
 const api = axios.create({
   baseURL: '/api',
@@ -262,14 +263,18 @@ export async function updateLocation(facilityId: string, locationSeqId: string, 
 }
 
 /*  PO  */
-export async function getPos(size: number = 9999) {
+export async function getPos(supplierId?: string) {
+  const params = {size: 9999} as Record<string, any>;
+  if (supplierId !== undefined) {
+    params.supplierId = supplierId;
+  }
   const response = await api.get<{
     content: any[];
     totalElements: number;
     size: number;
     number: number;
     totalPages: number;
-  }>('/proxy/BffPurchaseOrders', { params: { size } });
+  }>('/proxy/BffPurchaseOrders', { params });
     const content = response.data.content || [];
     const transformedItems = (content as any[]).map((item: any) => ({
       poNumber: item.orderId, 
@@ -285,10 +290,13 @@ export async function addPo(item: any) {
   return response.data
 }
 
-export async function getPoById(id: string, includesProductDetails?: boolean) {
+export async function getPoById(id: string, includesProductDetails?: boolean, includesItemFulfillments?: boolean) {
   const params = {} as Record<string, any>;
   if (includesProductDetails !== undefined) {
     params.includesProductDetails = includesProductDetails;
+  }
+  if (includesItemFulfillments !== undefined) {
+    params.includesItemFulfillments = includesItemFulfillments;
   }
   const response = await api.get(`/proxy/BffPurchaseOrders/${id}`, { params });
   return response.data;
@@ -338,5 +346,40 @@ export async function locationDeactive(facilityId: string ,item: string[]) {
 
 export async function locationActive(facilityId: string ,item: string[]) {
   const response = await api.put<string[]>(`/proxy/BffFacilities/${facilityId}/Locations/batchActivateLocations`, item)
+  return response.data
+}
+
+/*  Receive  */
+export async function getReceives(size: number = 9999) {
+  const response = await api.get<{
+    content: any[];
+    totalElements: number;
+    size: number;
+    number: number;
+    totalPages: number;
+  }>('/proxy/BffReceipts', { params: { size } });
+    const content = response.data.content || [];
+    const transformedItems = (content as any[]).map((item: any) => ({
+      receivingNumber: item.documentId, 
+      PO: item.primaryOrderId, 
+      receivingDate: item.createdAt, 
+      vendor: item.partyNameFrom, 
+      status: item.statusId,
+      ...item,
+    }));
+    return transformedItems;
+}
+
+export async function getReceiveById(id: string, derivesQaInspectionStatus?: boolean) {
+  const params = {} as Record<string, any>;
+  if (derivesQaInspectionStatus !== undefined) {
+    params.derivesQaInspectionStatus = derivesQaInspectionStatus;
+  }
+  const response = await api.get(`/proxy/BffReceipts/${id}`, { params });
+  return response.data;
+}
+
+export async function updateReceive(id: string, item: Partial<Receiveform>) {
+  const response = await api.put<Poform>(`/proxy/BffReceipts/${id}`, item)
   return response.data
 }

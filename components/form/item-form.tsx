@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { itemformSchema, Itemform } from '@/components/tanstack/schema/formSchema/itemformSchema'
 import { NumberField } from './components/field/number-field'
 import { TextField } from './components/field/text-field'
+import "@/app/globals.css";
 
 import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
 import { getItemById , getVendorList, updateItem } from '@/lib/api';
@@ -138,7 +139,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name='supplierId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight after:content-['*'] after:ml-0.5 after:text-red-500">
+                  <FormLabel className="form-label font-common after:content-['*'] after:ml-0.5 after:text-red-500">
                     Vendor
                   </FormLabel>
                   <FormControl>
@@ -161,7 +162,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {findVendorName(field.value?.toString() ?? '', vendors)}
                       </div>
                     )}
@@ -179,7 +180,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name='caseUomId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight after:content-['*'] after:ml-0.5 after:text-red-500">
+                  <FormLabel className="form-label font-common after:content-['*'] after:ml-0.5 after:text-red-500">
                     Packaging Type
                   </FormLabel>
                   <FormControl>
@@ -202,7 +203,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {findUomName(field.value?.toString() ?? '', packageType)}
                       </div>
                     )}
@@ -217,7 +218,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name="individualsPerPackage"
               render={({ field: { value, onChange, ...field } }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">
+                  <FormLabel className="form-label font-common">
                     Quantity Per Package
                   </FormLabel>
                   <FormControl>
@@ -240,7 +241,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
                         step="any"
                       />
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {value?.toString() ?? ''}
                       </div>
                     )}
@@ -256,7 +257,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name='quantityUomId'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight after:content-['*'] after:ml-0.5 after:text-red-500">
+                  <FormLabel className="form-label font-common after:content-['*'] after:ml-0.5 after:text-red-500">
                     Weight Units
                   </FormLabel>
                   <FormControl>
@@ -279,7 +280,7 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {findUomName(field.value?.toString() ?? '', weightUom)}
                       </div>
                     )}
@@ -301,13 +302,13 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-zinc-600 text-sm font-normal  leading-tight">Description</FormLabel>
+                  <FormLabel className="form-label font-common">Description</FormLabel>
                   <FormControl>
                     {isEditing ? (
                       <Textarea {...field} value={field.value ?? ''} 
                        onChange={(e) => field.onChange(e.target.value)}/>
                     ) : (
-                      <div className="text-[#121619] text-sm font-normal leading-tight">
+                      <div className="form-control font-common">
                         {field.value?.toString() ?? ''}
                       </div>
                     )}

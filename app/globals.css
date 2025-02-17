@@ -95,6 +95,7 @@
 
 
 /* use for components */
+/* badge */
 .badge-page {
   padding: 0.5rem 0.625rem;         /* px-2.5 py-0.5 */
   border-radius: 9999px;           /* rounded-full */
@@ -129,6 +130,25 @@
   color: #15803d;
 }
 
+/* form */
+.font-common {
+  line-height: 1.25;
+  font-weight: 400;
+  font-size: 0.875rem /* 14px */;
+  line-height: 1.25rem /* 20px */;
+  --tw-text-opacity: 1;
+}
+
+.form-label {
+  color: rgb(82 82 91 / var(--tw-text-opacity, 1)) /* #52525b */;
+}
+
+.form-control {
+  color: rgb(18 22 25 / var(--tw-text-opacity, 1)) /* #121619 */;
+}
+
+
+/* table */
 .table-header-content {
   overflow: hidden;
   color: var(--base-muted-foreground, #52525B);
