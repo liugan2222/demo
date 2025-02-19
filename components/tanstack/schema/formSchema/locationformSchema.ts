@@ -1,11 +1,16 @@
 import { z } from "zod"
 
+import { glnRegex } from "../regexPatterns";
+
 // Extended location schema with number and date fields
 export const locationformSchema = z.object({
-  facilityId: z.string().nullable().optional(),  // facilityId
+  facilityId: z.string().min(1, "Warehouse is required"),  // facilityId
   locationSeqId: z.string().nullable().optional(),  // id
-  locationName: z.string().nullable().optional(),   // location
-  gln: z.string().nullable().optional(),
+  locationName: z.string().min(1, "Location is required"),   // location
+  gln: z.string().nullable().optional().refine(
+    (value) => !value || glnRegex.test(value),
+    { message: "Invalid GLN format" }
+  ), 
   locationCode: z.string().nullable().optional(),   // locationNumber
   active: z.string().nullable().optional(),
   facilityName: z.string().nullable().optional(),      // Warehouse 

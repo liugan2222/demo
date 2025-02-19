@@ -15,6 +15,7 @@ import { AddVendorDialog } from "@/components/add-dialog/add-vendor-dialog"
 import { AddWarehouseDialog } from "@/components/add-dialog/add-warehouse-dialog"
 import { AddLocationDialog } from "@/components/add-dialog/add-location-dialog"
 import { AddPoDialog } from "@/components/add-dialog/add-po-dialog"
+// import { AddUserDialog } from "@/components/add-dialog/add-user-dialog"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>,
@@ -198,7 +199,8 @@ export function DataTableToolbar<TData>({
       case 'locations':
         return <AddLocationDialog onAdded={onRefresh || (() => {})} />
       case 'procurements':
-        return <AddPoDialog onAdded={onRefresh || (() => {})} />  
+        return <AddPoDialog onAdded={onRefresh || (() => {})} />
+        // return <AddUserDialog onAdded={onRefresh || (() => {})} />
       default:
         return null
     }

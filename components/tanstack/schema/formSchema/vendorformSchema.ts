@@ -1,7 +1,30 @@
 import { z } from "zod"
 
-import { businessContactSchema } from './businessContactSchema'
 import { facilitySchema } from './facilitySchema'
+import { telephoneRegex, glnRegex, emailRegex, zipCodeRegex } from "../regexPatterns";
+
+const businessContactSchema = z.object({
+  businessName: z.string().nullable().optional(),   // Contact Name
+  contactRole: z.string().nullable().optional(),    // Contact Role
+  email: z.string().nullable().optional().refine(
+    (value) => !value || emailRegex.test(value),
+    { message: "Invalid email format" }
+  ),    // Contact Email
+  phoneNumber: z.string().nullable().optional().refine(
+    (value) => !value || telephoneRegex.test(value),
+    { message: "Invalid telephone format" }
+  ),    // Contact Phone
+  countryGeoId: z.string().nullable().optional(),
+  country: z.string().nullable().optional(),
+  stateProvinceGeoId: z.string().nullable().optional(),
+  state: z.string().nullable().optional(),
+  city: z.string().nullable().optional(),
+  physicalLocationAddress: z.string().nullable().optional(),
+  zipCode: z.string().nullable().optional().refine(
+    (value) => !value || zipCodeRegex.test(value),
+    { message: "Invalid postal code format" }
+  )
+})
 
 // Extended vendor schema with number and date fields
 export const vendorformSchema = z.object({
@@ -11,11 +34,17 @@ export const vendorformSchema = z.object({
   supplierName: z.string().min(1, "Full name is required"),       // Full Name
   // TODO required 
   address: z.string().nullable().optional(),
-  telephone: z.string().min(1, "Tel is required"),    // Tel
-  email: z.string().nullable().optional(),            // Email
+  telephone: z.string().min(1, "Tel is required").regex(telephoneRegex, "Invalid telephone format"),    // Tel
+  email: z.string().nullable().optional().refine(
+    (value) => !value || emailRegex.test(value),
+    { message: "Invalid email format" }
+  ),             // Email
   gs1CompanyPrefix: z.string().nullable().optional(),      // GCP
-  gln: z.string().nullable().optional(),                // gln
-  internalId: z.string().min(1, "Vendor number is required"),   // vendorNumber
+  gln: z.string().nullable().optional().refine(
+    (value) => !value || glnRegex.test(value),
+    { message: "Invalid GLN format" }
+  ),                 // gln
+  internalId: z.string().nullable().optional(),   // vendorNumber
   active: z.string().nullable().optional(),     // status
   preferredCurrencyUomId: z.string().nullable().optional(),   // Currency
   taxId: z.string().nullable().optional(),      // Tax ID / VAT Number
@@ -55,3 +84,6 @@ export const vendorformSchema = z.object({
 
 // Derive the TypeScript type
 export type Vendorform = z.infer<typeof vendorformSchema>
+
+
+ 

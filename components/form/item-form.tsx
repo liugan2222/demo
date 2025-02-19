@@ -14,10 +14,11 @@ import { Input } from "@/components/ui/input"
 import { itemformSchema, Itemform } from '@/components/tanstack/schema/formSchema/itemformSchema'
 import { NumberField } from './components/field/number-field'
 import { TextField } from './components/field/text-field'
+import { ItemImage } from "@/components/common/item/item-image"
 import "@/app/globals.css";
 
 import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
-import { getItemById , getVendorList, updateItem } from '@/lib/api';
+import { getItemById , getVendorList, updateItem, uploadFile } from '@/lib/api';
 
 interface ItemFormProps {
   selectedItem: Itemform 
@@ -118,19 +119,31 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing }: ItemForm
     return <div>Loading...</div>
   }
 
-  const onError = (errors: any) => {
-    console.log('Form validation errors:', errors)
-    console.log("Current form values:", form.getValues())
-  }
+  // const onError = (errors: any) => {
+  //   console.log('Form validation errors:', errors)
+  //   console.log("Current form values:", form.getValues())
+  // }
 
   return (
     <Form {...form}>
       <form 
-        onSubmit={form.handleSubmit(onSubmit, onError)}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col h-full"
       >
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
+          <ItemImage
+              form={form}
+              isEditing={isEditing}
+              onImageChange={async (file) => {
+                try {
+                  const response = await uploadFile(file)
+                  form.setValue("smallImageUrl", response.data?.id)
+                } catch (error) {
+                  console.error("Error uploading file:", error)
+                }
+              }}
+            />
             <TextField form={form} name="productName" label="Item" required isEditing={isEditing} />
             <TextField form={form} name="gtin" label="GTIN" isEditing={isEditing} />
             {/* vendor select */}

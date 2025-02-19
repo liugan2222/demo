@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
+import { Badge } from "@/components/ui/badge"
 
 import { Plus, X, CalendarIcon } from "lucide-react"
 
@@ -456,8 +457,23 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
           <div className="space-y-6 p-6">
             {/* Header Information */}
             <div className="grid grid-cols-1 gap-6">
-              <TextField form={form} name="orderId" label="PO #" isEditing={isEditing} />
-              <TextField form={form} name="statusId" label="Status" isEditing={false} />
+              <TextField form={form} name="orderId" label="PO #" required isEditing={isEditing} />
+
+              <FormField
+                control={form.control}
+                name="statusId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="form-label font-common">Status</FormLabel>
+                    <FormControl>
+                      <div className="form-control font-common">
+                        <Badge variant="outline" className={field.value === "NOT_FULFILLED" ? "badge-page badge-notFulfilled" : (field.value  === "PARTIALLY_FULFILLED" ? "badge-page badge-partiallyFulfilled" : "badge-page badge-fullfilled")}>{field.value}</Badge>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               {/* Updated orderDate field */}
               <FormField
@@ -502,7 +518,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="form-label font-common">
-                      Vendor
+                      Vendor<span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       {isEditing ? (

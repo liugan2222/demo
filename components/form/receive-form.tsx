@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns"
 import "@/app/globals.css";
 
-import { TextField } from "./components/field/text-field"
 import { receiveformSchema, Receiveform } from '@/components/tanstack/schema/formSchema/receiveformSchema'
 
 import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
@@ -363,8 +362,37 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing }: Recei
               />
 
 
-              <TextField form={form} name="documentId" label="Receiving #" isEditing={false} />
-              <TextField form={form} name="partyNameFrom" label="Vendor" isEditing={false} />
+              <FormField
+                control={form.control}
+                name="documentId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="form-label font-common">Receiving #</FormLabel>
+                    <FormControl>
+                      <div className="form-control font-common">
+                        {field.value?.toString() ?? ''}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="partyNameFrom"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="form-label font-common">Vendor</FormLabel>
+                    <FormControl>
+                      <div className="form-control font-common">
+                        {field.value?.toString() ?? ''}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -379,7 +407,21 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing }: Recei
                 )}
               />
 
-              <TextField form={form} name="destinationFacilityName" label="Warehouse" isEditing={false} />
+              <FormField
+                control={form.control}
+                name="destinationFacilityName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="form-label font-common">Warehouse</FormLabel>
+                    <FormControl>
+                      <div className="form-control font-common">
+                        {field.value?.toString() ?? ''}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -397,7 +439,21 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing }: Recei
                 )}
               />
 
-              <TextField form={form} name="createdBy" label="Received by" isEditing={false} />
+              <FormField
+                control={form.control}
+                name="createdBy"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="form-label font-common">Received by</FormLabel>
+                    <FormControl>
+                      <div className="form-control font-common">
+                        {field.value?.toString() ?? ''}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               {/* Items Section */}
               <div className="space-y-4">{isEditing ? renderEditItems() : renderReadOnlyItems()}</div>

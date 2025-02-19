@@ -149,8 +149,8 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const fetchTypes = useCallback(async () => {
     try {
-      const vendorList = await getSupplierType('FRESH_MART_DC')
-      setSupperlierType(vendorList)
+      const vendorTypeList = await getSupplierType('SUPPLIER_TYPE_ENUM')
+      setSupperlierType(vendorTypeList)
     } catch (error) {
       console.error("Error fetching warehouses:", error)
     }
@@ -263,7 +263,7 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                   name={`items.0.internalId`}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Vendor Number<span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>Vendor Number</FormLabel>
                       <FormControl>
                         <Input {...field} value={field.value ?? ''} />
                       </FormControl>
@@ -525,25 +525,48 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Country</FormLabel>
-                      <Select value={field.value ?? undefined} 
-                              onValueChange={(value) => {
-                                field.onChange(value);
-                                handleContactCountryChange(value);
-                              }}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a country" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {countries?.map((country: Country) => (
-                            <SelectItem key={country.geoId} value={country.geoId}>
-                              {country.geoName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                            >
+                              {field.value ?? "Select a country"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Search country..." />
+                            <CommandList>
+                              <CommandEmpty>No country found.</CommandEmpty>
+                              <CommandGroup>
+                                {countries?.map((country) => (
+                                  <CommandItem
+                                    value={country.geoId}
+                                    key={country.geoId}
+                                    onSelect={() => {
+                                      field.onChange(country.geoId)
+                                      handleContactCountryChange(country.geoId)
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === country.geoId ? "opacity-100" : "opacity-0",
+                                      )}
+                                    />
+                                    {country.geoName}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -583,20 +606,47 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>State/Province</FormLabel>
-                      <Select value={field.value ?? undefined} onValueChange={field.onChange}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a state/province" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {contactstates?.map((state: Country) => (
-                            <SelectItem key={state.geoId} value={state.geoId}>
-                              {state.geoName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                            >
+                              {field.value ?? "Select a state"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Search state/province..." />
+                            <CommandList>
+                              <CommandEmpty>No state/province found.</CommandEmpty>
+                              <CommandGroup>
+                                {contactstates?.map((state) => (
+                                  <CommandItem
+                                    value={state.geoId}
+                                    key={state.geoId}
+                                    onSelect={() => {
+                                      field.onChange(state.geoId)
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === state.geoId ? "opacity-100" : "opacity-0",
+                                      )}
+                                    />
+                                    {state.geoName}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                       <FormMessage />
                     </FormItem>
                   )}

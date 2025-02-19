@@ -6,12 +6,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 
 import { warehouseformSchema, Warehouseform } from '@/components/tanstack/schema/formSchema/warehouseformSchema'
 import { NumberField } from './components/field/number-field'
 import { TextField } from './components/field/text-field'
+import { Check, ChevronsUpDown } from 'lucide-react'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 import "@/app/globals.css";
 
 import { useCountries } from "@/hooks/use-cached-data"
@@ -86,9 +89,9 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
     }
   }
 
-  const onError = (errors: any) => {
-    console.error('Form validation errors:', errors)
-  }
+  // const onError = (errors: any) => {
+  //   console.error('Form validation errors:', errors)
+  // }
 
    // Helper function to find the geoName for a given geoId
    const findCountryName = (geoId: string | undefined, countries: Country[]): string => {
@@ -118,7 +121,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col h-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
        
@@ -133,34 +136,56 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
                 name="businessContacts.0.countryGeoId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="form-label font-common">Country</FormLabel>
+                    <FormLabel className="form-label font-common">Country<span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       {isEditing ? (
-                        <Select
-                          value={field.value ?? undefined}
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            handleContactCountryChange(value);
-                          }}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a country" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {countries?.map((country: Country) => (
-                              <SelectItem key={country.geoId} value={country.geoId}>
-                                {country.geoName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <div className="form-control font-common">
-                          {findCountryName(getFormValue('businessContacts.0.countryGeoId'), countries)}
-                        </div>
-                      )}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                              >
+                                {field.value ?? "Select a country"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Search country..." />
+                              <CommandList>
+                                <CommandEmpty>No country found.</CommandEmpty>
+                                <CommandGroup>
+                                  {countries?.map((country) => (
+                                    <CommandItem
+                                      value={country.geoId}
+                                      key={country.geoId}
+                                      onSelect={() => {
+                                        field.onChange(country.geoId)
+                                        handleContactCountryChange(country.geoId)
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          field.value === country.geoId ? "opacity-100" : "opacity-0",
+                                        )}
+                                      />
+                                      {country.geoName}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        ) : (
+                          <div className="form-control font-common">
+                            {findCountryName(getFormValue('businessContacts.0.countryGeoId'), countries)}
+                          </div>
+                        )}
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -175,7 +200,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
                 name="businessContacts.0.physicalLocationAddress"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="form-label font-common">Address</FormLabel>
+                    <FormLabel className="form-label font-common">Address<span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       {isEditing ? (
                         <Input
@@ -201,7 +226,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
                 name="businessContacts.0.city"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="form-label font-common">City</FormLabel>
+                    <FormLabel className="form-label font-common">City<span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       {isEditing ? (
                         <Input
@@ -227,38 +252,60 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
                 name="businessContacts.0.stateProvinceGeoId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="form-label font-common">State/Province</FormLabel>
-                    <FormControl>
-                      {isEditing ? (
-                        <Select
-                          value={field.value ?? undefined}
-                          onValueChange={(value) => {
-                            field.onChange(value)
-                          }}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a state/province" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {contactstates?.map((state: Country) => (
-                              <SelectItem key={state.geoId} value={state.geoId}>
-                                {state.geoName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <div className="form-control font-common">
-                          {findCountryName(getFormValue('businessContacts.0.stateProvinceGeoId'), contactstates)}
-                        </div>
-                      )}
-                    </FormControl>
+                    <FormLabel>State/Province<span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        {isEditing ? (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                                >
+                                  {field.value ?? "Select a state"}
+                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0">
+                              <Command>
+                                <CommandInput placeholder="Search state/province..." />
+                                <CommandList>
+                                  <CommandEmpty>No state/province found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {contactstates?.map((state) => (
+                                      <CommandItem
+                                        value={state.geoId}
+                                        key={state.geoId}
+                                        onSelect={() => {
+                                          field.onChange(state.geoId)
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn(
+                                            "mr-2 h-4 w-4",
+                                            field.value === state.geoId ? "opacity-100" : "opacity-0",
+                                          )}
+                                        />
+                                        {state.geoName}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          ) : (
+                            <div className="form-control font-common">
+                              {findCountryName(getFormValue('businessContacts.0.stateProvinceGeoId'), contactstates)}
+                            </div>
+                          )}
+                      </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
-              />   
+              />
             ) : null}
 
             {isEditing || form.getValues('businessContacts.0.zipCode') ? (
@@ -267,7 +314,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing }: War
                 name="businessContacts.0.zipCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="form-label font-common">Postal Code</FormLabel>
+                    <FormLabel className="form-label font-common">Postal Code<span className="text-red-500">*</span></FormLabel>
                     <FormControl>
                       {isEditing ? (
                         <Input

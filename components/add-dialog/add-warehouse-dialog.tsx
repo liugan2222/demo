@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Check, ChevronsUpDown } from 'lucide-react'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -23,13 +23,15 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 
 // Import the warehouseSchema
 import { warehouseformSchema } from '@/components/tanstack/schema/formSchema/warehouseformSchema'
@@ -235,7 +237,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.internalId`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Warehouse Number<span className="text-red-500">*</span></FormLabel>
+                              <FormLabel>Warehouse Number</FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ''} />
                               </FormControl>
@@ -271,26 +273,49 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.businessContacts.0.countryGeoId`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Country</FormLabel>
-                              <Select value={field.value ?? undefined} 
-                                      onValueChange={(value) => {
-                                        field.onChange(value);
-                                        handleContactCountryChange(value);
-                                      }}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a country" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {countries?.map((country: Country) => (
-                                    <SelectItem key={country.geoId} value={country.geoId}>
-                                      {country.geoName}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormLabel>Country<span className="text-red-500">*</span></FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                                    >
+                                      {field.value ?? "Select a country"}
+                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0">
+                                  <Command>
+                                    <CommandInput placeholder="Search country..." />
+                                    <CommandList>
+                                      <CommandEmpty>No country found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {countries?.map((country) => (
+                                          <CommandItem
+                                            value={country.geoId}
+                                            key={country.geoId}
+                                            onSelect={() => {
+                                              field.onChange(country.geoId)
+                                              handleContactCountryChange(country.geoId)
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === country.geoId ? "opacity-100" : "opacity-0",
+                                              )}
+                                            />
+                                            {country.geoName}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -301,7 +326,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.businessContacts.0.physicalLocationAddress`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Address</FormLabel>
+                              <FormLabel>Address<span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ""} />
                               </FormControl>
@@ -315,7 +340,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.businessContacts.0.city`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>City</FormLabel>
+                              <FormLabel>City<span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ""} />
                               </FormControl>
@@ -329,21 +354,48 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.businessContacts.0.stateProvinceGeoId`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>State/Province</FormLabel>
-                              <Select value={field.value ?? undefined} onValueChange={field.onChange}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a state/province" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {contactstates?.map((state: Country) => (
-                                    <SelectItem key={state.geoId} value={state.geoId}>
-                                      {state.geoName}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                              <FormLabel>State/Province<span className="text-red-500">*</span></FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                                    >
+                                      {field.value ?? "Select a state"}
+                                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0">
+                                  <Command>
+                                    <CommandInput placeholder="Search state/province..." />
+                                    <CommandList>
+                                      <CommandEmpty>No state/province found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {contactstates?.map((state) => (
+                                          <CommandItem
+                                            value={state.geoId}
+                                            key={state.geoId}
+                                            onSelect={() => {
+                                              field.onChange(state.geoId)
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === state.geoId ? "opacity-100" : "opacity-0",
+                                              )}
+                                            />
+                                            {state.geoName}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -354,7 +406,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.businessContacts.0.zipCode`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Postal Code</FormLabel>
+                              <FormLabel>Postal Code<span className="text-red-500">*</span></FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ""} />
                               </FormControl>

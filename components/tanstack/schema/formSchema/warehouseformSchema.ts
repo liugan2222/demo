@@ -1,12 +1,16 @@
 import { z } from "zod"
 import { businessContactSchema } from './businessContactSchema'
+import { glnRegex } from "../regexPatterns";
 
 export const warehouseformSchema = z.object({
   ownerPartyId: z.string().nullable().optional(),
   facilityId: z.string().nullable().optional(), // id
   facilityName: z.string().min(1, "Warehouse name is required"),  // Warehouse
   // address: z.string().nullable().optional(),
-  gln: z.string().nullable().optional(),    // GLN
+  gln: z.string().nullable().optional().refine(
+    (value) => !value || glnRegex.test(value),
+    { message: "Invalid GLN format" }
+  ),     // GLN
   internalId: z.string().nullable().optional(),    // internalId   Warehouse Number
   facilitySize: z.number().nullable().optional(), // capacity Capacity
   active: z.string().nullable().optional(),

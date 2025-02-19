@@ -5,7 +5,6 @@ import { useFieldArray } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -85,7 +84,7 @@ export function FacilitiesSection({
                       Name<span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} value={field.value || ""}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -101,7 +100,7 @@ export function FacilitiesSection({
                       Phone Number
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} value={field.value || ""}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -113,11 +112,64 @@ export function FacilitiesSection({
                 name={`facilities.${facilityIndex}.businessContacts.0.countryGeoId`}
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel>Country<span className="text-red-500">*</span></FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                          >
+                            {field.value ?? "Select a country"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Search country..." />
+                          <CommandList>
+                            <CommandEmpty>No country found.</CommandEmpty>
+                            <CommandGroup>
+                              {countries?.map((country) => (
+                                <CommandItem
+                                  value={country.geoId}
+                                  key={country.geoId}
+                                  onSelect={() => {
+                                    field.onChange(country.geoId)
+                                    onCountryChange(country.geoId)
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value === country.geoId ? "opacity-100" : "opacity-0",
+                                    )}
+                                  />
+                                  {country.geoName}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* <FormField
+                control={form.control}
+                name={`facilities.${facilityIndex}.businessContacts.0.countryGeoId`}
+                render={({ field }) => (
+                  <FormItem>
                     <FormLabel>
                       Country<span className="text-red-500">*</span>
                     </FormLabel>
                     <Select
-                      value={field.value}
+                      value={field.value || ""}
                       onValueChange={(value) => {
                         field.onChange(value)
                         onCountryChange(value)
@@ -139,7 +191,7 @@ export function FacilitiesSection({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <FormField
                 control={form.control}
@@ -150,7 +202,7 @@ export function FacilitiesSection({
                       Address<span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} value={field.value || ""}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -166,7 +218,7 @@ export function FacilitiesSection({
                       City<span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} value={field.value || ""}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -175,53 +227,51 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
-                name={`items.0.preferredCurrencyUomId`}
+                name={`facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`}
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>State/Province</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
+                  <FormItem>
+                    <FormLabel>State/Province<span className="text-red-500">*</span></FormLabel>
+                    <FormControl>
+                      <Popover>
+                        <PopoverTrigger asChild>
                           <Button
                             variant="outline"
                             role="combobox"
                             className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
                           >
-                            {field.value
-                              ? states?.find((state) => state.geoId === field.value)?.geoName
-                              : "Select a state"}
+                            {field.value ?? "Select a state"}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
-                          <CommandInput placeholder="Search state/province..." />
-                          <CommandList>
-                            <CommandEmpty>No state/province found.</CommandEmpty>
-                            <CommandGroup>
-                              {states?.map((state) => (
-                                <CommandItem
-                                  value={state.geoName}
-                                  key={`${state.geoId}-${facilityIndex}`}
-                                  onSelect={() => {
-                                    field.onChange(state.geoId)
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value === state.geoId ? "opacity-100" : "opacity-0",
-                                    )}
-                                  />
-                                  {state.geoName}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Search state/province..." />
+                            <CommandList>
+                              <CommandEmpty>No state/province found.</CommandEmpty>
+                              <CommandGroup>
+                                {states?.map((state) => (
+                                  <CommandItem
+                                    value={state.geoId}
+                                    key={state.geoId}
+                                    onSelect={() => {
+                                      field.onChange(state.geoId)
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === state.geoId ? "opacity-100" : "opacity-0",
+                                      )}
+                                    />
+                                    {state.geoName}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -236,7 +286,7 @@ export function FacilitiesSection({
                       Postal Code<span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field}  value={field.value || ""}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -250,7 +300,7 @@ export function FacilitiesSection({
                   <FormItem>
                     <FormLabel>FFRN</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} value={field.value || ""}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -264,7 +314,7 @@ export function FacilitiesSection({
                   <FormItem>
                     <FormLabel>GLN</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

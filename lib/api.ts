@@ -63,21 +63,22 @@ export async function getUoms(uomTypeId: string) {
 
 // get warehouseList
 // TODO ownerPartyId 获取
-export async function getWarehouseList(ownerPartyId: string = 'FRESH_MART_DC') {
-  const response = await api.get("/proxy/BffLists/Facilities", {params: {ownerPartyId}})
+export async function getWarehouseList(ownerPartyId: string = 'FRESH_MART_DC', active: string = 'Y') {
+  const response = await api.get("/proxy/BffLists/Facilities", {params: {ownerPartyId, active}})
   return response.data
 }
 
 // get vendorList
-export async function getVendorList() {
-  const response = await api.get("/proxy/BffLists/Suppliers")
+export async function getVendorList(active: string = 'Y') {
+  const response = await api.get("/proxy/BffLists/Suppliers", {params: {active}})
   return response.data
 }
 
 // get itemList
-export async function getItemList(supplierId?: string) {
+export async function getItemList(supplierId?: string, active: string = 'Y') {
   const params = {} as Record<string, any>;
   if (supplierId !== undefined) {
+    params.active = active;
     params.supplierId = supplierId;
   }
   const response =  await api.get(`/proxy/BffLists/RawItems`, { params });
@@ -85,8 +86,8 @@ export async function getItemList(supplierId?: string) {
 }
 
 // get supplierType  SUPPLIER_TYPE_ENUM
-export async function getSupplierType(type: string) {
-  const response = await api.get("/proxy/Enumerations", {params: {type}})
+export async function getSupplierType(enumTypeId: string) {
+  const response = await api.get("/proxy/Enumerations", {params: {enumTypeId}})
   return response.data
 }
 
@@ -392,4 +393,26 @@ export async function getReceiveById(id: string, derivesQaInspectionStatus?: boo
 export async function updateReceive(id: string, item: Partial<Receiveform>) {
   const response = await api.put<Poform>(`/proxy/BffReceipts/${id}`, item)
   return response.data
+}
+
+
+/* file */
+export async function uploadFile(file: File) {
+  // 添加格式验证
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('仅支持JPG/PNG/GIF/WEBP格式的图片');
+  }
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('isPublic', 'true')
+
+  return api.post('/proxy/files/upload', formData, {
+    headers: {
+      // 让浏览器自动设置Content-Type和boundary
+      'Content-Type': 'multipart/form-data'
+    },
+    transformRequest: (data) => data // 确保axios不自动转换formData
+  })
 }

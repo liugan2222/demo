@@ -40,6 +40,17 @@ export const columns: ColumnDef<Vendorpation>[] = [
     maxSize: 40,
   },
 
+    // vendorNumber
+    {
+    accessorKey: "vendorNumber",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Vendor Number" />
+    ),
+    cell: ({ row }) => <div>{row.getValue("vendorNumber")}</div>,
+    size: 240,
+    minSize: 150,
+  }, 
+
   {
     accessorKey: "vendor",
     header: ({ column }) => (
@@ -49,17 +60,6 @@ export const columns: ColumnDef<Vendorpation>[] = [
     size: 550,
     minSize: 100,
   },
-
-   // vendorNumber
-   {
-    accessorKey: "vendorNumber",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Vendor Number" />
-    ),
-    cell: ({ row }) => <div>{row.getValue("vendorNumber")}</div>,
-    size: 240,
-    minSize: 150,
-  }, 
 
   // fullName
   // address

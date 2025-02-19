@@ -50,9 +50,9 @@ interface Warehouse {
 }
 
 const createEmptyLocation = () => ({
-  facilityId: null,
+  facilityId: '',
   locationSeqId: null,
-  locationName: null,
+  locationName: '',
   gln: null,
   locationCode: null,
   // status: null,
@@ -223,7 +223,7 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                           name={`items.${index}.locationCode`}
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Location Number<span className="text-red-500">*</span></FormLabel>
+                              <FormLabel>Location Number</FormLabel>
                               <FormControl>
                                 <Input {...field} value={field.value ?? ''} />
                               </FormControl>

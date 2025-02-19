@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { gtinRegex } from "../regexPatterns";
+
 // Define the status and priority options
 // export const taskPriorityEnum = z.enum(["low", "medium", "high"])
 
@@ -7,7 +9,10 @@ import { z } from "zod"
 export const itemformSchema = z.object({
   productId: z.string().nullable().optional(),
   productName: z.string().min(1, "Item name is required"),    // Item
-  gtin: z.string().nullable().optional(),
+  gtin: z.string().nullable().optional().refine(
+    (value) => !value || gtinRegex.test(value),
+    { message: "Invalid GTIN format" }
+  ),
   supplierId: z.string().min(1, "Vendor is required"),     // Vendor
   supplierName: z.string().nullable().optional(),  
   internalId: z.string().min(1, "Item number is required"), // Item number
@@ -66,6 +71,7 @@ export const itemformSchema = z.object({
 
 
   smallImageUrl: z.string().nullable().optional(),      // Item Image
+  picture: z.string().nullable().optional(),
 
   // New date fields
   // createdAt: z.string().transform((str) => new Date(str)),

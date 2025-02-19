@@ -9,7 +9,7 @@ import { format } from "date-fns"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
+  // DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -209,9 +209,9 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Add Purchase Order</DialogTitle>
-          <DialogDescription>
+          {/* <DialogDescription>
             Add a new purchase order with one or more items.
-          </DialogDescription>
+          </DialogDescription> */}
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -273,7 +273,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                     name="supplierId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Vendor</FormLabel>
+                        <FormLabel>Vendor<span className="text-red-500">*</span></FormLabel>
                         <Select
                           value={field.value ?? undefined}
                           onValueChange={(value) => {

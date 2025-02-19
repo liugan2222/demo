@@ -38,6 +38,7 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing }: Loca
         try {
           setLoading(true)
           const locationData = await getLocationById(selectedItem.facilityId, selectedItem.locationSeqId)
+          locationData.facilityId = selectedItem.facilityId
           // form.reset(warehouseData)
           // Update form values with fetched data
           Object.keys(locationData).forEach((key) => {
@@ -69,22 +70,32 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing }: Loca
     }
   }
 
-  const onError = (errors: any) => {
-    console.error('Form validation errors:', errors)
-  }
-
   if (loading) {
     return <div>Loading...</div>
   }
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, onError)} className="flex flex-col h-full">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
 
-            <TextField form={form} name="facilityName" label="Warehouse" isEditing={false} />
-            <TextField form={form} name="locationName" label="Location" isEditing={isEditing} />
+          <FormField
+              control={form.control}
+              name="facilityName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="form-label font-common">Warehouse</FormLabel>
+                  <FormControl>
+                    <div className="form-control font-common">
+                      {field.value?.toString() ?? ''}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <TextField form={form} name="locationName" label="Location" required isEditing={isEditing} />
             <TextField form={form} name="gln" label="GLN" isEditing={isEditing} />
             <TextField form={form} name="locationCode" label="Location Number" isEditing={isEditing} />
             <TextField form={form} name="areaId" label="Warehouse Zone" isEditing={isEditing} />

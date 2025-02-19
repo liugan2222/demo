@@ -1,7 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import axios, { AxiosRequestConfig, Method } from 'axios'
 
-const API_BASE_URL = 'http://47.88.28.103:1023/api'
+// 
+const getBaseUrl = (path: string) => {
+  if (path.startsWith('files/')) {
+    console.log(11111111)
+    return 'http://47.88.28.103:8080/api' // 
+  }
+  return 'http://47.88.28.103:1023/api' //
+}
 
 // TODO: Implement token management
 const getToken = () => {
@@ -17,6 +24,7 @@ const isAuthorized = (response: any) => {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+
   const { method, query, body } = req
   const { proxy } = query
 
@@ -25,6 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const path = proxy.join('/')
+
+  const API_BASE_URL = getBaseUrl(path)
 
   try {
     const token = getToken()
@@ -37,8 +47,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // 'Content-Type': 'application/json',
         'accept': 'application/json',
         'X-TenantID': 'X',
+        ...(req.headers['content-type']?.startsWith('multipart/form-data')
+          ? { 'Content-Type': req.headers['content-type'] } // 保留完整Content-Type
+          : { 'Content-Type': req.headers['content-type'] || 'application/json' }
+        ),
         // 'Authorization': `Bearer ${token}`,
-        // TODO: Add any other necessary headers
       },
       params: { ...query, proxy: undefined },
       data: body,
@@ -54,6 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(response.status).json(response.data)
   } catch (error: any) {
     console.error('API request error:', error.response?.data || error.message)
+    // const jsonString = JSON.stringify(error);
     res.status(error.response?.status || 500).json({ message: error.response?.data?.message || 'Internal server error' })
   }
 }
