@@ -63,6 +63,8 @@ export function DatabaseLocations() {
     fetchLocations()
   }, [fetchLocations]); 
 
+  const getRowId = useCallback((row: Location) => row.id || '', [])
+
   if (isLoading) {
     return <div className="p-11">Loading...</div>
   }
@@ -79,7 +81,7 @@ export function DatabaseLocations() {
           width: 100
         }}
       /> */}
-      <DataTable data={locations} columns={columns} dataType='locations' onRefresh={fetchLocations}/>
+      <DataTable data={locations} columns={columns} dataType='locations' onRefresh={fetchLocations} getRowId={getRowId}/>
     </div>
   )
 }

@@ -38,6 +38,8 @@ export function Procurement() {
     fetchProcurements()
   }, [fetchProcurements]); 
 
+  const getRowId = useCallback((row: Po) => row.id || '', [])
+
   if (isLoading) {
     return <div className="p-5">Loading...</div>
   }
@@ -48,7 +50,7 @@ export function Procurement() {
 
   return (
     <div className="p-11">
-      <DataTable data={procurements} columns={columns} dataType='procurements'  onRefresh={fetchProcurements}/>
+      <DataTable data={procurements} columns={columns} dataType='procurements'  onRefresh={fetchProcurements} getRowId={getRowId}/>
     </div>
   )
 }

@@ -260,7 +260,7 @@ export function DataTableToolbar<TData>({
             className="h-8 px-2 lg:px-3 text-green-700"
           >
             <X />
-            Clear filters
+            Reset
           </Button>
         )}
       </div>

@@ -2,7 +2,7 @@ import { z } from "zod"
 
 // Extended vendor schema with number and date fields
 export const vendorpationSchema = z.object({
-  // id: z.string().nullable().optional(),
+  id: z.string().nullable().optional(),
   supplierId: z.string().nullable().optional(),   // id
   vendor: z.string().nullable().optional(),   // supplierShortName
   address: z.string().nullable().optional(),

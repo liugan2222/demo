@@ -38,6 +38,8 @@ export function Receiving() {
     fetchReceives()
   }, [fetchReceives]); 
 
+  const getRowId = useCallback((row: Receive) => row.id || '', [])
+
   if (isLoading) {
     return <div className="p-5">Loading...</div>
   }
@@ -48,7 +50,7 @@ export function Receiving() {
 
   return (
     <div className="p-11">
-      <DataTable data={receives} columns={columns} dataType='receivings'  onRefresh={fetchReceives}/>
+      <DataTable data={receives} columns={columns} dataType='receivings'  onRefresh={fetchReceives} getRowId={getRowId}/>
     </div>
   )
 }

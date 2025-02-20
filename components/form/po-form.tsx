@@ -110,6 +110,9 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
             const vendorData = await getVendorById(poData.supplierId)
             poData.supplierName = vendorData.supplierName
             poData.statusId= poData.fulfillmentStatusId?(poData.fulfillmentStatusId):(poData.statusId?poData.statusId:'')
+
+            const [productList] = await Promise.all([getItemList(poData.supplierId)])
+            setProducts(productList)
           }
           if (poData.orderItems) {
               poData.orderItems = poData.orderItems.map((orderItem) => ({
@@ -140,15 +143,6 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
     }
     fetchVendors()
     fetchPoData()
-    const fetchData = async () => {
-      try {
-        const [productList] = await Promise.all([getItemList()])
-        setProducts(productList)
-      } catch (error) {
-        console.error("Error fetching data:", error)
-      }
-    }
-    fetchData()
   }, [selectedItem.orderId, form, fetchVendors])
 
 
@@ -246,7 +240,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
             <div className="flex items-start gap-4 w-full">
               <div className="w-24 h-24 bg-gray-100 rounded-lg">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src={item.smallImageUrl ? `http://47.88.28.103:8080/api/files/${item.smallImageUrl}/media` : "/placeholder.svg?height=96&width=96"}
                   alt={item.productName || ""}
                   className="w-full h-full object-cover rounded-lg"
                 />
@@ -323,15 +317,15 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
               <div className="flex items-start gap-4 w-full">
                 <div className="w-24 h-24 bg-gray-100 rounded-lg">
                   <img
-                    src="/placeholder.svg?height=96&width=96"
-                    alt=""
+                    src={form.watch(`orderItems.${index}.smallImageUrl`) ? `http://47.88.28.103:8080/api/files/${form.watch(`orderItems.${index}.smallImageUrl`)}/media` : "/placeholder.svg?height=96&width=96"}
+                    alt={form.watch(`orderItems.${index}.productName`) || ""}
                     className="w-full h-full object-cover rounded-lg"
                   />
                 </div>
                 <div className="flex-1 text-left">
                   <h4 className={getFulfillmentStatusColor(form.watch(`orderItems.${index}.fulfillmentStatusId`))}>{form.watch(`orderItems.${index}.fulfillmentStatusId`)}</h4>
                   <h4 className="text-base font-medium mt-1">
-                    {form.watch(`orderItems.${index}.productName`) || "Select a product"}
+                    {form.watch(`orderItems.${index}.productName`) || "Select a item"}
                   </h4>
                   <p className="text-sm text-gray-600">
                     {`${form.watch(`orderItems.${index}.amount`) || 0} ${findUomName(form.watch(`orderItems.${index}.caseUomId`) ?? "", packageType)}, ${formatNumber(form.watch(`orderItems.${index}.quantity`))} ${findUomName(form.watch(`orderItems.${index}.quantityUomId`) ?? "", weightUom)}`}
@@ -360,7 +354,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a product" />
+                            <SelectValue placeholder="Select a item" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -467,7 +461,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing }: PoFormProp
                     <FormLabel className="form-label font-common">Status</FormLabel>
                     <FormControl>
                       <div className="form-control font-common">
-                        <Badge variant="outline" className={field.value === "NOT_FULFILLED" ? "badge-page badge-notFulfilled" : (field.value  === "PARTIALLY_FULFILLED" ? "badge-page badge-partiallyFulfilled" : "badge-page badge-fullfilled")}>{field.value}</Badge>
+                        <Badge variant="outline" className={field.value === "NOT_FULFILLED" ? "badge-page badge-notFulfilled" : (field.value  === "PARTIALLY_FULFILLED" ? "badge-page badge-partiallyFulfilled" : "badge-page badge-fullfilled")}>{field.value || 'NOT_FULFILLED'}</Badge>
                       </div>
                     </FormControl>
                     <FormMessage />

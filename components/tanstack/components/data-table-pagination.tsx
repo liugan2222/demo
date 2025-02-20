@@ -301,7 +301,7 @@ export function DataTablePagination<TData>({
       <CustomAlertDialog
         open={showDisableDialog}
         onOpenChange={setShowDisableDialog}
-        title={`Are you sure you want to disable ${selectedRows.length} items?`}
+        title={`Are you sure you want to disable ${selectedRows.length} entries?`}
         description="These items will remain viewable only in the base data but will be hidden in any other modules for future entries."
         onCancel={() => setShowDisableDialog(false)}
         onConfirm={handleConfirmDisable}
@@ -310,7 +310,7 @@ export function DataTablePagination<TData>({
       <CustomAlertDialog
         open={showEnableDialog}
         onOpenChange={setShowEnableDialog}
-        title={`Are you sure you want to enable ${selectedRows.length} items?`}
+        title={`Are you sure you want to enable ${selectedRows.length} entries?`}
         description="These items will be visible in any other modules for future entries."
         onCancel={() => setShowEnableDialog(false)}
         onConfirm={handleConfirmEnable}

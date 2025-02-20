@@ -55,6 +55,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       params: { ...query, proxy: undefined },
       data: body,
+      maxBodyLength: Infinity, // 确保大文件上传不受限制
+      maxContentLength: Infinity, // 确保大文件上传不受限制
     }
 
     const response = await axios(config)

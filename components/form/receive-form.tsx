@@ -158,7 +158,7 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing }: Recei
             <div className="flex items-start gap-4 w-full">
               <div className="w-24 h-24 bg-gray-100 rounded-lg">
                 <img
-                  src="/placeholder.svg?height=96&width=96"
+                  src={item.smallImageUrl ? `http://47.88.28.103:8080/api/files/${item.smallImageUrl}/media` : "/placeholder.svg?height=96&width=96"}
                   alt={item.productName || ""}
                   className="w-full h-full object-cover rounded-lg"
                 />
@@ -234,8 +234,8 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing }: Recei
               <div className="flex items-start gap-4 w-full">
                 <div className="w-24 h-24 bg-gray-100 rounded-lg">
                   <img
-                    src="/placeholder.svg?height=96&width=96"
-                    alt=""
+                    src={form.watch(`receivingItems.${index}.smallImageUrl`) ? `http://47.88.28.103:8080/api/files/${form.watch(`receivingItems.${index}.smallImageUrl`)}/media` : "/placeholder.svg?height=96&width=96"}
+                    alt={form.watch(`receivingItems.${index}.productName`) || ""}
                     className="w-full h-full object-cover rounded-lg"
                   />
                 </div>

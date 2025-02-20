@@ -38,6 +38,8 @@ export function DatabaseVendors() {
     fetchVendors()
   }, [fetchVendors]);
 
+  const getRowId = useCallback((row: Vendor) => row.id || '', [])
+
   if (isLoading) {
     return <div className="p-11">Loading...</div>
   }
@@ -50,6 +52,8 @@ export function DatabaseVendors() {
   //   return <div className="p-11">No vendors found.</div>;
   // }
 
+  
+
   return (
     <div className="p-11">
       {/* <DataTable data={vendors} columns={columns} dataType='vendors'
@@ -58,7 +62,7 @@ export function DatabaseVendors() {
           width: 100
         }}
       /> */}
-      <DataTable data={vendors} columns={columns} dataType='vendors' onRefresh={fetchVendors}  />
+      <DataTable data={vendors} columns={columns} dataType='vendors' onRefresh={fetchVendors} getRowId={getRowId} />
     </div>
   )
 }

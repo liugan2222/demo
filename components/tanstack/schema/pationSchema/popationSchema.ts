@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export const popationSchema = z.object({
+  id: z.string().nullable().optional(),
   orderId: z.string().nullable().optional(),       // PO Number
   poNumber: z.string().nullable().optional(),       // PO Number  poNumber  orderId
   orderDate: z.union([                              // Order Date

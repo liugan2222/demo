@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export const receivepationSchema = z.object({
+  id: z.string().nullable().optional(),
   documentId: z.string().nullable().optional(),
   receivingNumber: z.string().nullable().optional(),       // Receiving Number  documentId
   PO: z.string().nullable().optional(),       // PO Number    primaryOrderId

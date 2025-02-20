@@ -64,6 +64,8 @@ export function DatabaseItems() {
     fetchItems()
   }, [fetchItems]); 
 
+  const getRowId = useCallback((row: Item) => row.id || '', [])
+
   if (isLoading) {
     return <div className="p-4">Loading...</div>
   }
@@ -80,7 +82,7 @@ export function DatabaseItems() {
           width: 100
         }}
       /> */}
-      <DataTable data={items} columns={columns} dataType='items' onRefresh={fetchItems} />
+      <DataTable data={items} columns={columns} dataType='items' onRefresh={fetchItems} getRowId={getRowId}/>
     </div>
   )
 }

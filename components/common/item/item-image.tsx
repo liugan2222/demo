@@ -4,8 +4,9 @@ import type React from "react"
 
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+// import { Input } from "@/components/ui/input"
 import Image from "next/image"
+import { useDropzone } from "react-dropzone";
 
 interface ItemImageProps {
   form: any
@@ -16,14 +17,26 @@ interface ItemImageProps {
 export function ItemImage({ form, isEditing, onImageChange }: ItemImageProps) {
   const imageUrl =
     // form.watch("smallImageUrl") || 
-    "http://47.88.28.103:8080/api/files/8dcbc767-0ad1-488f-bc11-de185b9bd245/media"
+    "http://47.88.28.103:8080/api/files/f9c020c7-ab25-44b8-9736-69b926d08f31/media"
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && onImageChange) {
-      await onImageChange(file)
+  // const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0]
+  //   if (file && onImageChange) {
+  //     await onImageChange(file)
+  //   }
+  // }
+
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: {
+      'image/*': ['.jpeg', '.png', '.gif', '.webp']
+    },
+    onDrop: async (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      if (file && onImageChange) {
+        await onImageChange(file);
+      }
     }
-  }
+  });
 
   return (
     <div className="space-y-4">
@@ -41,7 +54,14 @@ export function ItemImage({ form, isEditing, onImageChange }: ItemImageProps) {
             <FormItem>
               <FormLabel>Picture</FormLabel>
               <FormControl>
-                <Input type="file" accept="image/*" onChange={handleImageChange} className="cursor-pointer" />
+                {/* <Input type="file" 
+                  // accept="image/*" 
+                  onChange={handleImageChange} 
+                  className="cursor-pointer" /> */}
+                <div {...getRootProps()} className="border-2 border-dashed rounded-md p-4 cursor-pointer">
+                  <input {...getInputProps()} />
+                  <p>Drag & drop an image here</p>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

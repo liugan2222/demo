@@ -129,19 +129,6 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
     }
   }, [open, fetchVendors]);
 
-  // const handlePictureChange = async (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = event.target.files?.[0];
-  //   if (file) {
-  //     try {
-  //       const pictureObj = await uploadFile(file);
-  //       form.setValue(`items.${index}.smallImageUrl`, pictureObj.data?.id);
-  //     } catch (error) {
-  //       console.error('Error uploading file:', error);
-  //       // Handle error (e.g., show error message to user)
-  //     }
-  //   }
-  // }  
-
   const onSubmit = useCallback(async (data: MultipleItemsSchema) => {
     try {
       console.log("add items", data)
@@ -164,7 +151,6 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
     
     const isValid = await form.trigger(`items.${lastIndex}`);
     // const result = await form.trigger(`items.${lastIndex}`, { shouldFocus: true });
-    // console.log('print',result)
 
     if (isValid) {
       append(createEmptyItem());
@@ -196,7 +182,7 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
         <DialogHeader>
           <DialogTitle>Add raw items</DialogTitle>
           <DialogDescription>
-            Add one or more new items to the inventory. Click the plus button to add more items.
+            Add one or more raw items to the database.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -231,16 +217,22 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                           </FormDescription>
                         </FormItem> */}
 
-                        <div className="col-span-2">
+                        <div className="col-span-2 flex justify-center items-center">
                           <ItemImage
                             form={form}
                             isEditing={true}
                             onImageChange={async (file) => {
                               try {
+                                form.setValue(`items.${index}.smallImageUrl`, 'uploading...');
                                 const pictureObj = await uploadFile(file)
                                 form.setValue(`items.${index}.smallImageUrl`, pictureObj.data?.id)
                               } catch (error) {
-                                console.error("Error uploading file:", error)
+                                form.setError(`items.${index}.picture`, {
+                                  type: 'manual',
+                                  message: error instanceof Error ? error.message : 'File upload failed'
+                                });
+                                form.setValue(`items.${index}.smallImageUrl`, null);
+                          
                               }
                             }}
                           />
@@ -630,20 +622,20 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                             </FormItem>
                           )}
                         />
+                        {index > 0 && (
+                          <div className="flex justify-end mt-6 pt-4">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="default"
+                              onClick={() => remove(index)}
+                            >
+                              <X className="h-4 w-4" />
+                              Remove Item
+                            </Button>
+                          </div>
+                        )}
                       </div>
-                      {index > 0 && (
-                        <div className="flex justify-end mt-6 border-t pt-4">
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="default"
-                            onClick={() => remove(index)}
-                          >
-                            <X className="h-4 w-4" />
-                            Remove Item
-                          </Button>
-                        </div>
-                      )}
                     </AccordionContent>
                   </AccordionItem>
                 ))}

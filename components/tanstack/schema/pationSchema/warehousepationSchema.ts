@@ -2,6 +2,7 @@ import { z } from "zod"
 import { businessContactSchema } from '../formSchema/businessContactSchema'
 
 export const warehousepationSchema = z.object({
+  id: z.string().nullable().optional(),
   facilityId: z.string().nullable().optional(), // id
   warehouse: z.string().nullable().optional(),  // warehouse
   address: z.string().nullable().optional(),

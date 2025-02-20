@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { Plus, Check, ChevronsUpDown } from 'lucide-react'
+import { Plus, X, Check, ChevronsUpDown } from 'lucide-react'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -105,7 +105,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
     mode: 'onChange', // Enable real-time validation
   })
 
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "items",
   })
@@ -414,7 +414,19 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                             </FormItem>
                           )}
                         /> 
-
+                        {index > 0 && (
+                          <div className="flex justify-end mt-6 pt-4">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="default"
+                              onClick={() => remove(index)}
+                            >
+                              <X className="h-4 w-4" />
+                              Remove warehouse
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>

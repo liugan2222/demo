@@ -9,10 +9,10 @@ import { Receiveform } from '@/components/tanstack/schema/formSchema/receiveform
 
 const api = axios.create({
   baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-    // 'X-TenantID': 'X',
-  },
+  // headers: {
+  //   'Content-Type': 'application/json',
+  //   // 'X-TenantID': 'X',
+  // },
 })
 
 // Add an interceptor to include the auth token in requests
@@ -112,6 +112,7 @@ export async function getVendors(size: number = 9999) {
     // });
     const content = response.data.content || [];
     const transformedVendors = (content as any[]).map((item: any) => ({
+      id: item.supplierId,
       vendor: item.supplierShortName, 
       tel: item.telephone, 
       gcp: item.gs1CompanyPrefix, 
@@ -154,6 +155,7 @@ export async function getItems(size: number = 9999) {
 
     const content = response.data.content || [];
     const transformedItems = (content as any[]).map((item: any) => ({
+      id: item.productId,
       item: item.productName, 
       vendor: item.supplierName, 
       itemNumber: item.internalId, 
@@ -218,6 +220,7 @@ export async function getWarehouses(size: number = 9999, ownerPartyId: string ='
 
 
       return {
+        id: item.facilityId,
         warehouse: item.facilityName,
         address: address, // Use the concatenated address
         warehouseNumber: item.internalId,
@@ -248,6 +251,7 @@ export async function getLocations() {
   const response =  await api.get(`/proxy/BffLists/Locations`)
   const content = response.data || [];
   const transformedItems = (content as any[]).map((item: any) => ({
+    id: item.locationSeqId,
     location: item.locationName,
     locationNumber: item.locationCode,
     warehouse: item.facilityName,
@@ -288,6 +292,7 @@ export async function getPos(supplierId?: string) {
   }>('/proxy/BffPurchaseOrders', { params });
     const content = response.data.content || [];
     const transformedItems = (content as any[]).map((item: any) => ({
+      id: item.orderId,
       poNumber: item.orderId, 
       vendor: item.supplierName, 
       orderStatus: item.fulfillmentStatusId?(item.fulfillmentStatusId):(item.statusId?item.statusId:'NOT_FULFILLED'),
@@ -371,6 +376,7 @@ export async function getReceives(size: number = 9999) {
   }>('/proxy/BffReceipts', { params: { size } });
     const content = response.data.content || [];
     const transformedItems = (content as any[]).map((item: any) => ({
+      id: item.documentId,
       receivingNumber: item.documentId, 
       PO: item.primaryOrderId, 
       receivingDate: item.createdAt, 
@@ -398,21 +404,29 @@ export async function updateReceive(id: string, item: Partial<Receiveform>) {
 
 /* file */
 export async function uploadFile(file: File) {
-  // 添加格式验证
+  // check
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
   if (!allowedTypes.includes(file.type)) {
-    throw new Error('仅支持JPG/PNG/GIF/WEBP格式的图片');
+    throw new Error('Only JPG/PNG/GIF/WEBP format is supported.');
   }
 
   const formData = new FormData()
-  formData.append('file', file)
-  formData.append('isPublic', 'true')
+  // formData.append('file', file)
+  // formData.append('isPublic', 'true')
 
-  return api.post('/proxy/files/upload', formData, {
-    headers: {
-      // 让浏览器自动设置Content-Type和boundary
-      'Content-Type': 'multipart/form-data'
-    },
-    transformRequest: (data) => data // 确保axios不自动转换formData
-  })
+  // 使用与Android完全一致的参数结构
+  const blob = new Blob([file], { type: file.type });
+  formData.append('file', blob, file.name); // 显式指定文件名
+  formData.append('isPublic', 'true');
+  
+
+  return api.post('/proxy/files/upload', formData
+    , {
+      // headers: {
+        // 让浏览器自动设置Content-Type和boundary
+        // 'Content-Type': 'multipart/form-data'
+      // },
+      transformRequest: (data) => data // 确保axios不自动转换formData
+    }
+  )
 }

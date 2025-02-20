@@ -2,6 +2,7 @@ import { z } from "zod"
 
 // Extended location schema with number and date fields
 export const locationpationSchema = z.object({
+  id: z.string().nullable().optional(), 
   facilityId: z.string().nullable().optional(),  // facilityId
   locationSeqId: z.string().nullable().optional(),  // id
   location: z.string().nullable().optional(),

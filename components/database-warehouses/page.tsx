@@ -63,6 +63,8 @@ export function DatabaseWarehouses() {
     fetchWarehouses()
   }, [fetchWarehouses]); 
 
+  const getRowId = useCallback((row: Warehouse) => row.id || '', [])
+
   if (isLoading) {
     return <div className="p-5">Loading...</div>
   }
@@ -79,7 +81,7 @@ export function DatabaseWarehouses() {
           width: 100
         }}
       /> */}
-      <DataTable data={warehouses} columns={columns} dataType='warehouses'  onRefresh={fetchWarehouses}/>
+      <DataTable data={warehouses} columns={columns} dataType='warehouses'  onRefresh={fetchWarehouses} getRowId={getRowId} />
     </div>
   )
 }

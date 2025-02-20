@@ -5,6 +5,7 @@ import { z } from "zod"
 
 // Extended item schema with number and date fields
 export const itempationSchema = z.object({
+  id: z.string().nullable().optional(),
   productId: z.string().nullable().optional(),
   smallImageUrl: z.string().nullable().optional(),  // Item Image
   item: z.string().nullable().optional(),

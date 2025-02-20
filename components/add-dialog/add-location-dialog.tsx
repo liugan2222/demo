@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -82,7 +82,7 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
     mode: 'onChange', // Enable real-time validation
   })
 
-  const { fields, append } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "items",
   })
@@ -288,6 +288,19 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                             </FormItem>
                           )}
                         />
+                        {index > 0 && (
+                          <div className="col-start-2 flex justify-end mt-6 pt-4">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="default"
+                              onClick={() => remove(index)}
+                            >
+                              <X className="h-4 w-4" />
+                              Remove location
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </AccordionContent>
                   </AccordionItem>

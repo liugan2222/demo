@@ -40,8 +40,16 @@ export const columns: ColumnDef<Vendorpation>[] = [
     maxSize: 40,
   },
 
-    // vendorNumber
-    {
+  // {
+  //   accessorKey: "id",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="ID" />
+  //   ),
+  //   cell: ({ row }) => <div  style={{ display: 'none' }}>{row.getValue("id")}</div>,
+  // },
+
+  // vendorNumber
+  {
     accessorKey: "vendorNumber",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Vendor Number" />

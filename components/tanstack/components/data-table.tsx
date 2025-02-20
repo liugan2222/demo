@@ -42,6 +42,7 @@ interface DataTableProps<TData, TValue> {
   dataType: 'items' | 'vendors' | 'warehouses' | 'locations' | 'procurements' | 'receivings'
   // stickyColumns?: StickyConfig
   onRefresh?: () => void
+  getRowId: (row: TData) => string
 }
 
 // interface DataTableToolbarProps {
@@ -56,6 +57,7 @@ export function DataTable<TData, TValue>({
   dataType,
   // stickyColumns,
   onRefresh: onRefresh,
+  getRowId,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -140,6 +142,7 @@ export function DataTable<TData, TValue>({
     getSortedRowModel: getSortedRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
+    getRowId: getRowId,
   })
 
   // Set initial page size
@@ -200,6 +203,7 @@ export function DataTable<TData, TValue>({
                       <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
+                        className={selectedItem && getRowId(selectedItem) === row.id ? "bg-zinc-200" : ""}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell 
