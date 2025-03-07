@@ -25,7 +25,7 @@ import { useAppContext } from "@/contexts/AppContext"
 
 interface ReceiveFormProps {
   selectedItem: Receiveform
-  onSave: (formData: Receiveform) => void
+  onSave: () => void
   onCancel: () => void
   isEditing: boolean
   onToggleEdit: () => void 
@@ -140,7 +140,7 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
         await updateReceive(data.documentId, data)
       }
       // Call the onSave callback with the form data
-      await onSave(data)
+      await onSave()
     } catch (error) {
       console.error('Error saving item:', error)
     }
@@ -322,8 +322,8 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
         <div className="flex items-center justify-between p-4">
           {!isEditing && isUpdate && (
-            <Button variant="outline" size="default" onClick={onToggleEdit}>
-              <Edit2 className="h-4 w-4 mr-2" />
+            <Button type="button" variant="outline" size="default" onClick={onToggleEdit}>
+              <Edit2 size={16} />
               Edit
             </Button>
           )}
@@ -335,8 +335,8 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
             </Button>
           </div>
           )}
-          <Button variant="ghost" size="icon" onClick={onCancel}>
-            <X className="h-4 w-4" />
+          <Button type="button" variant="ghost" size="icon" onClick={onCancel}>
+            <X size={16} />
           </Button>
         </div>
         <ScrollArea className="flex-grow">

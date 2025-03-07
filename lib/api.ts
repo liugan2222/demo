@@ -228,6 +228,17 @@ export async function updateUser(id: string, item: Partial<Userform>) {
   return response.data
 }
 
+export async function userEnabled(id: string, X_CSRF_Token: string) {
+  const response = await authApi.post(`/api/users/${id}/toggle-enabled`,{}
+  ,{
+    headers: {
+      'x-csrf-token': X_CSRF_Token
+    }
+   }
+  )
+  return response.data
+}
+
 /*  role  */
 export async function getRoles(enabled?: boolean) {
   const params = {} as Record<string, any>;
@@ -302,6 +313,17 @@ export async function userToRole(id: string, userNameList: Partial<string[]>) {
 
 export async function getRoleUsers(id: string) {
   const response = await authApi.get<Roleform>(`/api/auth-srv/groups/${id}/users`)
+  return response.data
+}
+
+export async function roleEnabled(id: string, X_CSRF_Token: string) {
+  const response = await authApi.post(`/api/groups/${id}/toggle-enabled`,{}
+  ,{
+    headers: {
+      'x-csrf-token': X_CSRF_Token
+    }
+   }
+  )
   return response.data
 }
 

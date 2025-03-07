@@ -84,6 +84,18 @@ export default function LoginPage() {
       localStorage.removeItem('userInfo')
       setError("Invalid email or password")
     }
+
+
+      // /* for test */
+      // const testUser = {'username': 'admin'}
+      // // 登录成功后设置本地存储
+      // localStorage.setItem('isLoggedIn', 'true')
+      // localStorage.setItem('userPermissions', JSON.stringify( []))
+      // localStorage.setItem('userInfo', JSON.stringify(testUser))
+      // setUserPermissions([])
+      // setUserInfo(testUser)
+      // setIsLoggedIn(true)
+      // router.replace("/dashboard")
   }
 
   if (isLoggedIn) {

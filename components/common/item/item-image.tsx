@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React, {useEffect , useState} from 'react'
 
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -15,9 +15,28 @@ interface ItemImageProps {
 }
 
 export function ItemImage({ form, isEditing, onImageChange }: ItemImageProps) {
-  const imageUrl = form.watch("smallImageUrl") 
-                  ? `http://47.88.28.103:8080/api/files/${form.watch("smallImageUrl")}/media`
-                  : "/placeholder.svg"
+  const [imageUrl, setImageUrl] = useState("")
+  const smallImageUrl = form.watch("smallImageUrl")
+
+
+  // const imageUrl = form.watch("smallImageUrl") 
+  //                 ? `http://47.88.28.103:8080/api/files/${form.watch("smallImageUrl")}/media`
+  //                 : "/placeholder.svg"
+
+  useEffect(() => {
+    const updateImageUrl = () => {
+      const baseUrl = smallImageUrl 
+        ? `http://47.88.28.103:8080/api/files/${smallImageUrl}/media`
+        : "/placeholder.svg"
+      // 添加时间戳避免缓存
+      setImageUrl(`${baseUrl}?timestamp=${Date.now()}`)
+    }
+    
+    updateImageUrl()
+    // 添加轮询更新（可选）
+    const interval = setInterval(updateImageUrl, 3000)
+    return () => clearInterval(interval)
+  }, [smallImageUrl])
 
   // const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   //   const file = e.target.files?.[0]

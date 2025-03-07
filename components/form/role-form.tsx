@@ -4,7 +4,7 @@ import React, {useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { X, Edit2 } from 'lucide-react'
+import { X, Edit2, EyeOff, Eye } from 'lucide-react'
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -18,7 +18,7 @@ import { PermissionsRead } from "@/components/form/components/role/permissions-r
 import { ManageMembersDialog } from "@/components/form/components/role/manage-members-dialog"
 import { PermissionsTree } from "@/components/add-dialog/components/role/permissions-tree"
 
-import { getRoleById, updateRole, getUsers, getRoleUsers, refresh_csrf } from '@/lib/api';
+import { getRoleById, updateRole, getUsers, getRoleUsers, refresh_csrf, roleEnabled } from '@/lib/api';
 
 import { useAppContext } from "@/contexts/AppContext"
 
@@ -136,7 +136,7 @@ interface User {
 
 interface RoleFormProps {
   selectedItem: Roleform 
-  onSave: (formData: Roleform) => void 
+  onSave: () => void 
   onCancel: () => void
   isEditing: boolean
   onToggleEdit: () => void 
@@ -150,6 +150,7 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
   const [users, setUsers] = useState<User[]>([])
 
   const { userPermissions, userInfo } = useAppContext()
+  const isDisable = (userInfo?.username === "admin") || (userPermissions.includes('Roles_Disable'))
   const isUpdate = (userInfo?.username === "admin") || (userPermissions.includes('Roles_Update'))
 
   const form = useForm<Roleform>({
@@ -240,16 +241,16 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
 
       if (selectedItem.id) {
         const X_CSRF_Token = await refresh_csrf('/group-management')
-      if (X_CSRF_Token) {
-        // const newRole = {
-        //   ...data,
-        //   permissions: data.permissions?.filter(perm => perm.includes('_')), 
-        // }
-        await updateRole(selectedItem.id, data)
-        await onSave(data)
-      } else {
-        console.error("Error:", 111)
-      }
+        if (X_CSRF_Token) {
+          // const newRole = {
+          //   ...data,
+          //   permissions: data.permissions?.filter(perm => perm.includes('_')), 
+          // }
+          await updateRole(selectedItem.id, data)
+          await onSave()
+        } else {
+          console.error("Error:", 111)
+        }
       }
       // Call the onSave callback with the form data
     } catch (error) {
@@ -295,15 +296,46 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
     return <div>Loading...</div>
   }
 
+  const handleDisable = async () => {
+    const X_CSRF_Token = await refresh_csrf('/group-management')
+    if (X_CSRF_Token) {
+      await roleEnabled(selectedItem.id ?? '', X_CSRF_Token)
+      await onSave()
+    } else {
+      console.error("Error:", 111)
+    }
+  }
+  const handleEnable = async () => {
+    const X_CSRF_Token = await refresh_csrf('/group-management')
+    if (X_CSRF_Token) {
+      await roleEnabled(selectedItem.id ?? '', X_CSRF_Token)
+      await onSave()
+    } else {
+      console.error("Error:", 111)
+    }
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
         <div className="flex items-center justify-between p-4">
-          {!isEditing && isUpdate && (
+          {!isEditing && isDisable && (
+            <div className="flex justify-end space-x-2 p-1">
+              {form.getValues('status') === 'Active' ? (
+                <Button type="button" variant="destructive" size="default" onClick={handleDisable}>
+                  <EyeOff size={16}/>
+                </Button>
+              ) : (
+                <Button type="button" size="default" onClick={handleEnable}>
+                  <Eye size={16}/>
+                </Button>
+              )}
+            </div>
+          )}
+          {!isEditing && isUpdate && (form.getValues('status') === 'Active') && (
             <div className="flex justify-end space-x-2 p-4">
-              <Button variant="outline" size="default" onClick={onToggleEdit}>
-                <Edit2 className="h-4 w-4 mr-2" />
-                Edit
+              <Button type="button" variant="outline" size="default" onClick={onToggleEdit}>
+                <Edit2 size={16} />
               </Button>
               <ManageMembersDialog
                 roleId={selectedItem.id??''}
@@ -321,8 +353,8 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
               </Button>
             </div>
           )}
-          <Button variant="ghost" size="icon" onClick={onCancel}>
-            <X className="h-4 w-4" />
+          <Button type="button" variant="ghost" size="icon" onClick={onCancel}>
+            <X size={16} />
           </Button>
         </div>
         <ScrollArea className="flex-grow">

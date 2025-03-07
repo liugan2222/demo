@@ -84,8 +84,8 @@ export function DataTable<TData, TValue>({
     setIsEditing(false)
   }
 
-  const handleSave = async (updatedItem: TData) => {
-    console.log('updatedItem: ',updatedItem)
+  const handleSave = async () => {
+    // console.log('updatedItem: ',updatedItem)
     try {
       // If the save is successful, close the panel and refresh the data
       handleSidePanelClose()

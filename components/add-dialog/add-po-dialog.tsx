@@ -241,7 +241,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
-                              <Button variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
+                              <Button type="button" variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
                                 {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -318,7 +318,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold">Items</h3>
                     {/* <Button type="button" variant="outline" size="sm" onClick={handleAddAnotherItem}>
-                      <Plus className="h-4 w-4 mr-2" />
+                      <Plus size={16} />
                       Add item
                     </Button> */}
                   </div>
