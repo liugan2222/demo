@@ -91,36 +91,38 @@ export async function login(
 
   // const response = await axios.post('http://47.88.28.103:9000/login', 
   const response = await authApi.post('/login',   
-  formData,
-    {
-      // headers: {
-      //   'X-CSRF-Token': csrfToken // 将 CSRF 放在请求头
-      // },
-      responseType: 'text'
-    }
+  formData
+  // ,
+  //   {
+  //     // headers: {
+  //     //   'X-CSRF-Token': csrfToken // 将 CSRF 放在请求头
+  //     // },
+  //     responseType: 'text'
+  //   }
   );
   
-  // 使用 DOMParser 解析 HTML
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(response.data, 'text/html');
+  // // 使用 DOMParser 解析 HTML
+  // const parser = new DOMParser();
+  // const doc = parser.parseFromString(response.data, 'text/html');
   
-  // 查找 CSRF 输入框
-  const csrfInput = doc.querySelector('input[name="_csrf"]');
-  if (!csrfInput) {
-    throw new Error('CSRF token input field not found');
-  }
+  // // 查找 CSRF 输入框
+  // const csrfInput = doc.querySelector('input[name="_csrf"]');
+  // if (!csrfInput) {
+  //   throw new Error('CSRF token input field not found');
+  // }
   
-  // 获取 value 属性
-  const X_CSRF_Token = csrfInput.getAttribute('value');
-  if (!X_CSRF_Token) {
-    throw new Error('CSRF token value is empty');
-  }
+  // // 获取 value 属性
+  // const X_CSRF_Token = csrfInput.getAttribute('value');
+  // if (!X_CSRF_Token) {
+  //   throw new Error('CSRF token value is empty');
+  // }
 
   // 登录成功后设置 Cookie
   // document.cookie = `x-csrf-token=${encodeURIComponent(X_CSRF_Token)}`;
-  document.cookie = `x-csrf-token=${encodeURIComponent(X_CSRF_Token)}; Path=/;`
+  document.cookie = `x-csrf-token=${encodeURIComponent(csrfToken)}; Path=/;`
   
-  return X_CSRF_Token;
+  // return X_CSRF_Token;
+  return 'succcess';
 }
 
 

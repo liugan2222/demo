@@ -61,29 +61,32 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginSchema) {
     const csrfToken = JSON.parse(localStorage.getItem('csrfToken') || '');
-    const X_CSRF_Token = await login(data, csrfToken)
-    if (X_CSRF_Token) {
+    await login(data, csrfToken)
+    // Set user info
+    const userData = await getUserById(data.email)
+
+    // 登录成功后设置本地存储
+    localStorage.setItem('isLoggedIn', 'true')
+    localStorage.setItem('userPermissions', JSON.stringify(userData.permissions || []))
+    localStorage.setItem('userInfo', JSON.stringify(userData))
+    
+    setUserPermissions(userData.permissions || [])
+    setUserInfo(userData)
+    setIsLoggedIn(true)
+    
+    router.replace("/dashboard")
+
+
+    // const X_CSRF_Token = await login(data, csrfToken)
+    // if (X_CSRF_Token) {
       
-      // Set user info
-      const userData = await getUserById(data.email)
-
-      // 登录成功后设置本地存储
-      localStorage.setItem('isLoggedIn', 'true')
-      localStorage.setItem('userPermissions', JSON.stringify(userData.permissions || []))
-      localStorage.setItem('userInfo', JSON.stringify(userData))
-
-      setUserPermissions(userData.permissions || [])
-      setUserInfo(userData)
-      setIsLoggedIn(true)
-
-      router.replace("/dashboard")
-      // console.log("router.replace called. Current pathname:", pathname);
-    } else {
-      localStorage.removeItem('isLoggedIn')
-      localStorage.removeItem('userPermissions')
-      localStorage.removeItem('userInfo')
-      setError("Invalid email or password")
-    }
+    //   // console.log("router.replace called. Current pathname:", pathname);
+    // } else {
+    //   localStorage.removeItem('isLoggedIn')
+    //   localStorage.removeItem('userPermissions')
+    //   localStorage.removeItem('userInfo')
+    //   setError("Invalid email or password")
+    // }
   }
 
   if (isLoggedIn) {
