@@ -240,7 +240,7 @@ export function DataTableToolbar<TData>({
         default:
           return null
       }
-    }  else {
+    } else {
       if (userPermissions.includes('Items_Create') && dataType === 'items') {
         return <AddRawDialog onAdded={onRefresh || (() => {})} />
       } else if (userPermissions.includes('Vendors_Create') && dataType === 'vendors') {
@@ -258,6 +258,7 @@ export function DataTableToolbar<TData>({
       } else {
         return null
       }
+    }
   } 
 
   return (
