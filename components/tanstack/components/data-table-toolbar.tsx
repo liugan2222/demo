@@ -240,23 +240,24 @@ export function DataTableToolbar<TData>({
         default:
           return null
       }
-    } else {
-      if (userPermissions.includes('Items_Create')) {
+    }  else {
+      if (userPermissions.includes('Items_Create') && dataType === 'items') {
         return <AddRawDialog onAdded={onRefresh || (() => {})} />
-      } else if (userPermissions.includes('Vendors_Create')) {
+      } else if (userPermissions.includes('Vendors_Create') && dataType === 'vendors') {
         return <AddVendorDialog onAdded={onRefresh || (() => {})} />
-      } else if (userPermissions.includes('Warehouses_Create')) {
+      } else if (userPermissions.includes('Warehouses_Create') && dataType === 'warehouses') {
         return <AddWarehouseDialog onAdded={onRefresh || (() => {})} />
-      } else if (userPermissions.includes('Locations_Create')) {
+      } else if (userPermissions.includes('Locations_Create') && dataType === 'locations') {
         return <AddLocationDialog onAdded={onRefresh || (() => {})} />
-      } else if (userPermissions.includes('Procurement_Create')) {
+      } else if (userPermissions.includes('Procurement_Create') && dataType === 'procurements') {
         return <AddPoDialog onAdded={onRefresh || (() => {})} />
-      } else if (userPermissions.includes('Users_Create')) {
+      } else if (userPermissions.includes('Users_Create') && dataType === 'users') {
         return <AddUserDialog onAdded={onRefresh || (() => {})} />
-      } else if (userPermissions.includes('Roles_Create')) {
+      } else if (userPermissions.includes('Roles_Create') && dataType === 'roles') {
         return <AddRoleDialog onAdded={onRefresh || (() => {})} />
-      } 
-    }
+      } else {
+        return null
+      }
   } 
 
   return (
