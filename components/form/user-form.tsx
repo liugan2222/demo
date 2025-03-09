@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
-import { X, CalendarIcon, Edit2 } from 'lucide-react'
+import { X, CalendarIcon, Edit2, EyeOff, Eye } from 'lucide-react'
 
 import { userformSchema, Userform } from '@/components/tanstack/schema/formSchema/userformSchema'
 import { TextField } from './components/field/text-field'
@@ -20,14 +20,14 @@ import "@/app/globals.css";
 
 import { MultiSelect } from "@/components/add-dialog/components/user/multi-select"
 
-import { getUserById, updateUser, getRoles, refresh_csrf } from '@/lib/api';
+import { getUserById, updateUser, getRoles, refresh_csrf, userEnabled } from '@/lib/api';
 
 import { useAppContext } from "@/contexts/AppContext"
 
 
 interface UserFormProps {
   selectedItem: Userform 
-  onSave: (formData: Userform) => void 
+  onSave: () => void 
   onCancel: () => void
   isEditing: boolean
   onToggleEdit: () => void 
@@ -58,6 +58,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
 
   const { userPermissions, userInfo } = useAppContext()
   const isUpdate = (userInfo?.username === "admin") || (userPermissions.includes('Users_Update'))
+  const isDisable = (userInfo?.username === "admin") || (userPermissions.includes('Users_Disable'))
 
   const form = useForm<Userform>({
     resolver: zodResolver(userformSchema),
@@ -155,7 +156,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
         }
       }
       // Call the onSave callback with the form data
-      await onSave(data)
+      await onSave()
     } catch (error) {
       console.error('Error saving item:', error)
     }
@@ -165,15 +166,49 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
     return <div>Loading...</div>
   }
 
+  const handleDisable = async () => {
+    const X_CSRF_Token = await refresh_csrf('/group-management')
+    if (X_CSRF_Token) {
+      await userEnabled(selectedItem.id ?? '', X_CSRF_Token)
+      await onSave()
+    } else {
+      console.error("Error:", 111)
+    }
+  }
+  const handleEnable = async () => {
+    const X_CSRF_Token = await refresh_csrf('/group-management')
+    if (X_CSRF_Token) {
+      await userEnabled(selectedItem.id ?? '', X_CSRF_Token)
+      await onSave()
+    } else {
+      console.error("Error:", 111)
+    }
+  } 
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
         <div className="flex items-center justify-between p-4">
-          {!isEditing && isUpdate && (
-            <Button variant="outline" size="default" onClick={onToggleEdit}>
-              <Edit2 className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
+          {!isEditing && isDisable && (
+            <div className="flex justify-end space-x-2 p-1">
+              {form.getValues('status') === 'Active' ? (
+                <Button type="button" variant="destructive" size="default" onClick={handleDisable}>
+                  <EyeOff size={16}/>
+                  Disable
+                </Button>
+              ) : (
+                <Button type="button" size="default" onClick={handleEnable}>
+                  <Eye size={16}/>
+                  Enable
+                </Button>
+              )}
+              {!isEditing && isUpdate && (form.getValues('status') === 'Active') && (
+                <Button type="button" variant="outline" size="default" onClick={onToggleEdit}>
+                  <Edit2 size={16} />
+                  Edit
+                </Button>
+              )}
+            </div>
           )}
           {isEditing && (
             <div className="flex justify-end space-x-2 p-4">
@@ -183,8 +218,8 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
             </Button>
           </div>
           )}
-          <Button variant="ghost" size="icon" onClick={onCancel}>
-            <X className="h-4 w-4" />
+          <Button type="button" variant="ghost" size="icon" onClick={onCancel}>
+            <X size={16} />
           </Button>
         </div>
         <ScrollArea className="flex-grow">
@@ -324,7 +359,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
                       {isEditing ? (
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
+                            <Button type="button" variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
                               {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>

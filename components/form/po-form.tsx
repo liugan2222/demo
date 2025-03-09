@@ -43,7 +43,7 @@ interface Vendor {
 
 interface PoFormProps {
   selectedItem: Poform 
-  onSave: (formData: Poform) => void 
+  onSave: () => void 
   onCancel: () => void
   isEditing: boolean
   onToggleEdit: () => void 
@@ -159,7 +159,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
         await updatePo(data.orderId, data)
       }
       // Call the onSave callback with the form data
-      await onSave(data)
+      await onSave()
     } catch (error) {
       console.error('Error saving item:', error)
     }
@@ -312,7 +312,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Items</h3>
         <Button type="button" variant="outline" size="sm" onClick={handleAddItem}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus size={16} />
           Add item
         </Button>
       </div>
@@ -338,7 +338,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
                   </p>
                 </div>
                 {/* <Button type="button" variant="ghost" size="sm" className="ml-auto" onClick={() => remove(index)}>
-                  <X className="h-4 w-4" />
+                  <X size={16} />
                   Remove Item
                 </Button> */}
               </div>
@@ -439,7 +439,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
                       calculateTotals(items); 
                     }}
                   >
-                  <X className="h-4 w-4 mr-2" />
+                  <X size={16} />
                   Remove item
                 </Button>
               </div>
@@ -455,8 +455,8 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
         <div className="flex items-center justify-between p-4">
           {!isEditing && isUpdate && (
-            <Button variant="outline" size="default" onClick={onToggleEdit}>
-              <Edit2 className="h-4 w-4 mr-2" />
+            <Button type="button" variant="outline" size="default" onClick={onToggleEdit}>
+              <Edit2 size={16} />
               Edit
             </Button>
           )}
@@ -468,8 +468,8 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
             </Button>
           </div>
           )}
-          <Button variant="ghost" size="icon" onClick={onCancel}>
-            <X className="h-4 w-4" />
+          <Button type="button" variant="ghost" size="icon" onClick={onCancel}>
+            <X size={16} />
           </Button>
         </div>
         <ScrollArea className="flex-grow">
@@ -505,7 +505,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
                       {isEditing ? (
                         <Popover>
                           <PopoverTrigger asChild>
-                            <Button variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
+                            <Button type="button" variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
                               {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
                               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                             </Button>

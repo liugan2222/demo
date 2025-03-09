@@ -3,7 +3,7 @@ import React, {useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { X, Edit2 } from 'lucide-react'
+import { X, Edit2, EyeOff, Eye } from 'lucide-react'
 
 import { Check, ChevronsUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -21,12 +21,12 @@ import "@/app/globals.css";
 import { vendorformSchema, Vendorform } from '@/components/tanstack/schema/formSchema/vendorformSchema'
 
 import { useAppContext } from "@/contexts/AppContext"
-import { getStatesAndProvinces, getVendorById, updateVendor, getSupplierType } from '@/lib/api';
+import { getStatesAndProvinces, getVendorById, updateVendor, getSupplierType, vendorDeactive, vendorActive } from '@/lib/api';
 
 
 interface VendorFormProps {
   selectedItem: Vendorform 
-  onSave: (formData: Vendorform) => void 
+  onSave: () => void 
   onCancel: () => void
   isEditing: boolean
   onToggleEdit: () => void 
@@ -54,11 +54,16 @@ export function VendorForm({ selectedItem, onSave, onCancel, isEditing, onToggle
 
   const { countries = [], currencies = [], userPermissions, userInfo } = useAppContext()
   const isUpdate = (userInfo?.username === "admin") || (userPermissions.includes('Vendors_Update'))
+  const isDisable = (userInfo?.username === "admin") || (userPermissions.includes('Vendors_Disable'))
 
   const [states, setStates] = useState<Country[]>([])
   const [contactstates, setContactstates] = useState<Country[]>([])
   const [supperlierType, setSupperlierType] = useState<SupplierType[]>([])
   const [loading, setLoading] = useState(true)
+
+  const [isCurrencyPopoverOpen, setIsCurrencyPopoverOpen] = useState(false)
+  const [isCountryPopoverOpen, setIsCountryPopoverOpen] = useState(false)
+  const [isStatePopoverOpen, setIsStatePopoverOpen] = useState(false)
 
   const form = useForm<Vendorform>({
     resolver: zodResolver(vendorformSchema),
@@ -125,7 +130,7 @@ useEffect(() => {
         await updateVendor(data.supplierId, data)
       }
       // Call the onSave callback with the form data
-      await onSave(data)
+      await onSave()
     } catch (error) {
       console.error('Error saving item:', error)
     }
@@ -184,15 +189,41 @@ useEffect(() => {
       return <div>Loading...</div>
     }
 
+    const handleDisable = async () => {
+      const vendorIds: string[] = [selectedItem.supplierId ?? ''];
+      await vendorDeactive(vendorIds)
+      await onSave()
+    }
+    const handleEnable = async () => {
+      const vendorIds: string[] = [selectedItem.supplierId ?? ''];
+      await vendorActive(vendorIds)
+      await onSave()
+    }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
         <div className="flex items-center justify-between p-4">
-          {!isEditing && isUpdate && (
-            <Button variant="outline" size="default" onClick={onToggleEdit}>
-              <Edit2 className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
+          {!isEditing && isDisable && (
+            <div className="flex justify-end space-x-2 p-1">
+              {form.getValues('active') === 'Y' ? (
+                <Button type="button" variant="destructive" size="default" onClick={handleDisable}>
+                  <EyeOff size={16}/>
+                  Disable
+                </Button>
+              ) : (
+                <Button type="button" size="default" onClick={handleEnable}>
+                  <Eye size={16}/>
+                  Enable
+                </Button>
+              )}
+              {!isEditing && isUpdate && (form.getValues('active') === 'Y') && (
+                <Button type="button" variant="outline" size="default" onClick={onToggleEdit}>
+                  <Edit2 size={16} />
+                  Edit
+                </Button>
+              )}
+            </div>
           )}
           {isEditing && (
             <div className="flex justify-end space-x-2 p-4">
@@ -202,8 +233,8 @@ useEffect(() => {
             </Button>
           </div>
           )}
-          <Button variant="ghost" size="icon" onClick={onCancel}>
-            <X className="h-4 w-4" />
+          <Button type="button" variant="ghost" size="icon" onClick={onCancel}>
+            <X size={16} />
           </Button>
         </div>
         <ScrollArea className="flex-grow">
@@ -220,82 +251,113 @@ useEffect(() => {
               <FormField
                 control={form.control}
                 name='preferredCurrencyUomId'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="form-label font-common">
-                      Currency
-                    </FormLabel>
-                    <FormControl>
-                      {isEditing ? (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                render={({ field }) => {
+                  // 添加状态控制
+                  return (
+                    <FormItem>
+                      <FormLabel className="form-label font-common">
+                        Currency
+                      </FormLabel>
+                      <FormControl>
+                        {isEditing ? (
+                            <div className="relative">
+                              <Popover
+                                open={isCurrencyPopoverOpen} 
+                                onOpenChange={setIsCurrencyPopoverOpen} // 控制弹出状态
                               >
-                                {field.value
-                                  ? currencies?.find((currency) => currency.uomId === field.value)?.abbreviation
-                                  : "Select currency"}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-full p-0">
-                            <Command>
-                              <CommandInput placeholder="Search currency..." />
-                              <CommandList>
-                                <CommandEmpty>No currency found.</CommandEmpty>
-                                <CommandGroup>
-                                  {currencies?.map((currency) => (
-                                    <CommandItem
-                                      value={currency.abbreviation}
-                                      key={currency.uomId}
-                                      onSelect={() => {
-                                        field.onChange(currency.uomId)
-                                      }}
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
                                     >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          field.value === currency.uomId ? "opacity-100" : "opacity-0",
-                                        )}
-                                      />
-                                      {currency.abbreviation}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                        // <Select
-                        //   value={field.value ?? undefined}
-                        //   onValueChange={field.onChange}
-                        // >
-                        //   <FormControl>
-                        //     <SelectTrigger>
-                        //       <SelectValue placeholder="Select a currency" />
-                        //     </SelectTrigger>
-                        //   </FormControl>
-                        //   <SelectContent>
-                        //     {currencies?.map((currency: Currency) => (
-                        //       <SelectItem key={currency.uomId} value={currency.uomId}>
-                        //         {currency.abbreviation}
-                        //       </SelectItem>
-                        //     ))}
-                        //   </SelectContent>
-                        // </Select>
-                      ) : (
-                        <div className="form-control font-common">
-                          {findCurrencyAbbreviation(field.value?.toString() ?? '', currencies)}
-                        </div>
-                      )}
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                                      {field.value
+                                        ? currencies?.find((currency) => currency.uomId === field.value)?.abbreviation
+                                        : "Select currency"}
+                                      {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0">
+                                  <Command>
+                                    <CommandInput placeholder="Search currency..." />
+                                    <CommandList>
+                                      <CommandEmpty>No currency found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {currencies?.map((currency) => (
+                                          <CommandItem
+                                            value={currency.abbreviation}
+                                            key={currency.uomId}
+                                            onSelect={() => {
+                                              field.onChange(currency.uomId)
+                                              setIsCurrencyPopoverOpen(false) // 选择后关闭下拉
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === currency.uomId ? "opacity-100" : "opacity-0",
+                                              )}
+                                            />
+                                            {currency.abbreviation}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+                              
+                            {/* 图标容器 */}
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                              {/* 清除按钮 */}
+                              {field.value && (
+                                <button
+                                type="button"
+                                className="text-muted-foreground hover:text-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  field.onChange("")
+                                  setIsCurrencyPopoverOpen(false)
+                                }}
+                                >
+                                <X className="h-4 w-4" />
+                                </button>
+                              )}
+
+                              {/* 下拉图标 */}
+                              <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                            </div>
+                          </div>                          
+                          // <Select
+                          //   value={field.value ?? undefined}
+                          //   onValueChange={field.onChange}
+                          // >
+                          //   <FormControl>
+                          //     <SelectTrigger>
+                          //       <SelectValue placeholder="Select a currency" />
+                          //     </SelectTrigger>
+                          //   </FormControl>
+                          //   <SelectContent>
+                          //     {currencies?.map((currency: Currency) => (
+                          //       <SelectItem key={currency.uomId} value={currency.uomId}>
+                          //         {currency.abbreviation}
+                          //       </SelectItem>
+                          //     ))}
+                          //   </SelectContent>
+                          // </Select>
+                        ) : (
+                          <div className="form-control font-common">
+                            {findCurrencyAbbreviation(field.value?.toString() ?? '', currencies)}
+                          </div>
+                        )}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
               />
             ) : null}
 
@@ -403,62 +465,93 @@ useEffect(() => {
               <FormField
                 control={form.control}
                 name="businessContacts.0.countryGeoId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="form-label font-common">Country</FormLabel>
-                    <FormControl>
-                      {isEditing ? (
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
+                render={({ field }) => {
+                  // 添加状态控制
+                  return (
+                    <FormItem>
+                      <FormLabel className="form-label font-common">Country</FormLabel>
+                      <FormControl>
+                        {isEditing ? (
+                            <div className="relative">
+                              <Popover 
+                                open={isCountryPopoverOpen} 
+                                onOpenChange={setIsCountryPopoverOpen} // 控制弹出状态
                               >
-                                {field.value ?? "Select a country"}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-full p-0">
-                            <Command>
-                              <CommandInput placeholder="Search country..." />
-                              <CommandList>
-                                <CommandEmpty>No country found.</CommandEmpty>
-                                <CommandGroup>
-                                  {countries?.map((country) => (
-                                    <CommandItem
-                                      value={country.geoId}
-                                      key={country.geoId}
-                                      onSelect={() => {
-                                        field.onChange(country.geoId)
-                                        handleCountryChange(country.geoId)
-                                      }}
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
                                     >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          field.value === country.geoId ? "opacity-100" : "opacity-0",
-                                        )}
-                                      />
-                                      {country.geoName}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                        ) : (
-                          <div className="form-control font-common">
-                            {findCountryName(getFormValue('businessContacts.0.countryGeoId'), countries)}
+                                      {field.value ?? "Select a country"}
+                                      {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0">
+                                  <Command>
+                                    <CommandInput placeholder="Search country..." />
+                                    <CommandList>
+                                      <CommandEmpty>No country found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {countries?.map((country) => (
+                                          <CommandItem
+                                            value={country.geoId}
+                                            key={country.geoId}
+                                            onSelect={() => {
+                                              field.onChange(country.geoId)
+                                              handleCountryChange(country.geoId)
+                                              setIsCountryPopoverOpen(false) // 选择后关闭下拉
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === country.geoId ? "opacity-100" : "opacity-0",
+                                              )}
+                                            />
+                                            {country.geoName}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+    
+                            {/* 图标容器 */}
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                              {/* 清除按钮 */}
+                              {field.value && (
+                                <button
+                                type="button"
+                                className="text-muted-foreground hover:text-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  field.onChange("")
+                                  setIsCountryPopoverOpen(false)
+                                }}
+                                >
+                                <X className="h-4 w-4" />
+                                </button>
+                              )}
+
+                              {/* 下拉图标 */}
+                              <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                            </div>
                           </div>
-                        )}
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                          ) : (
+                            <div className="form-control font-common">
+                              {findCountryName(getFormValue('businessContacts.0.countryGeoId'), countries)}
+                            </div>
+                          )}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
               />
               // <FormField
               //   control={form.control}
@@ -556,61 +649,92 @@ useEffect(() => {
               <FormField
                 control={form.control}
                 name="businessContacts.0.stateProvinceGeoId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State/Province</FormLabel>
-                      <FormControl>
-                        {isEditing ? (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  role="combobox"
-                                  className={cn("w-full justify-between", !field.value && "text-muted-foreground")}
-                                >
-                                  {field.value ?? "Select a state"}
-                                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-full p-0">
-                              <Command>
-                                <CommandInput placeholder="Search state/province..." />
-                                <CommandList>
-                                  <CommandEmpty>No state/province found.</CommandEmpty>
-                                  <CommandGroup>
-                                    {states?.map((state) => (
-                                      <CommandItem
-                                        value={state.geoId}
-                                        key={state.geoId}
-                                        onSelect={() => {
-                                          field.onChange(state.geoId)
-                                        }}
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            field.value === state.geoId ? "opacity-100" : "opacity-0",
-                                          )}
-                                        />
-                                        {state.geoName}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                          ) : (
-                            <div className="form-control font-common">
-                              {findCountryName(getFormValue('businessContacts.0.stateProvinceGeoId'), contactstates)}
+                render={({ field }) => {
+                  // 添加状态控制
+                  return (
+                    <FormItem>
+                      <FormLabel>State/Province</FormLabel>
+                        <FormControl>
+                          {isEditing ? (
+                            <div className="relative">
+                              <Popover 
+                                open={isStatePopoverOpen} 
+                                onOpenChange={setIsStatePopoverOpen} // 控制弹出状态
+                              >
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      role="combobox"
+                                      className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
+                                    >
+                                      {field.value ?? "Select a state"}
+                                      {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0">
+                                  <Command>
+                                    <CommandInput placeholder="Search state/province..." />
+                                    <CommandList>
+                                      <CommandEmpty>No state/province found.</CommandEmpty>
+                                      <CommandGroup>
+                                        {states?.map((state) => (
+                                          <CommandItem
+                                            value={state.geoId}
+                                            key={state.geoId}
+                                            onSelect={() => {
+                                              field.onChange(state.geoId)
+                                              setIsStatePopoverOpen(false) // 选择后关闭下拉
+                                            }}
+                                          >
+                                            <Check
+                                              className={cn(
+                                                "mr-2 h-4 w-4",
+                                                field.value === state.geoId ? "opacity-100" : "opacity-0",
+                                              )}
+                                            />
+                                            {state.geoName}
+                                          </CommandItem>
+                                        ))}
+                                      </CommandGroup>
+                                    </CommandList>
+                                  </Command>
+                                </PopoverContent>
+                              </Popover>
+  
+                              {/* 图标容器 */}
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                {/* 清除按钮 */}
+                                {field.value && (
+                                  <button
+                                  type="button"
+                                  className="text-muted-foreground hover:text-foreground"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    field.onChange("")
+                                    setIsStatePopoverOpen(false)
+                                  }}
+                                  >
+                                  <X className="h-4 w-4" />
+                                  </button>
+                                )}
+
+                                {/* 下拉图标 */}
+                                <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                              </div>
                             </div>
-                          )}
-                      </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                            ) : (
+                              <div className="form-control font-common">
+                                {findCountryName(getFormValue('businessContacts.0.stateProvinceGeoId'), contactstates)}
+                              </div>
+                            )}
+                        </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
               />
               // <FormField
               //   control={form.control}

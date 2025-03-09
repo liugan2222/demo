@@ -223,16 +223,15 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                             isEditing={true}
                             onImageChange={async (file) => {
                               try {
-                                form.setValue(`items.${index}.smallImageUrl`, 'uploading...');
+                                form.setValue(`items.${index}.smallImageUrl`, "uploading...")
                                 const pictureObj = await uploadFile(file)
-                                form.setValue(`items.${index}.smallImageUrl`, pictureObj.data?.id)
+                                form.setValue(`items.${index}.smallImageUrl`, pictureObj.data.id)
                               } catch (error) {
+                                form.setValue(`items.${index}.smallImageUrl`, null)
                                 form.setError(`items.${index}.picture`, {
                                   type: 'manual',
                                   message: error instanceof Error ? error.message : 'File upload failed'
-                                });
-                                form.setValue(`items.${index}.smallImageUrl`, null);
-                          
+                                })
                               }
                             }}
                           />

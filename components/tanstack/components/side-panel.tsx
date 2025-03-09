@@ -13,7 +13,7 @@ interface SidePanelProps {
   onClose: () => void
   selectedItem: any
   dataType: string // Add more types as needed
-  onSave: (updatedItem: any) => void
+  onSave: () => void
   isEditing: boolean
   onToggleEdit: () => void
 }

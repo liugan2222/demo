@@ -4,7 +4,7 @@ import React, {useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { X, Edit2 } from 'lucide-react'
+import { X, Edit2, EyeOff, Eye } from 'lucide-react'
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -14,14 +14,14 @@ import { locationformSchema, Locationform } from '@/components/tanstack/schema/f
 import { TextField } from './components/field/text-field'
 import "@/app/globals.css";
 
-import { getLocationById, updateLocation } from '@/lib/api';
+import { getLocationById, updateLocation, locationDeactive, locationActive } from '@/lib/api';
 
 import { useAppContext } from "@/contexts/AppContext"
 
 
 interface LocationFormProps {
   selectedItem: Locationform 
-  onSave: (formData: Locationform) => void 
+  onSave: () => void 
   onCancel: () => void
   isEditing: boolean
   onToggleEdit: () => void 
@@ -33,6 +33,7 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing, onTogg
 
   const { userPermissions, userInfo } = useAppContext()
   const isUpdate = (userInfo?.username === "admin") || (userPermissions.includes('Locations_Update'))
+  const isDisable = (userInfo?.username === "admin") || (userPermissions.includes('Locations_Disable'))
 
   const form = useForm<Locationform>({
     resolver: zodResolver(locationformSchema),
@@ -71,7 +72,7 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing, onTogg
         await updateLocation(data.facilityId, data.locationSeqId, data)
       }
       // Call the onSave callback with the form data
-      await onSave(data)
+      await onSave()
     } catch (error) {
       console.error('Error saving item:', error)
     }
@@ -81,15 +82,41 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing, onTogg
     return <div>Loading...</div>
   }
 
+  const handleDisable = async () => {
+    const locationSeqIds: string[] = [selectedItem.locationSeqId ?? ''];
+    await locationDeactive(selectedItem.facilityId, locationSeqIds)
+    await onSave()
+  }
+  const handleEnable = async () => {
+    const locationSeqIds: string[] = [selectedItem.locationSeqId ?? ''];
+    await locationActive(selectedItem.facilityId, locationSeqIds)
+    await onSave()
+  } 
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
         <div className="flex items-center justify-between p-4">
-          {!isEditing && isUpdate && (
-            <Button variant="outline" size="default" onClick={onToggleEdit}>
-              <Edit2 className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
+          {!isEditing && isDisable && (
+            <div className="flex justify-end space-x-2 p-1">
+              {form.getValues('active') === 'Y' ? (
+                <Button type="button" variant="destructive" size="default" onClick={handleDisable}>
+                  <EyeOff size={16}/>
+                  Disable
+                </Button>
+              ) : (
+                <Button type="button" size="default" onClick={handleEnable}>
+                  <Eye size={16}/>
+                  Enable
+                </Button>
+              )}
+              {!isEditing && isUpdate && (form.getValues('active') === 'Y') && (
+                <Button type="button" variant="outline" size="default" onClick={onToggleEdit}>
+                  <Edit2 size={16} />
+                  Edit
+                </Button>
+              )}
+            </div>
           )}
           {isEditing && (
             <div className="flex justify-end space-x-2 p-4">
@@ -99,8 +126,8 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing, onTogg
             </Button>
           </div>
           )}
-          <Button variant="ghost" size="icon" onClick={onCancel}>
-            <X className="h-4 w-4" />
+          <Button type="button" variant="ghost" size="icon" onClick={onCancel}>
+            <X size={16} />
           </Button>
         </div>
         <ScrollArea className="flex-grow">

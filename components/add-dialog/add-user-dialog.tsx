@@ -360,7 +360,7 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
-                              <Button variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
+                              <Button type="button" variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
                                 {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
