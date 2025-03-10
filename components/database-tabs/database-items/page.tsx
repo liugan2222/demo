@@ -20,7 +20,6 @@ export function DatabaseItems() {
 
   // const fetchItems = useCallback(async () => {
   //   setIsLoading(true)
-  //   // console.log('select items')
   //   fetch('/json/items.json')
   //     .then(res => res.json())
   //     .then(data => {
@@ -75,7 +74,7 @@ export function DatabaseItems() {
   }
 
   return (
-    <div className="p-4">
+    <div className="flex-1 flex flex-col overflow-hidden">
       {/* <DataTable data={items} columns={columns} dataType='items'
         stickyColumns={{
           columns: ['select', 'image', 'id'],

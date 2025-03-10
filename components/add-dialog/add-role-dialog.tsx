@@ -47,7 +47,6 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
 
   async function onSubmit(data: Roleform) {
     try {
-      console.log(data)
       // Add API call 
       const X_CSRF_Token = await refresh_csrf('/group-management')
       if (X_CSRF_Token) {
@@ -58,7 +57,7 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
         await addRole(data)
         onAdded()
       } else {
-        console.error("Error:", 111)
+        console.error("Error:", 'Failed to get token')
       }
     } catch (error) {
       console.error("Error:", error)

@@ -81,7 +81,6 @@ export default function LoginPage() {
     // const X_CSRF_Token = await login(data, csrfToken)
     // if (X_CSRF_Token) {
       
-    //   // console.log("router.replace called. Current pathname:", pathname);
     // } else {
     //   localStorage.removeItem('isLoggedIn')
     //   localStorage.removeItem('userPermissions')

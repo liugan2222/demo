@@ -125,7 +125,6 @@ useEffect(() => {
 
   const onSubmit = async (data: Vendorform) => {
     try {
-      console.log('Form submitted with data:', data)
       if (data.supplierId) {
         await updateVendor(data.supplierId, data)
       }

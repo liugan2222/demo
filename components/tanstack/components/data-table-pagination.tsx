@@ -61,7 +61,7 @@ export function DataTablePagination<TData>({
         const productIds = selectedRows.map((row) => (row.original as Itempation).productId).filter(Boolean) as string[]
         if (productIds.length > 0) {
           await itemDeactive(productIds)
-          console.log(`Successfully deactivated ${productIds.length} items`)
+          // console.log(`Successfully deactivated ${productIds.length} items`)
           // refresh the table data or show a success message here
         } else {
           console.warn("No valid productIds found in selected rows")
@@ -71,7 +71,7 @@ export function DataTablePagination<TData>({
         const warehouseIds = selectedRows.map((row) => (row.original as Warehousepation).facilityId).filter(Boolean) as string[]
         if (warehouseIds.length > 0) {
           await warehouseDeactive(warehouseIds)
-          console.log(`Successfully deactivated ${warehouseIds.length} items`)
+          // console.log(`Successfully deactivated ${warehouseIds.length} items`)
         } else {
           console.warn("No valid warehouseIds found in selected rows")
         }
@@ -94,7 +94,7 @@ export function DataTablePagination<TData>({
         for (const [facilityId, locationSeqIds] of Object.entries(locationsByFacility)) {
           if (locationSeqIds.length > 0) {
             await locationDeactive(facilityId, locationSeqIds)
-            console.log(`Successfully deactivated ${locationSeqIds.length} locations for facility ${facilityId}`)
+            // console.log(`Successfully deactivated ${locationSeqIds.length} locations for facility ${facilityId}`)
           }
         }
       } else if (dataType === "vendors") {
@@ -102,7 +102,7 @@ export function DataTablePagination<TData>({
         const supplierIds = selectedRows.map((row) => (row.original as Vendorpation).supplierId).filter(Boolean) as string[]
         if (supplierIds.length > 0) {
           await vendorDeactive(supplierIds)
-          console.log(`Successfully deactivated ${supplierIds.length} items`)
+          // console.log(`Successfully deactivated ${supplierIds.length} items`)
         } else {
           console.warn("No valid supplierIds found in selected rows")
         }
@@ -124,7 +124,7 @@ export function DataTablePagination<TData>({
         const productIds = selectedRows.map((row) => (row.original as Itempation).productId).filter(Boolean) as string[]
         if (productIds.length > 0) {
           await itemActive(productIds)
-          console.log(`Successfully deactivated ${productIds.length} items`)
+          // console.log(`Successfully deactivated ${productIds.length} items`)
           // refresh the table data or show a success message here
         } else {
           console.warn("No valid productIds found in selected rows")
@@ -134,7 +134,7 @@ export function DataTablePagination<TData>({
         const warehouseIds = selectedRows.map((row) => (row.original as Warehousepation).facilityId).filter(Boolean) as string[]
         if (warehouseIds.length > 0) {
           await warehouseActive(warehouseIds)
-          console.log(`Successfully deactivated ${warehouseIds.length} items`)
+          // console.log(`Successfully deactivated ${warehouseIds.length} items`)
         } else {
           console.warn("No valid warehouseIds found in selected rows")
         }
@@ -157,7 +157,7 @@ export function DataTablePagination<TData>({
         for (const [facilityId, locationSeqIds] of Object.entries(locationsByFacility)) {
           if (locationSeqIds.length > 0) {
             await locationActive(facilityId, locationSeqIds)
-            console.log(`Successfully deactivated ${locationSeqIds.length} locations for facility ${facilityId}`)
+            // console.log(`Successfully deactivated ${locationSeqIds.length} locations for facility ${facilityId}`)
           }
         }
       } else if (dataType === "vendors") {
@@ -165,7 +165,7 @@ export function DataTablePagination<TData>({
         const supplierIds = selectedRows.map((row) => (row.original as Vendorpation).supplierId).filter(Boolean) as string[]
         if (supplierIds.length > 0) {
           await vendorActive(supplierIds)
-          console.log(`Successfully deactivated ${supplierIds.length} items`)
+          // console.log(`Successfully deactivated ${supplierIds.length} items`)
         } else {
           console.warn("No valid supplierIds found in selected rows")
         }
@@ -180,7 +180,7 @@ export function DataTablePagination<TData>({
     }    
   }
 
-  console.log('select :', selectedRows)
+  // console.log('select :', selectedRows)
 
   return (
     <div className="flex items-center justify-between px-2">

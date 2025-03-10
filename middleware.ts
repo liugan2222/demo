@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
 
   const isPublicPath = publicPaths.some((path) => request.nextUrl.pathname.startsWith(path))
 
-  console.log("isPublicPath", isPublicPath);
+  // console.log("isPublicPath", isPublicPath);
 
   if (!isLoggedIn && !isPublicPath) {
     return NextResponse.redirect(new URL("/login", request.url));

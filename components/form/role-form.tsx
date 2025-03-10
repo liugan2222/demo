@@ -249,7 +249,7 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
           await updateRole(selectedItem.id, data)
           await onSave()
         } else {
-          console.error("Error:", 111)
+          console.error("Error:", 'Failed to get token')
         }
       }
       // Call the onSave callback with the form data
@@ -302,7 +302,7 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       await roleEnabled(selectedItem.id ?? '', X_CSRF_Token)
       await onSave()
     } else {
-      console.error("Error:", 111)
+      console.error("Error:", 'Failed to get token')
     }
   }
   const handleEnable = async () => {
@@ -311,7 +311,7 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       await roleEnabled(selectedItem.id ?? '', X_CSRF_Token)
       await onSave()
     } else {
-      console.error("Error:", 111)
+      console.error("Error:", 'Failed to get token')
     }
   }
 

@@ -54,10 +54,10 @@ export function SidePanel({
   }
 
   return (
-    <div className="w-96 border-l border-border bg-background flex flex-col h-[calc(73vh)]">
-      <div className="flex-grow overflow-hidden">
-        {renderForm()}
-      </div>
+    <div className="absolute top-0 right-0 h-full w-[386px] bg-white border-l border-gray-200 shadow-lg z-10 overflow-hidden">
+      {renderForm()}
+      {/* <div className="flex-grow overflow-hidden">
+      </div> */}
     </div>
   )
 }

@@ -78,7 +78,7 @@ export function DataTable<TData, TValue>({
   }
 
   const handleSidePanelClose = () => {
-    console.log('handleSidePanelClose')  
+    // console.log('handleSidePanelClose')  
     setSidePanelOpen(false)
     setSelectedItem(null)
     setIsEditing(false)
@@ -151,12 +151,12 @@ export function DataTable<TData, TValue>({
   }, [table])
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex flex-col h-full">
       <DataTableToolbar table={table} dataType={dataType} onRefresh={onRefresh}/>
-      <div className="rounded-md border">
-        <div className="flex">
-          <div className={`overflow-auto transition-all ${sidePanelOpen ? 'w-[calc(81vw-386px)]' : 'w-[calc(81vw)]'}`}>
-            <div className="h-[calc(95vh-200px)] overflow-auto">
+      <div className="rounded-md border flex-1 flex flex-col relative">
+        {/* <div className="flex flex-1 min-h-0"> */}
+          <div className="h-[calc(95vh-200px)] overflow-auto">
+            <div className="w-full overflow-x-auto">
               <Table>
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
@@ -258,7 +258,7 @@ export function DataTable<TData, TValue>({
               onToggleEdit={toggleEditing}
             />
           )}
-        </div>
+        {/* </div> */}
       </div>
       <DataTablePagination table={table} dataType={dataType} onRefresh={onRefresh || (() => {})}/>
     </div>

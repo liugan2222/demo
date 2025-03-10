@@ -204,7 +204,6 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const onSubmit = useCallback(async (data: MultipleVendorsSchema) => {
     try {
-      console.log("add vendors", data)
       await addVendor(data)
       setOpen(false)
       form.reset({

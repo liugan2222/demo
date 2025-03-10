@@ -19,7 +19,6 @@ export function DatabaseWarehouses() {
 
   // const fetchWarehouses = useCallback(async () => {
   //   setIsLoading(true)
-  //   // console.log('select warehouses')
   //   fetch('/json/warehouses.json')
   //     .then(res => res.json())
   //     .then(data => {

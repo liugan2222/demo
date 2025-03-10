@@ -104,7 +104,6 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const onSubmit = useCallback(async (data: MultipleLocationsSchema) => {
     try {
-      console.log("add locations", data)
       await addLocation(data)
       setOpen(false)
       form.reset({
@@ -123,8 +122,6 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
     const lastIndex = currentValues.length - 1;
     
     const isValid = await form.trigger(`items.${lastIndex}`);
-    // const result = await form.trigger(`items.${lastIndex}`, { shouldFocus: true });
-    // console.log('print',result)
 
     if (isValid) {
       append(createEmptyLocation());

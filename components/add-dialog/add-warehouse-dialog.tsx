@@ -121,7 +121,6 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const onSubmit = useCallback(async (data: MultipleWarehousesSchema) => {
     try {
-      console.log("add warehouses", data)
       await addWarehouse(data)
       setOpen(false)
       form.reset({
@@ -140,8 +139,6 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
     const lastIndex = currentValues.length - 1;
     
     const isValid = await form.trigger(`items.${lastIndex}`);
-    // const result = await form.trigger(`items.${lastIndex}`, { shouldFocus: true });
-    // console.log('print',result)
 
     if (isValid) {
       append(createEmptyWarehouse());

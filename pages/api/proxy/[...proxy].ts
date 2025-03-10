@@ -25,7 +25,8 @@ const getBaseUrl = (path: string) => {
 // TODO: Implement response authorization check
 const isAuthorized = (response: any) => {
   // Implement authorization check logic
-  if (response) console.log(response)
+  if (response) 
+  // console.log(response)
   return true
 }
 
@@ -44,8 +45,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     // const token = getToken()
-    console.log(API_BASE_URL)
-    console.log(path)
+    // console.log(API_BASE_URL)
+    // console.log(path)
     
     const config: AxiosRequestConfig = {
       method: method as Method,
@@ -74,7 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const response = await axios(config)
 
-    console.log(config.headers)
+    // console.log(config.headers)
 
 
     // TODO: Implement more sophisticated error handling

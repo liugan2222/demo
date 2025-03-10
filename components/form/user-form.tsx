@@ -152,7 +152,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
           }
           await updateUser(selectedItem.id, updateUserInfo)
         } else {
-          console.error("Error:", 111)
+          console.error("Error:", 'Failed to get token')
         }
       }
       // Call the onSave callback with the form data
@@ -172,7 +172,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       await userEnabled(selectedItem.id ?? '', X_CSRF_Token)
       await onSave()
     } else {
-      console.error("Error:", 111)
+      console.error("Error:", 'Failed to get token')
     }
   }
   const handleEnable = async () => {
@@ -181,7 +181,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       await userEnabled(selectedItem.id ?? '', X_CSRF_Token)
       await onSave()
     } else {
-      console.error("Error:", 111)
+      console.error("Error:", 'Failed to get token')
     }
   } 
 

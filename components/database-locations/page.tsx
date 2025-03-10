@@ -19,7 +19,6 @@ export function DatabaseLocations() {
 
   // const fetchLocations = useCallback(async () => {
   //   setIsLoading(true)
-  //   // console.log('select locations')
   //   fetch('/json/locations.json')
   //     .then(res => res.json())
   //     .then(data => {

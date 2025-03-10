@@ -52,13 +52,11 @@ export default function HomeLayout({
   }
 
   return  isLoggedIn ? (
-    <>
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            {children}
-          </SidebarInset>
-        </SidebarProvider>
-    </>
+    <div className="flex h-screen w-full overflow-hidden">
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset className="flex flex-col overflow-hidden">{children}</SidebarInset>
+      </SidebarProvider>
+    </div>
   ) : null
 }

@@ -86,7 +86,6 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing, onTog
 
   const onSubmit = async (data: Warehouseform) => {
     try {
-      console.log('Form submitted with data:', data)
       if (data.facilityId) {
         await updateWarehouse(data.facilityId, data)
       }

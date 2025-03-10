@@ -135,7 +135,6 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
 
   const onSubmit = async (data: Receiveform) => {
     try {
-      console.log('Form submitted with data:', data)
       if (data.documentId) {
         await updateReceive(data.documentId, data)
       }

@@ -36,9 +36,9 @@ export default function RootLayout({
 }>) {
 
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body className={cn(
-        "min-h-screen bg-background font-sans antialiased",
+        "min-h-screen bg-background font-sans antialiased h-full flex flex-col",
         inter.variable
       )}>
         <AppProvider>{children}</AppProvider>

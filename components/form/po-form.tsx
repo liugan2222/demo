@@ -110,7 +110,6 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
         try {
           setLoading(true)
           const poData = await getPoById(selectedItem.orderId, true, true)
-          console.log('poData : ',poData)
           // Fetch vendor data
           if (poData.supplierId) {
             const vendorData = await getVendorById(poData.supplierId)
@@ -127,9 +126,9 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
               internalId: orderItem.product.internalId,
               description: orderItem.product.description,
               quantityUomId: orderItem.product.quantityUomId,
-              caseUomId: orderItem.product.caseUomId
+              caseUomId: orderItem.product.caseUomId,
+              smallImageUrl: orderItem.product.smallImageUrl
             }))
-            console.log('orderItems ',poData.orderItems)
             calculateTotals(poData.orderItems)
           }
 
@@ -154,7 +153,6 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
 
   const onSubmit = async (data: Poform) => {
     try {
-      console.log('Form submitted with data:', data)
       if (data.orderId) {
         await updatePo(data.orderId, data)
       }

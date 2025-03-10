@@ -131,7 +131,6 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const onSubmit = useCallback(async (data: MultipleItemsSchema) => {
     try {
-      console.log("add items", data)
       await addItem(data)
       setOpen(false)
       form.reset({

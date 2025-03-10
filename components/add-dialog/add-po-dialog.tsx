@@ -127,7 +127,6 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const onSubmit = useCallback(async (data: Poform) => {
     try {
-      console.log("add po", data)
       await addPo(data)
       setOpen(false)
       form.reset(createEmptyPo());

@@ -67,7 +67,6 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing, onTogg
 
   const onSubmit = async (data: Locationform) => {
     try {
-      console.log('Form submitted with data:', data)
       if (data.facilityId && data.locationSeqId) {
         await updateLocation(data.facilityId, data.locationSeqId, data)
       }

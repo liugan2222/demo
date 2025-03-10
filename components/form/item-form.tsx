@@ -112,7 +112,6 @@ export function ItemForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
 
   const onSubmit = async (data: Itemform) => {
     try {
-      console.log('Form submitted with data:', data)
       if (data.productId) {
         await updateItem(data.productId, data)
       }

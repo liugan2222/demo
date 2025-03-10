@@ -139,7 +139,6 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
 
   async function onSubmit(data: Userform) {
     try {
-      console.log(data)
       // 处理 roles
       const groups = data.roles?.map(role => Number(role));
       // Add API call 

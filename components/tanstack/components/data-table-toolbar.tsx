@@ -134,7 +134,7 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("itemNumber")?.setFilterValue(event.target.value)
             }
-            className="h-8 w-[150px] lg:w-[250px]"
+            className="h-8 w-full max-w-[250px]"
           />
         )
       case 'vendors':
@@ -145,7 +145,7 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("vendorNumber")?.setFilterValue(event.target.value)
             }
-            className="h-8 w-[150px] lg:w-[250px]"
+            className="h-8 w-full max-w-[250px]"
           />
         )
       case 'warehouses':
@@ -156,7 +156,7 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("warehouseNumber")?.setFilterValue(event.target.value)
             }
-            className="h-8 w-[150px] lg:w-[250px]"
+            className="h-8 w-full max-w-[250px]"
           />
         )
       case 'locations':
@@ -167,7 +167,7 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("location")?.setFilterValue(event.target.value)
             }
-            className="h-8 w-[150px] lg:w-[250px]"
+            className="h-8 w-full max-w-[250px]"
           />
         )
       case 'procurements':
@@ -178,7 +178,7 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("poNumber")?.setFilterValue(event.target.value)
             }
-            className="h-8 w-[150px] lg:w-[250px]"
+            className="h-8 w-full max-w-[250px]"
           />
         )
       case 'receivings':
@@ -189,7 +189,7 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("PO")?.setFilterValue(event.target.value)
             }
-            className="h-8 w-[150px] lg:w-[250px]"
+            className="h-8 w-full max-w-[250px]"
           />
         )
       case 'users':
@@ -200,7 +200,7 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("userNumber")?.setFilterValue(event.target.value)
             }
-            className="h-8 w-[150px] lg:w-[250px]"
+            className="h-8 w-full max-w-[250px]"
           />
         )
       case 'roles':
@@ -211,7 +211,7 @@ export function DataTableToolbar<TData>({
             onChange={(event) =>
               table.getColumn("role")?.setFilterValue(event.target.value)
             }
-            className="h-8 w-[150px] lg:w-[250px]"
+            className="h-8 w-full max-w-[250px]"
           />
         )             
       default:
@@ -270,7 +270,7 @@ export function DataTableToolbar<TData>({
           onChange={(event) =>
             table.getColumn("id")?.setFilterValue(event.target.value)
           }
-          className="h-8 w-[150px] lg:w-[250px]"
+          className="h-8 w-full max-w-[250px]"
         /> */}
 
         {renderSearchBar()}
