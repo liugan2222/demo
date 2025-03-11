@@ -350,25 +350,28 @@ export async function roleEnabled(id: string, X_CSRF_Token: string) {
 // }
 
 
+// const token = document.cookie.replace(/(?:(?:^|.*;\s*)auth-token\s*=\s*([^;]*).*$)|^.*$/, "$1")
 const api = axios.create({
   baseURL: '/api',
-  withCredentials: true, // 必须显式设置
-  // headers: {
-  //   'Content-Type': 'application/json',
-  //   // 'X-TenantID': 'X',
-  // },
+  // withCredentials: true, // 必须显式设置
+  headers: {
+    // 'Content-Type': 'application/json',
+    'X-TenantID': 'X',
+    // 'Authorization': `Bearer ${token}`
+  },
   // responseType: 'arraybuffer' // 强制响应为二进制数据
 })
 
-// Add an interceptor to include the auth token in requests
-api.interceptors.request.use((config) => {
-  const token = document.cookie.replace(/(?:(?:^|.*;\s*)auth-token\s*=\s*([^;]*).*$)|^.*$/, "$1")
-  if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`
-  }
-  // config.headers.Cookie = document.cookie
-  return config
-})
+// TODO token 处理
+// // Add an interceptor to include the auth token in requests
+// api.interceptors.request.use((config) => {
+//   const token = document.cookie.replace(/(?:(?:^|.*;\s*)auth-token\s*=\s*([^;]*).*$)|^.*$/, "$1")
+//   if (token) {
+//     config.headers["Authorization"] = `Bearer ${token}`
+//   }
+//   // config.headers.Cookie = document.cookie
+//   return config
+// })
 
 
 // Cached data

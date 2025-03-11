@@ -23,12 +23,12 @@ const getBaseUrl = (path: string) => {
 // }
 
 // TODO: Implement response authorization check
-const isAuthorized = (response: any) => {
-  // Implement authorization check logic
-  if (response) 
-  // console.log(response)
-  return true
-}
+// const isAuthorized = (response: any) => {
+//   // Implement authorization check logic
+//   if (response) 
+//   // console.log(response)
+//   return true
+// }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
@@ -54,17 +54,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers: {
         // 'Content-Type': 'application/json',
         // 'accept': 'application/json',
-        // ...req.headers,
+        ...req.headers,
          // 选择性透传头，避免覆盖关键头
-        ...(req.headers['content-type'] && { 
-          'Content-Type': req.headers['content-type'] 
-        }),
-        'X-TenantID': 'X',
-        // ...(req.headers['content-type']?.startsWith('multipart/form-data')
-        //   ? { 'Content-Type': req.headers['content-type'] } // 保留完整Content-Type
-        //   : { 'Content-Type': req.headers['content-type'] || 'application/json' }
-        // ),
-        // ...({ 'Content-Type': req.headers['content-type'] || 'application/json' }),
+        // ...(req.headers['content-type'] && { 
+        //   'Content-Type': req.headers['content-type'] 
+        // }),
+        // 'X-TenantID': 'X',
         // 'Authorization': `Bearer ${token}`,
       },
       params: { ...query, proxy: undefined },
@@ -79,9 +74,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 
     // TODO: Implement more sophisticated error handling
-    if (!isAuthorized(response.data)) {
-      return res.status(403).json({ message: 'Unauthorized' })
-    }
+    // if (!isAuthorized(response.data)) {
+    //   return res.status(403).json({ message: 'Unauthorized' })
+    // }
 
     res.status(response.status).json(response.data)
   } catch (error: any) {

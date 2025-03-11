@@ -8,6 +8,8 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import Image from "next/image"
 import { useDropzone } from "react-dropzone";
 
+const DEFAULT_IMAGE = "/default_item_pic.png";
+
 interface ItemImageProps {
   form: any
   isEditing: boolean
@@ -27,7 +29,7 @@ export function ItemImage({ form, isEditing, onImageChange }: ItemImageProps) {
     const updateImageUrl = () => {
       const baseUrl = smallImageUrl 
         ? `http://47.88.28.103:8080/api/files/${smallImageUrl}/media`
-        : "/placeholder.svg"
+        : DEFAULT_IMAGE;
       // 添加时间戳避免缓存
       setImageUrl(`${baseUrl}?timestamp=${Date.now()}`)
     }

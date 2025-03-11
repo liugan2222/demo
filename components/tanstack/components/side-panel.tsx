@@ -54,7 +54,7 @@ export function SidePanel({
   }
 
   return (
-    <div className="absolute top-0 right-0 h-full w-[386px] bg-white border-l border-gray-200 shadow-lg z-10 overflow-hidden">
+    <div className="absolute top-0 right-0 h-full w-[340px] bg-white border-l border-gray-200 shadow-lg z-10 overflow-hidden">
       {renderForm()}
       {/* <div className="flex-grow overflow-hidden">
       </div> */}

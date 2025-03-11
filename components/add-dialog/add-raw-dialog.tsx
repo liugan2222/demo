@@ -36,6 +36,8 @@ import { ItemImage } from "@/components/common/item/item-image"
 // Import the itemSchema
 import { itemformSchema } from '@/components/tanstack/schema/formSchema/itemformSchema'
 
+import { AlertDialog, AlertDialogContent, AlertDialogTitle } from "@/components/common/info-alert-dialog"
+
 import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
 import { addItem, getVendorList, uploadFile } from '@/lib/api';
 
@@ -97,6 +99,8 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
   const [open, setOpen] = useState(false)
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [expandedItems, setExpandedItems] = useState<string[]>(['item-0'])
+
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false)
 
   const { data: packageType = [] } = usePackageType(true)
   const { data: weightUom = [] } = useWeightUom(true)
@@ -161,7 +165,16 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
     }
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
+    // Check if form is dirty (has been modified)
+    if (form.formState.isDirty) {
+      setShowDiscardDialog(true)
+    } else {
+      // If form is not dirty, close directly
+      closeForm()
+    }
+  }, [form.formState.isDirty])
+  const closeForm = () => {
     setOpen(false);
     form.reset({
       items: [createEmptyItem()]
@@ -170,497 +183,535 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add raw
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px]">
-        <DialogHeader>
-          <DialogTitle>Add raw items</DialogTitle>
-          <DialogDescription>
-            Add one or more raw items to the database.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <ScrollArea className="h-[60vh] pr-4">
-              <Accordion
-                type="single"
-                collapsible
-                value={expandedItems[0]}
-                onValueChange={(value) => setExpandedItems([value])}
-              >
-                {fields.map((field, index) => (
-                  <AccordionItem key={field.id} value={`item-${index}`}>
-                    <AccordionTrigger className="hover:no-underline">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">
-                          Item {index + 1}
-                        </span>
-                        {form.getValues(`items.${index}.productName`) && (
-                          <span className="text-sm text-muted-foreground">
-                            - {form.getValues(`items.${index}.productName`)}
+    <>
+      <Dialog
+          open={open}
+          onOpenChange={(newOpen) => {
+            if (!newOpen && form.formState.isDirty) {
+              // If trying to close and form is dirty, show confirmation dialog
+              setShowDiscardDialog(true)
+            } else if (!newOpen) {
+              // If trying to close and form is not dirty, close directly
+              closeForm()
+            } else {
+              // If opening the dialog
+              setOpen(true)
+            }
+          }}
+        >
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add raw
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Add raw items</DialogTitle>
+            <DialogDescription>
+              Add one or more raw items to the database.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <ScrollArea className="h-[60vh] pr-4">
+                <Accordion
+                  type="single"
+                  collapsible
+                  value={expandedItems[0]}
+                  onValueChange={(value) => setExpandedItems([value])}
+                >
+                  {fields.map((field, index) => (
+                    <AccordionItem key={field.id} value={`item-${index}`}>
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">
+                            Item {index + 1}
                           </span>
-                        )}
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="grid grid-cols-2 gap-4 p-4">
-                        {/* <FormItem>
-                          <FormLabel>ID</FormLabel>
-                          <FormDescription>
-                            This field is automatically generated by the system.
-                          </FormDescription>
-                        </FormItem> */}
-
-                        <div className="col-span-2 flex justify-center items-center">
-                          <ItemImage
-                            form={form}
-                            isEditing={true}
-                            onImageChange={async (file) => {
-                              try {
-                                form.setValue(`items.${index}.smallImageUrl`, "uploading...")
-                                const pictureObj = await uploadFile(file)
-                                form.setValue(`items.${index}.smallImageUrl`, pictureObj.data.id)
-                              } catch (error) {
-                                form.setValue(`items.${index}.smallImageUrl`, null)
-                                form.setError(`items.${index}.picture`, {
-                                  type: 'manual',
-                                  message: error instanceof Error ? error.message : 'File upload failed'
-                                })
-                              }
-                            }}
-                          />
+                          {form.getValues(`items.${index}.productName`) && (
+                            <span className="text-sm text-muted-foreground">
+                              - {form.getValues(`items.${index}.productName`)}
+                            </span>
+                          )}
                         </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="grid grid-cols-2 gap-4 p-4">
+                          {/* <FormItem>
+                            <FormLabel>ID</FormLabel>
+                            <FormDescription>
+                              This field is automatically generated by the system.
+                            </FormDescription>
+                          </FormItem> */}
 
-                        {/* <FormField
-                          control={form.control}
-                          name={`items.${index}.picture`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Picture</FormLabel>
-                              <FormControl>
-                                <Input
-                                 type="file" 
-                                 accept="image/*"
-                                 {...field} 
-                                 value={field.value ?? ''}
-                                 onChange={(e) => handlePictureChange(index, e)}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        /> */}
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.productName`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Item<span className="text-red-500">*</span></FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.gtin`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>GTIN</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.supplierId`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Vendor<span className="text-red-500">*</span></FormLabel>
-                              <Select
-                                value={field.value ?? undefined}
-                                onValueChange={field.onChange}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a vendor" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {vendors.map((vendor) => (
-                                    <SelectItem key={vendor.supplierId} value={vendor.supplierId}>
-                                      {vendor.supplierShortName}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.internalId`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Item number<span className="text-red-500">*</span></FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.caseUomId`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Packaging type<span className="text-red-500">*</span></FormLabel>
-                              <Select
-                                value={field.value ?? undefined}
-                                onValueChange={field.onChange}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select packaging type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {packageType?.map((packageUom: Uom) => (
-                                    <SelectItem key={packageUom.uomId} value={packageUom.uomId}>
-                                      {packageUom.abbreviation}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.individualsPerPackage`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Quantity per package</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  type="number" 
-                                  value={field.value ?? ''} 
-                                  onChange={(e) => {
-                                    const value = e.target.value;
-                                    // Ensure only integer values are allowed
-                                    if (value === '' || /^[0-9]+$/.test(value)) {
-                                      field.onChange(value ? parseInt(value, 10) : null);
-                                    }
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.quantityUomId`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Weight units<span className="text-red-500">*</span></FormLabel>
-                              <Select
-                                value={field.value ?? undefined}
-                                onValueChange={field.onChange}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select weight units" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {weightUom?.map((weightUo: Uom) => (
-                                    <SelectItem key={weightUo.uomId} value={weightUo.uomId}>
-                                      {weightUo.abbreviation}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.quantityIncluded`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Gross weight per package<span className="text-red-500">*</span></FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  type="number" 
-                                  step="0.01"
-                                  value={field.value ?? ''} 
-                                  onChange={(e) => {
-                                    const value = e.target.value ? parseFloat(e.target.value) : null;
-                                    field.onChange(value);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.productWeight`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Net weight per package</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  type="number" 
-                                  value={field.value ?? ''} 
-                                  onChange={(e) => {
-                                    const value = e.target.value ? parseFloat(e.target.value) : null;
-                                    field.onChange(value);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.brandName`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Brand</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.produceVariety`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Produce variety</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.hsCode`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>HS code</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.organicCertifications`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Organic certification</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.description`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Description</FormLabel>
-                              <FormControl>
-                                <Textarea {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.dimensionsDescription`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Dimensions</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.materialCompositionDescription`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Material composition</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.countryOfOrigin`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Country of origin</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.certificationCodes`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Certification code</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.shelfLifeDescription`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Shelf life</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.handlingInstructions`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Handling instructions</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.storageConditions`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Storage conditions</FormLabel>
-                              <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        {index > 0 && (
-                          <div className="flex justify-end mt-6 pt-4">
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="default"
-                              onClick={() => remove(index)}
-                            >
-                              <X className="h-4 w-4" />
-                              Remove item
-                            </Button>
+                          <div className="col-span-2 flex justify-center items-center">
+                            <ItemImage
+                              form={form}
+                              isEditing={true}
+                              onImageChange={async (file) => {
+                                try {
+                                  form.setValue(`items.${index}.smallImageUrl`, "uploading...")
+                                  const pictureObj = await uploadFile(file)
+                                  form.setValue(`items.${index}.smallImageUrl`, pictureObj.data.id)
+                                } catch (error) {
+                                  form.setValue(`items.${index}.smallImageUrl`, null)
+                                  form.setError(`items.${index}.picture`, {
+                                    type: 'manual',
+                                    message: error instanceof Error ? error.message : 'File upload failed'
+                                  })
+                                }
+                              }}
+                            />
                           </div>
-                        )}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </ScrollArea>
-            <div className="flex justify-between items-center">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAddAnotherItem}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add item
-              </Button>
-              <div className="space-x-2">
-                <Button type="button" variant="outline" onClick={handleClose}>
-                  Cancel
+
+                          {/* <FormField
+                            control={form.control}
+                            name={`items.${index}.picture`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Picture</FormLabel>
+                                <FormControl>
+                                  <Input
+                                  type="file" 
+                                  accept="image/*"
+                                  {...field} 
+                                  value={field.value ?? ''}
+                                  onChange={(e) => handlePictureChange(index, e)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          /> */}
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.productName`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Item<span className="text-red-500">*</span></FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.gtin`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>GTIN</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.supplierId`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Vendor<span className="text-red-500">*</span></FormLabel>
+                                <Select
+                                  value={field.value ?? undefined}
+                                  onValueChange={field.onChange}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a vendor" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {vendors.map((vendor) => (
+                                      <SelectItem key={vendor.supplierId} value={vendor.supplierId}>
+                                        {vendor.supplierShortName}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.internalId`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Item number<span className="text-red-500">*</span></FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.caseUomId`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Packaging type<span className="text-red-500">*</span></FormLabel>
+                                <Select
+                                  value={field.value ?? undefined}
+                                  onValueChange={field.onChange}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select packaging type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {packageType?.map((packageUom: Uom) => (
+                                      <SelectItem key={packageUom.uomId} value={packageUom.uomId}>
+                                        {packageUom.abbreviation}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.individualsPerPackage`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Quantity per package</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    type="number" 
+                                    value={field.value ?? ''} 
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      // Ensure only integer values are allowed
+                                      if (value === '' || /^[0-9]+$/.test(value)) {
+                                        field.onChange(value ? parseInt(value, 10) : null);
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.quantityUomId`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Weight units<span className="text-red-500">*</span></FormLabel>
+                                <Select
+                                  value={field.value ?? undefined}
+                                  onValueChange={field.onChange}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select weight units" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {weightUom?.map((weightUo: Uom) => (
+                                      <SelectItem key={weightUo.uomId} value={weightUo.uomId}>
+                                        {weightUo.abbreviation}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.quantityIncluded`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Gross weight per package<span className="text-red-500">*</span></FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    type="number" 
+                                    step="0.01"
+                                    value={field.value ?? ''} 
+                                    onChange={(e) => {
+                                      const value = e.target.value ? parseFloat(e.target.value) : null;
+                                      field.onChange(value);
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.productWeight`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Net weight per package</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    type="number" 
+                                    value={field.value ?? ''} 
+                                    onChange={(e) => {
+                                      const value = e.target.value ? parseFloat(e.target.value) : null;
+                                      field.onChange(value);
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.brandName`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Brand</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.produceVariety`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Produce variety</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.hsCode`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>HS code</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.organicCertifications`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Organic certification</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.description`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Description</FormLabel>
+                                <FormControl>
+                                  <Textarea {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.dimensionsDescription`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Dimensions</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.materialCompositionDescription`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Material composition</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.countryOfOrigin`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Country of origin</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.certificationCodes`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Certification code</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.shelfLifeDescription`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Shelf life</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.handlingInstructions`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Handling instructions</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.storageConditions`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Storage conditions</FormLabel>
+                                <FormControl>
+                                  <Input {...field} value={field.value ?? ''} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          {index > 0 && (
+                            <div className="flex justify-end mt-6 pt-4">
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="default"
+                                onClick={() => remove(index)}
+                              >
+                                <X className="h-4 w-4" />
+                                Remove item
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </ScrollArea>
+              <div className="flex justify-between items-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddAnotherItem}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add item
                 </Button>
-                <Button type="submit" disabled={form.formState.isSubmitting}>
-                  {form.formState.isSubmitting ? "Add..." : "Add all"}
-                </Button>
+                <div className="space-x-2">
+                  <Button type="button" variant="outline" onClick={handleClose}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={form.formState.isSubmitting}>
+                    {form.formState.isSubmitting ? "Add..." : "Add all"}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Discard confirmation dialog */}
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <AlertDialogContent className="max-w-[400px]">
+          <AlertDialogTitle className="text-center mb-6">Discard draft?</AlertDialogTitle>
+          <div className="flex justify-center space-x-4">
+            <Button variant="outline" onClick={() => setShowDiscardDialog(false)} className="w-[160px]">
+              Continue editing
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setShowDiscardDialog(false)
+                closeForm()
+              }}
+              className="w-[160px] bg-red-500 hover:bg-red-600"
+            >
+              Discard
+            </Button>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }

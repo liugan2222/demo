@@ -167,8 +167,12 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
   
         // 如果 rolesData 存在且是一个数组
         if (uselist && Array.isArray(uselist)) {
+           // 过滤掉 username 为 'admin' 和 'user' 的用户
+          const filteredList = uselist.filter((user: any) => 
+            user.firstName && user.firstName !== ''
+          );
           // 提取需要的属性，构建 User[] 类型的数据
-          const filteredUsers: User[] = uselist.map((user: any) => ({
+          const filteredUsers: User[] = filteredList.map((user: any) => ({
             username: user.username || "", // 如果接口返回的字段名不同，可以在这里调整
             firstName: user.firstName || "",
             lastName: user.lastName || "",

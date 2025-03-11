@@ -29,6 +29,8 @@ import { getPoById, getVendorById, getItemList, updatePo, getVendorList } from '
 
 import { useAppContext } from "@/contexts/AppContext"
 
+const DEFAULT_IMAGE = "/default_item_pic.png";
+
 // Define the Uom
 interface Uom {
   uomId: string;
@@ -244,7 +246,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
             <div className="flex items-start gap-4 w-full">
               <div className="w-24 h-24 bg-gray-100 rounded-lg">
                 <img
-                  src={item.smallImageUrl ? `http://47.88.28.103:8080/api/files/${item.smallImageUrl}/media` : "/placeholder.svg?height=96&width=96"}
+                  src={item.smallImageUrl ? `http://47.88.28.103:8080/api/files/${item.smallImageUrl}/media` : DEFAULT_IMAGE}
                   alt={item.productName || ""}
                   className="w-full h-full object-cover rounded-lg"
                 />
@@ -321,7 +323,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
               <div className="flex items-start gap-4 w-full">
                 <div className="w-24 h-24 bg-gray-100 rounded-lg">
                   <img
-                    src={form.watch(`orderItems.${index}.smallImageUrl`) ? `http://47.88.28.103:8080/api/files/${form.watch(`orderItems.${index}.smallImageUrl`)}/media` : "/placeholder.svg?height=96&width=96"}
+                    src={form.watch(`orderItems.${index}.smallImageUrl`) ? `http://47.88.28.103:8080/api/files/${form.watch(`orderItems.${index}.smallImageUrl`)}/media` : DEFAULT_IMAGE}
                     alt={form.watch(`orderItems.${index}.productName`) || ""}
                     className="w-full h-full object-cover rounded-lg"
                   />

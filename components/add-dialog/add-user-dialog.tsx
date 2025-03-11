@@ -31,6 +31,8 @@ import {
 
 import { Plus, CalendarIcon } from "lucide-react"
 
+import { UserAlertDialog, UserAlertDialogContent, UserAlertDialogTitle } from "@/components/common/user-alert-dialog"
+
 import { userformSchema, Userform } from '@/components/tanstack/schema/formSchema/userformSchema'
 import { addUser, refresh_csrf, getRoles } from '@/lib/api';
 
@@ -82,6 +84,8 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const [open, setOpen] = useState(false)
   const [roles, setRoles] = useState<Role[]>([])
+
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false)
 
   const [apiResponse, setApiResponse] = useState<{ username: string; oneTimePassword: string } | null>(null)
   const [showResultDialog, setShowResultDialog] = useState(false)
@@ -172,15 +176,38 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
     handleClose()
   }
  
+  const handleClose = useCallback(() => {
+    // Check if form is dirty (has been modified)
+    if (form.formState.isDirty) {
+      setShowDiscardDialog(true)
+    } else {
+      // If form is not dirty, close directly
+      closeForm()
+    }
+  }, [form.formState.isDirty])
 
-  const handleClose = () => {
+  const closeForm = () => {
     setOpen(false);
     form.reset(createEmptyUser());
   };  
 
   return (
       <>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+          open={open}
+          onOpenChange={(newOpen) => {
+            if (!newOpen && form.formState.isDirty) {
+              // If trying to close and form is dirty, show confirmation dialog
+              setShowDiscardDialog(true)
+            } else if (!newOpen) {
+              // If trying to close and form is not dirty, close directly
+              closeForm()
+            } else {
+              // If opening the dialog
+              setOpen(true)
+            }
+          }}
+        >
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -355,7 +382,7 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                     name="fromDate"
                     render={({ field }) => (
                       <FormItem >
-                        <FormLabel>Order date</FormLabel>
+                        <FormLabel>Start Date</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -488,7 +515,29 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
               <AlertDialogAction onClick={handleConfirm}>Continue</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
-        </AlertDialog>          
+        </AlertDialog>         
+
+        {/* Discard confirmation dialog */}
+        <UserAlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+          <UserAlertDialogContent className="max-w-[400px]">
+            <UserAlertDialogTitle className="text-center mb-6">Discard draft?</UserAlertDialogTitle>
+            <div className="flex justify-center space-x-4">
+              <Button variant="outline" onClick={() => setShowDiscardDialog(false)} className="w-[160px]">
+                Continue editing
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setShowDiscardDialog(false)
+                  closeForm()
+                }}
+                className="w-[160px] bg-red-500 hover:bg-red-600"
+              >
+                Discard
+              </Button>
+            </div>
+          </UserAlertDialogContent>
+        </UserAlertDialog> 
       </>
   )
 }
