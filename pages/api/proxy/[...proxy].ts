@@ -70,8 +70,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const response = await axios(config)
 
-    // console.log(config.headers)
-
+    res.setHeader("Access-Control-Allow-Origin", "*")
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 
     // TODO: Implement more sophisticated error handling
     // if (!isAuthorized(response.data)) {
