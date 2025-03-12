@@ -79,17 +79,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // }
     // If it's a POST or PUT request and the error is related to CORS or 403,
     // return a success response since the backend operation likely succeeded
-    if ((method === "POST" || method === "PUT") && (response?.status === 403)) {
-      return res.status(200).json({ success: true, message: "Operation completed" })
-    }
+    // if ((method === "POST" || method === "PUT") && (response?.status === 403)) {
+    //   return res.status(200).json({ success: true, message: "Operation completed" })
+    // }
 
     res.status(response.status).json(response.data)
   } catch (error: any) {
 
-    if ((method === "POST" || method === "PUT") && (error.message.includes("CORS") || error.response?.status === 403)) {
-      return res.status(200).json({ success: true, message: "Operation completed" })
-    }
-    
+    // if ((method === "POST" || method === "PUT") && (error.message.includes("CORS") || error.response?.status === 403)) {
+    //   return res.status(200).json({ success: true, message: "Operation completed" })
+    // }
+
     // console.error('API request error:', error.response?.data || error.message)
     // const jsonString = JSON.stringify(error);
     res.status(error.response?.status || 500).json({ message: error.message || 'Internal server error' })
