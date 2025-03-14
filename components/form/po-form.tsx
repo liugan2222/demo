@@ -28,8 +28,9 @@ import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
 import { getPoById, getVendorById, getItemList, updatePo, getVendorList } from '@/lib/api';
 
 import { useAppContext } from "@/contexts/AppContext"
+import { IMAGE_PATHS  } from "@/contexts/images"
 
-const DEFAULT_IMAGE = "/default_item_pic.png";
+const DEFAULT_IMAGE = IMAGE_PATHS.DEFAULT_ITEM;
 
 // Define the Uom
 interface Uom {

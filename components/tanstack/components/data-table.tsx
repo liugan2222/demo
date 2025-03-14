@@ -154,7 +154,7 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4 flex flex-col h-full">
       <DataTableToolbar table={table} dataType={dataType} onRefresh={onRefresh}/>
       <div className="rounded-md border flex-1 flex flex-col relative">
-        {/* <div className="flex flex-1 min-h-0"> */}
+        <div className={`flex-1 transition-all duration-300 ${sidePanelOpen ? "mr-[340px]" : ""}`}>
           <div className="h-[calc(95vh-200px)] overflow-auto">
             <div className="w-full overflow-x-auto">
               <Table>
@@ -258,7 +258,7 @@ export function DataTable<TData, TValue>({
               onToggleEdit={toggleEditing}
             />
           )}
-        {/* </div> */}
+        </div>
       </div>
       <DataTablePagination table={table} dataType={dataType} onRefresh={onRefresh || (() => {})}/>
     </div>

@@ -4,11 +4,12 @@ import React, {useEffect , useState} from 'react'
 
 import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-// import { Input } from "@/components/ui/input"
 import Image from "next/image"
 import { useDropzone } from "react-dropzone";
 
-const DEFAULT_IMAGE = "/default_item_pic.png";
+import { IMAGE_PATHS  } from "@/contexts/images"
+
+const DEFAULT_IMAGE = IMAGE_PATHS.DEFAULT_ITEM;
 
 interface ItemImageProps {
   form: any

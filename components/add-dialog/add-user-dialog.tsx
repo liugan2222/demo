@@ -318,62 +318,34 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                     )}
                   />
 
-                <FormField
-                  control={form.control}
-                  name="telephoneNumber"
-                  render={({ field: telField }) => (
-                    <FormItem>
-                      <FormLabel>Telephone</FormLabel>
-                      <div className="grid grid-cols-4 gap-4">
-                        <div className="col-span-1">
-                          <FormControl>
-                            <Input {...telField} value={telField.value ?? ""}/>
-                          </FormControl>
-                        </div>
-                        <div className="col-span-3">
-                          <FormField
-                            control={form.control}
-                            name="mobileNumber"
-                            render={({ field: mobileField }) => (
-                              <FormControl>
-                                <Input {...mobileField} value={mobileField.value ?? ""} />
-                              </FormControl>
-                            )}
-                          />
-                        </div>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                  {/* <FormField
+                  <FormField
                     control={form.control}
                     name="telephoneNumber"
-                    render={({ field }) => (
+                    render={({ field: telField }) => (
                       <FormItem>
-                        <FormLabel>Tel</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
-                        </FormControl>
+                        <FormLabel>Telephone</FormLabel>
+                        <div className="grid grid-cols-4 gap-4">
+                          <div className="col-span-1">
+                            <FormControl>
+                              <Input {...telField} value={telField.value ?? ""}/>
+                            </FormControl>
+                          </div>
+                          <div className="col-span-3">
+                            <FormField
+                              control={form.control}
+                              name="mobileNumber"
+                              render={({ field: mobileField }) => (
+                                <FormControl>
+                                  <Input {...mobileField} value={mobileField.value ?? ""} />
+                                </FormControl>
+                              )}
+                            />
+                          </div>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="mobileNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Cellphone</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  /> */}
 
                   {/* TODO Employee Type */}
 

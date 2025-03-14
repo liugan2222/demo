@@ -2,13 +2,17 @@
 
 import * as React from "react"
 import { Table } from "@tanstack/react-table"
-import { X } from "lucide-react"
+// import { Calendar } from "lucide-react"
+// import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DataTableViewOptions } from "./data-table-view-options"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import { DataTableColumnSelector } from "./data-table-column-selector"
+
+// import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+// import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 
 import { AddRawDialog } from "@/components/add-dialog/add-raw-dialog"
 import { AddVendorDialog } from "@/components/add-dialog/add-vendor-dialog"
@@ -34,6 +38,8 @@ export function DataTableToolbar<TData>({
 
   // Track selected columns and their filter states
   const [selectedColumns, setSelectedColumns] = React.useState<string[]>([])
+  const [openFilterId, setOpenFilterId] = React.useState<string | null>(null)
+
   const { userPermissions, userInfo } = useAppContext()
 
   const isAdmin = userInfo?.username === "admin"
@@ -41,18 +47,17 @@ export function DataTableToolbar<TData>({
   const filterColumns = () => {
     switch (dataType) {
       case 'items':
-        return [{id: 'item'},{id: 'vendor'}]
+        return [{id: 'item'},{id: 'vendor'},{id: 'status'}]
       case 'warehouses':
-        return [{id: 'warehouse'}]
+        return [{id: 'warehouse'},{id: 'status'}]
       case 'locations':
-        // , {id: 'warehouseZone'}  
-        return [{id: 'warehouse'}]  
+        return [{id: 'warehouse'},{id: 'status'}]  
       case 'vendors': // contact name
-        return [{id: 'vendor'},]
+        return [{id: 'vendor'},{id: 'status'}]
       case 'procurements':  // , {id: 'item'}
         return [{id: 'orderStatus'}]
       case 'receivings':  // receiving date
-        return [{id: 'item'}] 
+        return []
       case 'users':
         return [{id: 'lastName'}]
       // case 'roles':
@@ -107,18 +112,25 @@ export function DataTableToolbar<TData>({
   // Handle adding a new column filter
   const handleAddColumnFilter = (columnId: string) => {
     setSelectedColumns((prev) => [...prev, columnId])
+    setOpenFilterId(columnId) // Open the filter dropdown immediately
   }
 
   // Handle removing a column filter
   const handleRemoveColumnFilter = (columnId: string) => {
     setSelectedColumns((prev) => prev.filter((id) => id !== columnId))
     table.getColumn(columnId)?.setFilterValue(undefined)
+    setOpenFilterId(null)
   }
 
   // Reset all filters
   const handleResetFilters = () => {
     table.resetColumnFilters()
     setSelectedColumns([])
+
+    // 如果是receivings类型，也重置日期范围
+    // if (dataType === "receivings") {
+    //   setDateRange({ from: undefined, to: undefined })
+    // }
   }
 
   const isFiltered = table.getState().columnFilters.length > 0
@@ -261,6 +273,151 @@ export function DataTableToolbar<TData>({
     }
   } 
 
+  // const [dateRange, setDateRange] = React.useState<{ from: Date | undefined; to: Date | undefined }>({
+  //   from: undefined,
+  //   to: undefined,
+  // })
+
+  // // Function to handle date selection
+  // const handleDateSelect = (selectedDate: Date | undefined) => {
+  //   if (selectedDate) {
+  //     setDateRange((prev) => {
+  //       if (!prev.from) {
+  //         return { from: selectedDate, to: undefined }
+  //       } else if (!prev.to && selectedDate > prev.from) {
+  //         return { ...prev, to: selectedDate }
+  //       } else {
+  //         return { from: selectedDate, to: undefined }
+  //       }
+  //     })
+  //   }
+  // }
+
+  // // Effect to apply date range filter
+  // React.useEffect(() => {
+  //   if (dataType === "receivings") {
+  //     const dateColumn = table.getColumn("receivingDate")
+  //     if (dateColumn) {
+  //       if (dateRange.from && dateRange.to) {
+  //         // 设置自定义过滤函数
+  //         dateColumn.setFilterValue((row) => {
+  //           const rowDate = row ? new Date(row as string) : null
+  //           if (!rowDate) return false
+
+  //           // // 确保日期在选定范围内
+  //           // let fromDate: Date | null = null
+  //           // let toDate: Date | null = null
+  //           // if (dateRange.from) {
+  //           //   fromDate = new Date(dateRange.from)
+  //           // }
+  //           // if (dateRange.to) {
+  //           //   toDate = new Date(dateRange.to)
+  //           // }
+  //           if (dateRange.from && dateRange.to) {
+  //             const fromDate = new Date(dateRange.from)
+  //             fromDate.setHours(0, 0, 0, 0)
+  
+  //             const toDate = new Date(dateRange.to)
+  //             toDate.setHours(23, 59, 59, 999)
+  
+  //             return rowDate >= fromDate && rowDate <= toDate
+  //           } else {
+  //             return false
+  //           }
+  //         })
+  //       } else {
+  //         // 如果没有日期范围，清除过滤器
+  //         dateColumn.setFilterValue(undefined)
+  //       }
+  //     }
+  //   }
+  // }, [dataType, dateRange, table])
+
+  // // Render date range component
+  // const renderDateRangeComponent = () => {
+  //   if (dataType !== "receivings") return null
+
+  //   return (
+  //     <Popover>
+  //       <PopoverTrigger asChild>
+  //         <Button variant="outline" className="h-8 border-dashed">
+  //           <Calendar className="mr-2 h-4 w-4" />
+  //           {dateRange.from ? (
+  //             dateRange.to ? (
+  //               <>
+  //                 {format(dateRange.from, "MMM dd, yyyy")} - {format(dateRange.to, "MMM dd, yyyy")}
+  //               </>
+  //             ) : (
+  //               format(dateRange.from, "MMM dd, yyyy")
+  //             )
+  //           ) : (
+  //             <span>Pick a date range</span>
+  //           )}
+  //         </Button>
+  //       </PopoverTrigger>
+  //       <PopoverContent className="w-auto p-0" align="start">
+  //         <div className="p-2">
+  //           <CalendarComponent
+  //             mode="range"
+  //             selected={{ from: dateRange.from, to: dateRange.to }}
+  //             onSelect={(range) => {
+  //               setDateRange({
+  //                 from: range?.from,
+  //                 to: range?.to,
+  //               })
+
+  //               // 如果用户清除了日期选择，也清除过滤器
+  //               if (!range?.from || !range?.to) {
+  //                 table.getColumn("receivingDate")?.setFilterValue(undefined)
+  //               }
+  //             }}
+  //             numberOfMonths={2}
+  //           />
+  //           <div className="mt-4 flex justify-end gap-2">
+  //             <Button
+  //               variant="outline"
+  //               size="sm"
+  //               onClick={() => {
+  //                 setDateRange({ from: undefined, to: undefined })
+  //                 table.getColumn("receivingDate")?.setFilterValue(undefined)
+  //               }}
+  //             >
+  //               Clear
+  //             </Button>
+  //             <Button
+  //               size="sm"
+  //               onClick={() => {
+  //                 if (dateRange.from && dateRange.to) {
+  //                   // 应用过滤器
+  //                   const dateColumn = table.getColumn("receivingDate")
+  //                   if (dateColumn) {
+  //                     dateColumn.setFilterValue((row) => {
+  //                       const rowDate = row ? new Date(row as string) : null
+  //                       if (!rowDate) return false
+
+  //                       // 确保日期在选定范围内
+  //                       const fromDate = new Date(dateRange.from!)
+  //                       fromDate.setHours(0, 0, 0, 0)
+
+  //                       const toDate = new Date(dateRange.to!)
+  //                       toDate.setHours(23, 59, 59, 999)
+
+  //                       return rowDate >= fromDate && rowDate <= toDate
+  //                     })
+  //                   }
+  //                 }
+  //               }}
+  //             >
+  //               Apply
+  //             </Button>
+  //           </div>
+  //         </div>
+  //       </PopoverContent>
+  //     </Popover>
+  //   )
+  // }
+
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
@@ -303,10 +460,20 @@ export function DataTableToolbar<TData>({
                 column.setFilterValue(value)
               }}
               onRemove={() => handleRemoveColumnFilter(columnId)}
+              isOpen={openFilterId === columnId}
+              onOpenChange={(open) => {
+                if (open) {
+                  setOpenFilterId(columnId)
+                } else {
+                  setOpenFilterId(null)
+                }
+              }}
             />
           )
         })}     
 
+        {/* TODO 日期查询组件 */}
+        {/* {renderDateRangeComponent()} */}
 
         {isFiltered && (
           <Button
@@ -314,16 +481,18 @@ export function DataTableToolbar<TData>({
             onClick={handleResetFilters}
             className="h-8 px-2 lg:px-3 text-green-700"
           >
-            <X />
+            {/* <X /> */}
             Reset
           </Button>
         )}
       </div>
+
       <div className="px-2">
         <DataTableViewOptions  table={table} />
       </div>
 
       {renderAddDialog()}
+      
     </div>
   )
 }

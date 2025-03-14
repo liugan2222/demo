@@ -20,6 +20,12 @@ interface FacilitiesSectionProps {
   onCountryChange: (value: string) => void
 }
 
+// Define the Country type
+interface Country {
+  geoId: string;
+  geoName: string;
+}
+
 export function FacilitiesSection({
   form,
   isEditing,
@@ -35,6 +41,13 @@ export function FacilitiesSection({
     control: form.control,
     name: "facilities",
   })
+
+   // Helper function to find the geoName for a given geoId
+   const findCountryName = (geoId: string | undefined, countries: Country[]): string => {
+    if (!geoId) return 'Select a country';
+      const country = countries.find(country => country.geoId === geoId);
+      return country ? country.geoName : 'Select a country';
+    }    
 
   // If in edit mode, show all fields expanded
   if (isEditing) {
@@ -53,6 +66,7 @@ export function FacilitiesSection({
                 gln: "",
                 businessContacts: [
                   {
+                    telecomCountryCode: "",
                     phoneNumber: "",
                     countryGeoId: "",
                     physicalLocationAddress: "",
@@ -79,7 +93,7 @@ export function FacilitiesSection({
               </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
                 name={`facilities.${facilityIndex}.facilityName`}
@@ -98,6 +112,35 @@ export function FacilitiesSection({
 
               <FormField
                 control={form.control}
+                name={`facilities.${facilityIndex}.businessContacts.0.telecomCountryCode`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone number</FormLabel>
+                    <div className="grid grid-cols-4 gap-4">
+                      <div className="col-span-1">
+                        <FormControl>
+                          <Input {...field} value={field.value || ""}/>
+                        </FormControl>
+                      </div>
+                      <div className="col-span-3">
+                        <FormField
+                          control={form.control}
+                          name={`facilities.${facilityIndex}.businessContacts.0.phoneNumber`}
+                          render={({ field }) => (
+                            <FormControl>
+                              <Input {...field} value={field.value || ""}/>
+                            </FormControl>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              /> 
+
+              {/* <FormField
+                control={form.control}
                 name={`facilities.${facilityIndex}.businessContacts.0.phoneNumber`}
                 render={({ field }) => (
                   <FormItem>
@@ -110,7 +153,7 @@ export function FacilitiesSection({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <FormField
                 control={form.control}
@@ -129,7 +172,8 @@ export function FacilitiesSection({
                                 role="combobox"
                                 className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
                               >
-                                {field.value ?? "Select a country"}
+                                {/* {field.value ?? "Select a country"} */}
+                                {findCountryName(field.value??'', countries) ?? "Select a country"}
                                 {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
                               </Button>
                             </FormControl>
@@ -241,100 +285,102 @@ export function FacilitiesSection({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name={`facilities.${facilityIndex}.businessContacts.0.city`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      City<span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ""}/>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name={`facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`}
-                render={({ field }) => {
-
-                  return (
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name={`facilities.${facilityIndex}.businessContacts.0.city`}
+                  render={({ field }) => (
                     <FormItem>
-                      <FormLabel>State/Province<span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>
+                        City<span className="text-red-500">*</span>
+                      </FormLabel>
                       <FormControl>
-                        <div className="relative">
-                          <Popover open={isStatePopoverOpen} onOpenChange={setIsStatePopoverOpen}>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
-                              >
-                                {field.value ?? "Select a state"}
-                                {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-full p-0">
-                              <Command>
-                                <CommandInput placeholder="Search state/province..." />
-                                <CommandList>
-                                  <CommandEmpty>No state/province found.</CommandEmpty>
-                                  <CommandGroup>
-                                    {states?.map((state) => (
-                                      <CommandItem
-                                        value={state.geoId}
-                                        key={state.geoId}
-                                        onSelect={() => {
-                                          field.onChange(state.geoId)
-                                          setIsStatePopoverOpen(false) // 选择后关闭下拉
-                                        }}
-                                      >
-                                        <Check
-                                          className={cn(
-                                            "mr-2 h-4 w-4",
-                                            field.value === state.geoId ? "opacity-100" : "opacity-0",
-                                          )}
-                                        />
-                                        {state.geoName}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                </CommandList>
-                              </Command>
-                            </PopoverContent>
-                          </Popover>
-                                
-                          {/* 图标容器 */}
-                          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                            {/* 清除按钮 */}
-                            {field.value && (
-                              <button
-                              type="button"
-                              className="text-muted-foreground hover:text-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                field.onChange("")
-                                setIsStatePopoverOpen(false)
-                              }}
-                              >
-                              <X className="h-4 w-4" />
-                              </button>
-                            )}
-
-                            {/* 下拉图标 */}
-                            <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                          </div>
-                        </div>
+                        <Input {...field} value={field.value || ""}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
-                  )
-                }}
-              />
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name={`facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`}
+                  render={({ field }) => {
+
+                    return (
+                      <FormItem>
+                        <FormLabel>State/Province<span className="text-red-500">*</span></FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Popover open={isStatePopoverOpen} onOpenChange={setIsStatePopoverOpen}>
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  role="combobox"
+                                  className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
+                                >
+                                  {field.value ?? "Select a state"}
+                                  {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-full p-0">
+                                <Command>
+                                  <CommandInput placeholder="Search state/province..." />
+                                  <CommandList>
+                                    <CommandEmpty>No state/province found.</CommandEmpty>
+                                    <CommandGroup>
+                                      {states?.map((state) => (
+                                        <CommandItem
+                                          value={state.geoId}
+                                          key={state.geoId}
+                                          onSelect={() => {
+                                            field.onChange(state.geoId)
+                                            setIsStatePopoverOpen(false) // 选择后关闭下拉
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value === state.geoId ? "opacity-100" : "opacity-0",
+                                            )}
+                                          />
+                                          {state.geoName}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
+                                  
+                            {/* 图标容器 */}
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                              {/* 清除按钮 */}
+                              {field.value && (
+                                <button
+                                type="button"
+                                className="text-muted-foreground hover:text-foreground"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  field.onChange("")
+                                  setIsStatePopoverOpen(false)
+                                }}
+                                >
+                                <X className="h-4 w-4" />
+                                </button>
+                              )}
+
+                              {/* 下拉图标 */}
+                              <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                            </div>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )
+                  }}
+                />
+              </div>
 
               <FormField
                 control={form.control}
@@ -406,7 +452,7 @@ export function FacilitiesSection({
             <AccordionContent className="space-y-2 pt-2">
               <div className="grid grid-cols-[auto,1fr] gap-x-2">
                 <span className="text-muted-foreground text-right pr-2">Phone:</span>
-                <span>{field.businessContacts[0]?.phoneNumber}</span>
+                <span>{field.businessContacts[0]?.telecomCountryCode} {field.businessContacts[0]?.phoneNumber}</span>
                 <span className="text-muted-foreground text-right pr-2">FFRN:</span>
                 <span>{field.ffrn}</span>
                 <span className="text-muted-foreground text-right pr-2">GLN:</span>

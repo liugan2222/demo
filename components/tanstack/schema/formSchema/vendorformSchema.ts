@@ -14,6 +14,7 @@ const businessContactSchema = z.object({
     (value) => !value || emailRegex.test(value),
     { message: "Invalid email format" }
   ),    // Contact Email
+  telecomCountryCode: z.string().nullable().optional(),
   phoneNumber: z.string().nullable().optional()
   // .refine(
   //   (value) => !value || telephoneRegex.test(value),

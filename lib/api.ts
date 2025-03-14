@@ -42,11 +42,6 @@ authApi.interceptors.response.use(
       localStorage.removeItem('userInfo')
 
       redirectToLogin()
-      // Redirect to login page
-      // if (typeof window !== "undefined") {
-      //   // const router = useRouter()
-      //   // router.replace("/login")
-      // }
     }
     return Promise.reject(error)
   },
@@ -100,28 +95,9 @@ export async function login(
   //     responseType: 'text'
   //   }
   );
-  
-  // // 使用 DOMParser 解析 HTML
-  // const parser = new DOMParser();
-  // const doc = parser.parseFromString(response.data, 'text/html');
-  
-  // // 查找 CSRF 输入框
-  // const csrfInput = doc.querySelector('input[name="_csrf"]');
-  // if (!csrfInput) {
-  //   throw new Error('CSRF token input field not found');
-  // }
-  
-  // // 获取 value 属性
-  // const X_CSRF_Token = csrfInput.getAttribute('value');
-  // if (!X_CSRF_Token) {
-  //   throw new Error('CSRF token value is empty');
-  // }
-
-  // 登录成功后设置 Cookie
-  // document.cookie = `x-csrf-token=${encodeURIComponent(X_CSRF_Token)}`;
+ 
   document.cookie = `x-csrf-token=${encodeURIComponent(csrfToken)}; Path=/;`
   
-  // return X_CSRF_Token;
   return 'succcess';
 }
 
@@ -152,11 +128,6 @@ export async function getUsers() {
 export async function refresh_csrf(
   url: string // 传入从 get_csrf 获取的 token
 ): Promise<string> {
-
-  // const formData = new FormData()
-  // formData.append('username', email)
-  // formData.append('password', password)
-  // formData.append('_csrf', csrfToken)
 
   // const response = await axios.post('http://47.88.28.103:9000/login', 
   const response = await authApi.get( url,   
@@ -232,6 +203,32 @@ export async function updateUser(id: string, item: Partial<Userform>) {
 
 export async function userEnabled(id: string, X_CSRF_Token: string) {
   const response = await authApi.post(`/api/users/${id}/toggle-enabled`,{}
+  ,{
+    headers: {
+      'x-csrf-token': X_CSRF_Token
+    }
+   }
+  )
+  return response.data
+}
+
+// 用户修改密码
+export async function updatePassword(username: string) {
+  const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
+  const response = await authApi.put<Userform>(`/api/users/${username}/regenerate-password`, {}
+  ,{
+    headers: {
+      'x-csrf-token': X_CSRF_Token
+    }
+   }
+  )
+  return response.data
+}
+
+// 刷新用户一次性密码
+export async function regeneratePassword(username: string) {
+  const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
+  const response = await authApi.put<Userform>(`/api/users/${username}/regenerate-password`, {}
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token

@@ -21,7 +21,9 @@ import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
 import { getReceiveById, updateReceive, getPos } from '@/lib/api';
 
 import { useAppContext } from "@/contexts/AppContext"
+import { IMAGE_PATHS  } from "@/contexts/images"
 
+const DEFAULT_IMAGE = IMAGE_PATHS.DEFAULT_ITEM;
 
 interface ReceiveFormProps {
   selectedItem: Receiveform
@@ -164,7 +166,7 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
             <div className="flex items-start gap-4 w-full">
               <div className="w-24 h-24 bg-gray-100 rounded-lg">
                 <img
-                  src={item.smallImageUrl ? `http://47.88.28.103:8080/api/files/${item.smallImageUrl}/media` : "/placeholder.svg?height=96&width=96"}
+                  src={item.smallImageUrl ? `http://47.88.28.103:8080/api/files/${item.smallImageUrl}/media` : DEFAULT_IMAGE}
                   alt={item.productName || ""}
                   className="w-full h-full object-cover rounded-lg"
                 />
@@ -240,7 +242,7 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
               <div className="flex items-start gap-4 w-full">
                 <div className="w-24 h-24 bg-gray-100 rounded-lg">
                   <img
-                    src={form.watch(`receivingItems.${index}.smallImageUrl`) ? `http://47.88.28.103:8080/api/files/${form.watch(`receivingItems.${index}.smallImageUrl`)}/media` : "/placeholder.svg?height=96&width=96"}
+                    src={form.watch(`receivingItems.${index}.smallImageUrl`) ? `http://47.88.28.103:8080/api/files/${form.watch(`receivingItems.${index}.smallImageUrl`)}/media` : DEFAULT_IMAGE}
                     alt={form.watch(`receivingItems.${index}.productName`) || ""}
                     className="w-full h-full object-cover rounded-lg"
                   />
