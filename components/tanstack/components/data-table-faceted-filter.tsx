@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { X, Filter } from 'lucide-react'
+import { X, Filter, Check } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,7 +11,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
+  // CommandSeparator,
 } from "@/components/ui/command"
 import {
   Popover,
@@ -33,20 +33,24 @@ interface DataTableFacetedFilterProps<TData, TValue> {
   selectedValues?: Set<string>
   onSelect?: (value: string) => void
   onRemove?: () => void
+  isOpen?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export function DataTableFacetedFilter<TData, TValue>({
-  column,
+  // column,
   title,
   options,
   selectedValues = new Set(),
   onSelect,
   onRemove,
+  isOpen,
+  onOpenChange,
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const [value, setValue] = React.useState("")
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 border-dashed">
         <Filter size={16} className="h-4 w-4" />
@@ -75,9 +79,10 @@ export function DataTableFacetedFilter<TData, TValue>({
                       <Badge
                         variant="secondary"
                         key={option.value}
-                        className="rounded-sm px-1 font-normal"
+                        className="rounded-sm px-1 font-normal "
                       >
-                        {option.label}
+                        <p className="max-w-[100px] truncate">{option.label}</p>
+                        
                       </Badge>
                     ))
                 )}
@@ -97,7 +102,7 @@ export function DataTableFacetedFilter<TData, TValue>({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
+      <PopoverContent className="w-[240px] p-0" align="start">
         <Command>
           <CommandInput
             placeholder={title}
@@ -118,7 +123,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                       }
                     }}
                   >
-                    <div
+                    {/* <div
                       className={cn(
                         "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
                         isSelected
@@ -127,7 +132,8 @@ export function DataTableFacetedFilter<TData, TValue>({
                       )}
                     >
                       <span className="h-4 w-4 shrink-0" />
-                    </div>
+                    </div> */}
+                    <Check className={cn("mr-2 h-4 w-4", isSelected ? "opacity-100" : "opacity-0")} />
                     {option.icon && (
                       <option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
                     )}
@@ -136,7 +142,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                 )
               })}
             </CommandGroup>
-            {selectedValues?.size > 0 && (
+            {/* {selectedValues?.size > 0 && (
               <>
                 <CommandSeparator />
                 <CommandGroup>
@@ -148,7 +154,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                   </CommandItem>
                 </CommandGroup>
               </>
-            )}
+            )} */}
           </CommandList>
         </Command>
       </PopoverContent>

@@ -34,6 +34,7 @@ const createEmptyFacility = () => ({
       businessName: null,
       contactRole: null,
       email: null,
+      telecomCountryCode: null,
       phoneNumber: null,
       countryGeoId: "",
       country: null,
@@ -73,6 +74,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
       handleCountryChange(vendorData.countryGeoId)
     }
 
+    // TODO 这里等Vendor主体有区号了需要处理一下
     form.setValue(`${path}.phoneNumber`, vendorData.phoneNumber)
     form.setValue(`${path}.countryGeoId`, vendorData.countryGeoId)
     form.setValue(`${path}.physicalLocationAddress`, vendorData.physicalLocationAddress)
@@ -81,6 +83,13 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
     form.setValue(`${path}.zipCode`, vendorData.zipCode)
     form.setValue(`${path}.email`, vendorData.email)
   }
+
+   // Helper function to find the geoName for a given geoId
+   const findCountryName = (geoId: string | undefined, countries: Country[]): string => {
+    if (!geoId) return 'Select a country';
+    const country = countries.find(country => country.geoId === geoId);
+    return country ? country.geoName : 'Select a country';
+  }  
 
   return (
     <Accordion type="multiple" defaultValue={["facilities"]} className="w-full">
@@ -126,6 +135,34 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                         />
 
                         <FormField
+                          control={form.control}
+                          name={`items.0.facilities.${facilityIndex}.businessContacts.0.telecomCountryCode`}
+                          render={({ field: telField }) => (
+                            <FormItem>
+                              <FormLabel>Phone number</FormLabel>
+                              <div className="grid grid-cols-4 gap-4">
+                                <div className="col-span-1">
+                                  <FormControl>
+                                    <Input {...telField} value={telField.value ?? ""}/>
+                                  </FormControl>
+                                </div>
+                                <div className="col-span-3">
+                                  <FormField
+                                    control={form.control}
+                                    name={`items.0.facilities.${facilityIndex}.businessContacts.0.phoneNumber`}
+                                    render={({ field: mobileField }) => (
+                                      <FormControl>
+                                        <Input {...mobileField} value={mobileField.value ?? ""} />
+                                      </FormControl>
+                                    )}
+                                  />
+                                </div>
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        {/* <FormField
                             control={form.control}
                             name={`items.0.facilities.${facilityIndex}.businessContacts.0.phoneNumber`}
                             render={({ field }) => (
@@ -137,7 +174,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                 <FormMessage />
                               </FormItem>
                             )}
-                          />
+                          /> */}
 
                           <FormField
                             control={form.control}
@@ -156,7 +193,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                             role="combobox"
                                             className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
                                           >
-                                            {field.value ?? "Select a country"}
+                                            {findCountryName(field.value, countries) ?? "Select a country"}
                                             {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
                                           </Button>
                                         </FormControl>

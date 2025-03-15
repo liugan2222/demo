@@ -199,6 +199,13 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
     }
   }, []);
 
+  // Helper function to find the geoName for a given geoId
+  const findCountryName = (geoId: string | undefined, countries: Country[]): string => {
+    if (!geoId) return 'Select a country';
+    const country = countries.find(country => country.geoId === geoId);
+    return country ? country.geoName : 'Select a country';
+  }
+
 
   const handleClose = useCallback(() => {
     // Check if form is dirty (has been modified)
@@ -607,7 +614,8 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                                         role="combobox"
                                         className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
                                       >
-                                        {field.value ?? "Select a country"}
+                                        {/* {field.value ?? "Select a country"} */}
+                                        {findCountryName(field.value??'', countries) ?? "Select a country"}
                                         {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
                                       </Button>
                                     </FormControl>

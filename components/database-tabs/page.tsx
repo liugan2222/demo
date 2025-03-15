@@ -18,7 +18,7 @@ const tabItems = [
 export function DatabaseTabs() {
   return (
     <Tabs defaultValue="raw" className="w-full">
-      <TabsList className="h-[42px] p-[5px] bg-slate-100 rounded-md justify-start items-start inline-flex">
+      <TabsList className="h-[42px] p-[5px] bg-zinc-100 rounded-md justify-start items-start inline-flex">
         {tabItems.map((item) => (
           <TabsTrigger
             key={item.value}

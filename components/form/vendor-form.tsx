@@ -82,6 +82,7 @@ export function VendorForm({ selectedItem, onSave, onCancel, isEditing, onToggle
       console.error("Error fetching warehouses:", error)
     }
   }, [])  
+  
 
 useEffect(() => {
   const fetchVendorData = async () => {
@@ -484,7 +485,8 @@ useEffect(() => {
                                       role="combobox"
                                       className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
                                     >
-                                      {field.value ?? "Select a country"}
+                                      {/* {field.value ?? "Select a country"} */}
+                                      {findCountryName(field.value??'', countries) ?? "Select a country"}
                                       {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
                                     </Button>
                                   </FormControl>
@@ -618,161 +620,163 @@ useEffect(() => {
               />
             ) : null}
 
-            {isEditing || form.getValues('businessContacts.0.city') ? (
-              <FormField
-                control={form.control}
-                name="businessContacts.0.city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="form-label font-common">City</FormLabel>
-                    <FormControl>
-                      {isEditing ? (
-                        <Input
-                          {...field}
-                          value={field.value?.toString() ?? ''}
-                          onChange={(e) => field.onChange(e.target.value)}
-                        />
-                      ) : (
-                        <div className="form-control font-common">
-                          {getFormValue('businessContacts.0.city')}
-                        </div>
-                      )}
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            ) : null}
-
-            {isEditing || form.getValues('businessContacts.0.stateProvinceGeoId') ? (
-              <FormField
-                control={form.control}
-                name="businessContacts.0.stateProvinceGeoId"
-                render={({ field }) => {
-                  // 添加状态控制
-                  return (
+            <div className="grid grid-cols-2 gap-4">
+              {isEditing || form.getValues('businessContacts.0.city') ? (
+                <FormField
+                  control={form.control}
+                  name="businessContacts.0.city"
+                  render={({ field }) => (
                     <FormItem>
-                      <FormLabel>State/Province</FormLabel>
-                        <FormControl>
-                          {isEditing ? (
-                            <div className="relative">
-                              <Popover 
-                                open={isStatePopoverOpen} 
-                                onOpenChange={setIsStatePopoverOpen} // 控制弹出状态
-                              >
-                                <PopoverTrigger asChild>
-                                  <FormControl>
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      role="combobox"
-                                      className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
-                                    >
-                                      {field.value ?? "Select a state"}
-                                      {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
-                                    </Button>
-                                  </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-full p-0">
-                                  <Command>
-                                    <CommandInput placeholder="Search state/province..." />
-                                    <CommandList>
-                                      <CommandEmpty>No state/province found.</CommandEmpty>
-                                      <CommandGroup>
-                                        {states?.map((state) => (
-                                          <CommandItem
-                                            value={state.geoId}
-                                            key={state.geoId}
-                                            onSelect={() => {
-                                              field.onChange(state.geoId)
-                                              setIsStatePopoverOpen(false) // 选择后关闭下拉
-                                            }}
-                                          >
-                                            <Check
-                                              className={cn(
-                                                "mr-2 h-4 w-4",
-                                                field.value === state.geoId ? "opacity-100" : "opacity-0",
-                                              )}
-                                            />
-                                            {state.geoName}
-                                          </CommandItem>
-                                        ))}
-                                      </CommandGroup>
-                                    </CommandList>
-                                  </Command>
-                                </PopoverContent>
-                              </Popover>
-  
-                              {/* 图标容器 */}
-                              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                                {/* 清除按钮 */}
-                                {field.value && (
-                                  <button
-                                  type="button"
-                                  className="text-muted-foreground hover:text-foreground"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    field.onChange("")
-                                    setIsStatePopoverOpen(false)
-                                  }}
-                                  >
-                                  <X className="h-4 w-4" />
-                                  </button>
-                                )}
-
-                                {/* 下拉图标 */}
-                                <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                              </div>
-                            </div>
-                            ) : (
-                              <div className="form-control font-common">
-                                {findCountryName(getFormValue('businessContacts.0.stateProvinceGeoId'), contactstates)}
-                              </div>
-                            )}
-                        </FormControl>
+                      <FormLabel className="form-label font-common">City</FormLabel>
+                      <FormControl>
+                        {isEditing ? (
+                          <Input
+                            {...field}
+                            value={field.value?.toString() ?? ''}
+                            onChange={(e) => field.onChange(e.target.value)}
+                          />
+                        ) : (
+                          <div className="form-control font-common">
+                            {getFormValue('businessContacts.0.city')}
+                          </div>
+                        )}
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
-                  )
-                }}
-              />
-              // <FormField
-              //   control={form.control}
-              //   name="businessContacts.0.stateProvinceGeoId"
-              //   render={({ field }) => (
-              //     <FormItem>
-              //       <FormLabel className="form-label font-common">State/Province</FormLabel>
-              //       <FormControl>
-              //         {isEditing ? (
-              //           <Select
-              //             value={field.value ?? undefined}
-              //             onValueChange={(value) => {
-              //               field.onChange(value)
-              //             }}
-              //           >
-              //             <FormControl>
-              //               <SelectTrigger>
-              //                 <SelectValue placeholder="Select a state/province" />
-              //               </SelectTrigger>
-              //             </FormControl>
-              //             <SelectContent>
-              //               {contactstates?.map((state: Country) => (
-              //                 <SelectItem key={state.geoId} value={state.geoId}>
-              //                   {state.geoName}
-              //                 </SelectItem>
-              //               ))}
-              //             </SelectContent>
-              //           </Select>
-              //         ) : (
-              //           <div className="form-control font-common">
-              //             {findCountryName(getFormValue('businessContacts.0.stateProvinceGeoId'), contactstates)}
-              //           </div>
-              //         )}
-              //       </FormControl>
-              //       <FormMessage />
-              //     </FormItem>
-              //   )}
-              // />
-            ) : null}
+                  )}
+                />
+              ) : null}
+
+              {isEditing || form.getValues('businessContacts.0.stateProvinceGeoId') ? (
+                <FormField
+                  control={form.control}
+                  name="businessContacts.0.stateProvinceGeoId"
+                  render={({ field }) => {
+                    // 添加状态控制
+                    return (
+                      <FormItem>
+                        <FormLabel>State/Province</FormLabel>
+                          <FormControl>
+                            {isEditing ? (
+                              <div className="relative">
+                                <Popover 
+                                  open={isStatePopoverOpen} 
+                                  onOpenChange={setIsStatePopoverOpen} // 控制弹出状态
+                                >
+                                  <PopoverTrigger asChild>
+                                    <FormControl>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        role="combobox"
+                                        className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
+                                      >
+                                        {field.value ?? "Select a state"}
+                                        {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
+                                      </Button>
+                                    </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-full p-0">
+                                    <Command>
+                                      <CommandInput placeholder="Search state/province..." />
+                                      <CommandList>
+                                        <CommandEmpty>No state/province found.</CommandEmpty>
+                                        <CommandGroup>
+                                          {states?.map((state) => (
+                                            <CommandItem
+                                              value={state.geoId}
+                                              key={state.geoId}
+                                              onSelect={() => {
+                                                field.onChange(state.geoId)
+                                                setIsStatePopoverOpen(false) // 选择后关闭下拉
+                                              }}
+                                            >
+                                              <Check
+                                                className={cn(
+                                                  "mr-2 h-4 w-4",
+                                                  field.value === state.geoId ? "opacity-100" : "opacity-0",
+                                                )}
+                                              />
+                                              {state.geoName}
+                                            </CommandItem>
+                                          ))}
+                                        </CommandGroup>
+                                      </CommandList>
+                                    </Command>
+                                  </PopoverContent>
+                                </Popover>
+    
+                                {/* 图标容器 */}
+                                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                  {/* 清除按钮 */}
+                                  {field.value && (
+                                    <button
+                                    type="button"
+                                    className="text-muted-foreground hover:text-foreground"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      field.onChange("")
+                                      setIsStatePopoverOpen(false)
+                                    }}
+                                    >
+                                    <X className="h-4 w-4" />
+                                    </button>
+                                  )}
+
+                                  {/* 下拉图标 */}
+                                  <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                                </div>
+                              </div>
+                              ) : (
+                                <div className="form-control font-common">
+                                  {findCountryName(getFormValue('businessContacts.0.stateProvinceGeoId'), contactstates)}
+                                </div>
+                              )}
+                          </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )
+                  }}
+                />
+                // <FormField
+                //   control={form.control}
+                //   name="businessContacts.0.stateProvinceGeoId"
+                //   render={({ field }) => (
+                //     <FormItem>
+                //       <FormLabel className="form-label font-common">State/Province</FormLabel>
+                //       <FormControl>
+                //         {isEditing ? (
+                //           <Select
+                //             value={field.value ?? undefined}
+                //             onValueChange={(value) => {
+                //               field.onChange(value)
+                //             }}
+                //           >
+                //             <FormControl>
+                //               <SelectTrigger>
+                //                 <SelectValue placeholder="Select a state/province" />
+                //               </SelectTrigger>
+                //             </FormControl>
+                //             <SelectContent>
+                //               {contactstates?.map((state: Country) => (
+                //                 <SelectItem key={state.geoId} value={state.geoId}>
+                //                   {state.geoName}
+                //                 </SelectItem>
+                //               ))}
+                //             </SelectContent>
+                //           </Select>
+                //         ) : (
+                //           <div className="form-control font-common">
+                //             {findCountryName(getFormValue('businessContacts.0.stateProvinceGeoId'), contactstates)}
+                //           </div>
+                //         )}
+                //       </FormControl>
+                //       <FormMessage />
+                //     </FormItem>
+                //   )}
+                // />
+              ) : null}
+            </div>
 
             {isEditing || form.getValues('businessContacts.0.zipCode') ? (
               <FormField

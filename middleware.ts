@@ -11,7 +11,9 @@ export function middleware(request: NextRequest) {
   const isLoggedIn = true
 
   // Public paths that don't require authentication
-  const publicPaths = ["/login", "/signup", "/forgot-password"]
+  // const publicPaths = ["/login", "/signup", "/forgot-password"]
+
+  const publicPaths = ["/login", "/change-password"]
 
   const isPublicPath = publicPaths.some((path) => request.nextUrl.pathname.startsWith(path))
 

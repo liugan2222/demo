@@ -460,7 +460,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                                   onClick={() => remove(index)}
                                 >
                                   <X className="h-4 w-4" />
-                                  Remove PO
+                                  Remove item
                                 </Button>
                               </div>
                             )}

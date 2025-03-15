@@ -20,7 +20,9 @@ import "@/app/globals.css";
 
 import { MultiSelect } from "@/components/add-dialog/components/user/multi-select"
 
-import { getUserById, updateUser, getRoles, refresh_csrf, userEnabled } from '@/lib/api';
+import { getUserById, updateUser, getRoles, refresh_csrf, userEnabled
+  // , regeneratePassword
+ } from '@/lib/api';
 
 import { useAppContext } from "@/contexts/AppContext"
 
