@@ -146,7 +146,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       if (selectedItem.id ) {
         const groups = data.roles?.map(role => Number(role));
         // Add API call 
-        const X_CSRF_Token = await refresh_csrf('/group-management')
+        const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
         if (X_CSRF_Token) {
           const updateUserInfo = {
             ...data,
@@ -169,7 +169,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
   }
 
   const handleDisable = async () => {
-    const X_CSRF_Token = await refresh_csrf('/group-management')
+    const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
     if (X_CSRF_Token) {
       await userEnabled(selectedItem.id ?? '', X_CSRF_Token)
       await onSave()
@@ -178,7 +178,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
     }
   }
   const handleEnable = async () => {
-    const X_CSRF_Token = await refresh_csrf('/group-management')
+    const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
     if (X_CSRF_Token) {
       await userEnabled(selectedItem.id ?? '', X_CSRF_Token)
       await onSave()

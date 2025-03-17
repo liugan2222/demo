@@ -35,14 +35,14 @@ const redirectToLogin = () => {
 authApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 403) {
-      document.cookie = `x-csrf-token=; Path=/;`
-      localStorage.removeItem('isLoggedIn')
-      localStorage.removeItem('userPermissions')
-      localStorage.removeItem('userInfo')
+    // if (error.response && error.response.status === 403) {
+    //   document.cookie = `x-csrf-token=; Path=/;`
+    //   localStorage.removeItem('isLoggedIn')
+    //   localStorage.removeItem('userPermissions')
+    //   localStorage.removeItem('userInfo')
 
-      redirectToLogin()
-    }
+    //   redirectToLogin()
+    // }
     return Promise.reject(error)
   },
 )
@@ -109,7 +109,7 @@ export async function getUsers() {
   // if (param1 !== undefined) {
   //   params.supplierId = param1;
   // }
-  const response = await authApi.get('/api/auth-srv/users');
+  const response = await authApi.get('/auth-srv/users');
   const content = response.data || [];
   
   // 转换
@@ -166,7 +166,7 @@ export async function refresh_csrf(
 
 export async function addUser(item: any) {
   const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
-  const response = await authApi.post<Userform>(`/api/users/pre-register`, item
+  const response = await authApi.post<Userform>(`/auth-srv/users/pre-register`, item
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
@@ -185,13 +185,13 @@ export async function getUserById(id: string, includesProductDetails?: boolean, 
   if (includesItemFulfillments !== undefined) {
     params.includesItemFulfillments = includesItemFulfillments;
   }
-  const response = await authApi.get(`/api/users/${id}`, { params });
+  const response = await authApi.get(`/auth-srv/users/${id}`, { params });
   return response.data;
 }
 
 export async function updateUser(id: string, item: Partial<Userform>) {
   const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
-  const response = await authApi.put<Userform>(`/api/auth-srv/users/${id}`, item
+  const response = await authApi.put<Userform>(`/auth-srv/users/${id}`, item
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
@@ -202,7 +202,7 @@ export async function updateUser(id: string, item: Partial<Userform>) {
 }
 
 export async function userEnabled(id: string, X_CSRF_Token: string) {
-  const response = await authApi.post(`/api/users/${id}/toggle-enabled`,{}
+  const response = await authApi.post(`/auth-srv/users/${id}/toggle-enabled`,{}
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
@@ -212,10 +212,10 @@ export async function userEnabled(id: string, X_CSRF_Token: string) {
   return response.data
 }
 
-// 用户修改密码
+// TODO 用户修改密码
 export async function updatePassword(username: string) {
   const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
-  const response = await authApi.put<Userform>(`/api/users/${username}/regenerate-password`, {}
+  const response = await authApi.put<Userform>(`/auth-srv/users/change-password?currentPassword=abc&newPassword=admin`, {}
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
@@ -228,7 +228,7 @@ export async function updatePassword(username: string) {
 // 刷新用户一次性密码
 export async function regeneratePassword(username: string) {
   const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
-  const response = await authApi.put<Userform>(`/api/users/${username}/regenerate-password`, {}
+  const response = await authApi.put<Userform>(`/auth-srv/users/${username}/regenerate-password`, {}
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
@@ -245,7 +245,7 @@ export async function getRoles(enabled?: boolean) {
   if (enabled !== undefined) {
     params.enabled = enabled;
   }
-  const response = await authApi.get(`/api/groups`, { params });
+  const response = await authApi.get(`/auth-srv/groups`, { params });
   const content = response.data || [];
   // 转换
   const transformedItems = (content as any[]).map((item: any) => ({
@@ -262,7 +262,7 @@ export async function getRoles(enabled?: boolean) {
 
 export async function addRole(item: any) {
   const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
-  const response = await authApi.post<Roleform>(`/api/auth-srv/groups`, item
+  const response = await authApi.post<Roleform>(`/auth-srv/groups`, item
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
@@ -282,13 +282,13 @@ export async function getRoleById(id: string
   // if (includesItemFulfillments !== undefined) {
   //   params.includesItemFulfillments = includesItemFulfillments;
   // }
-  const response = await authApi.get(`/api/auth-srv/groups/${id}`, { params });
+  const response = await authApi.get(`/auth-srv/groups/${id}`, { params });
   return response.data;
 }
 
 export async function updateRole(id: string, item: Partial<Roleform>) {
   const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
-  const response = await authApi.put<Roleform>(`/api/auth-srv/groups/${id}`, item
+  const response = await authApi.put<Roleform>(`/auth-srv/groups/${id}`, item
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
@@ -300,7 +300,7 @@ export async function updateRole(id: string, item: Partial<Roleform>) {
 
 export async function userToRole(id: string, userNameList: Partial<string[]>) {
   const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
-  const response = await authApi.put<Roleform>(`/api/auth-srv/groups/${id}/users`, userNameList
+  const response = await authApi.put<Roleform>(`/auth-srv/groups/${id}/users`, userNameList
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
@@ -311,12 +311,12 @@ export async function userToRole(id: string, userNameList: Partial<string[]>) {
 }
 
 export async function getRoleUsers(id: string) {
-  const response = await authApi.get<Roleform>(`/api/auth-srv/groups/${id}/users`)
+  const response = await authApi.get<Roleform>(`/auth-srv/groups/${id}/users`)
   return response.data
 }
 
 export async function roleEnabled(id: string, X_CSRF_Token: string) {
-  const response = await authApi.post(`/api/groups/${id}/toggle-enabled`,{}
+  const response = await authApi.post(`/auth-srv/groups/${id}/toggle-enabled`,{}
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
@@ -758,7 +758,7 @@ export async function uploadFile(file: File) {
   // 手动获取 token
   // const token = document.cookie.replace(/(?:(?:^|.*;\s*)auth-token\s*=\s*([^;]*).*$)|^.*$/, "$1");
 
-  // return axios.post('http://47.88.28.103:8080/api/files/upload', formData, {
+  // return axios.post('https://fp.ablueforce.com/api/files/upload', formData, {
   return axios.post('https://fp.ablueforce.com/api/files/upload', formData, {    
     headers: {
     //  'X-TenantID': 'X', // 必须与 Android 一致的 Header

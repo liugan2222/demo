@@ -4,7 +4,7 @@ import axios, { AxiosRequestConfig, Method } from 'axios'
 // 
 const getBaseUrl = (path: string) => {
   // if (path.startsWith('files/')) {
-    // return 'http://47.88.28.103:8080/api'
+    // return 'https://fp.ablueforce.com/api'
 
   //  totest
   // if (path.startsWith('importLocations')) {

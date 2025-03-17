@@ -146,7 +146,7 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
       // 处理 roles
       const groups = data.roles?.map(role => Number(role));
       // Add API call 
-      const X_CSRF_Token = await refresh_csrf('/pre-register?from=user-management')
+      const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register?from=user-management')
       if (X_CSRF_Token) {
         const newUser = {
           ...data,

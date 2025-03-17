@@ -51,7 +51,7 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
   async function onSubmit(data: Roleform) {
     try {
       // Add API call 
-      const X_CSRF_Token = await refresh_csrf('/group-management')
+      const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
       if (X_CSRF_Token) {
         // const newRole = {
         //   ...data,

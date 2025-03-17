@@ -23,13 +23,13 @@ export function ItemImage({ form, isEditing, onImageChange }: ItemImageProps) {
 
 
   // const imageUrl = form.watch("smallImageUrl") 
-  //                 ? `http://47.88.28.103:8080/api/files/${form.watch("smallImageUrl")}/media`
+  //                 ? `https://fp.ablueforce.com/api/files/${form.watch("smallImageUrl")}/media`
   //                 : "/placeholder.svg"
 
   useEffect(() => {
     const updateImageUrl = () => {
       const baseUrl = smallImageUrl 
-        ? `http://47.88.28.103:8080/api/files/${smallImageUrl}/media`
+        ? `https://fp.ablueforce.com/api/files/${smallImageUrl}/media`
         : DEFAULT_IMAGE;
       // 添加时间戳避免缓存
       setImageUrl(`${baseUrl}?timestamp=${Date.now()}`)

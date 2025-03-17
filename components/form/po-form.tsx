@@ -247,7 +247,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
             <div className="flex items-start gap-4 w-full">
               <div className="w-24 h-24 bg-gray-100 rounded-lg">
                 <img
-                  src={item.smallImageUrl ? `http://47.88.28.103:8080/api/files/${item.smallImageUrl}/media` : DEFAULT_IMAGE}
+                  src={item.smallImageUrl ? `https://fp.ablueforce.com/api/files/${item.smallImageUrl}/media` : DEFAULT_IMAGE}
                   alt={item.productName || ""}
                   className="w-full h-full object-cover rounded-lg"
                 />
@@ -324,7 +324,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
               <div className="flex items-start gap-4 w-full">
                 <div className="w-24 h-24 bg-gray-100 rounded-lg">
                   <img
-                    src={form.watch(`orderItems.${index}.smallImageUrl`) ? `http://47.88.28.103:8080/api/files/${form.watch(`orderItems.${index}.smallImageUrl`)}/media` : DEFAULT_IMAGE}
+                    src={form.watch(`orderItems.${index}.smallImageUrl`) ? `https://fp.ablueforce.com/api/files/${form.watch(`orderItems.${index}.smallImageUrl`)}/media` : DEFAULT_IMAGE}
                     alt={form.watch(`orderItems.${index}.productName`) || ""}
                     className="w-full h-full object-cover rounded-lg"
                   />
