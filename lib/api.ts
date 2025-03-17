@@ -35,14 +35,14 @@ const redirectToLogin = () => {
 authApi.interceptors.response.use(
   (response) => response,
   (error) => {
-    // if (error.response && error.response.status === 403) {
-    //   document.cookie = `x-csrf-token=; Path=/;`
-    //   localStorage.removeItem('isLoggedIn')
-    //   localStorage.removeItem('userPermissions')
-    //   localStorage.removeItem('userInfo')
+    if (error.response && error.response.status === 403) {
+      document.cookie = `x-csrf-token=; Path=/;`
+      localStorage.removeItem('isLoggedIn')
+      localStorage.removeItem('userPermissions')
+      localStorage.removeItem('userInfo')
 
-    //   redirectToLogin()
-    // }
+      redirectToLogin()
+    }
     return Promise.reject(error)
   },
 )
