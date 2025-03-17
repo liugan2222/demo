@@ -213,17 +213,17 @@ export async function userEnabled(id: string, X_CSRF_Token: string) {
 }
 
 // TODO 用户修改密码
-export async function updatePassword(username: string) {
-  const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
-  const response = await authApi.put<Userform>(`/auth-srv/users/change-password?currentPassword=abc&newPassword=admin`, {}
-  ,{
-    headers: {
-      'x-csrf-token': X_CSRF_Token
-    }
-   }
-  )
-  return response.data
-}
+// export async function updatePassword(username: string) {
+//   const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
+//   const response = await authApi.put<Userform>(`/auth-srv/users/change-password?currentPassword=abc&newPassword=admin`, {}
+//   ,{
+//     headers: {
+//       'x-csrf-token': X_CSRF_Token
+//     }
+//    }
+//   )
+//   return response.data
+// }
 
 // 刷新用户一次性密码
 export async function regeneratePassword(username: string) {
