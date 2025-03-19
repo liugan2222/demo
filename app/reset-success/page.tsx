@@ -1,23 +1,9 @@
 "use client"
 
 import Image from "next/image"
-import * as z from "zod"
-
 import { Card, CardContent } from "@/components/ui/card"
 
 import { IMAGE_PATHS } from "@/contexts/images"
-
-// Email validator
-const emailValidator = (value: string) => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-}
-
-const resetPasswordSchema = z.object({
-  email: z.string().min(1, "Please enter an email.").refine(emailValidator, {
-    message: "Please enter a valid email address.",
-  }),
-})
-
 
 export default function ResetSuccessPage() {
 

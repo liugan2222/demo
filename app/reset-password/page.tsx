@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { useForm } from "react-hook-form"
@@ -69,7 +69,7 @@ export default function ResetPasswordPage() {
 
       const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register?from=user-management')
       if (X_CSRF_Token) {
-        await forgetPassword(data, X_CSRF_Token)
+        await forgetPassword(data.email, X_CSRF_Token)
         router.push("/reset-success")
       } else {
         setError("Network abnormality, please refresh the page, please try again.")

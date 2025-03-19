@@ -1,8 +1,43 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useState, useEffect, Suspense } from "react"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { Card, CardContent } from "@/components/ui/card"
+import { IMAGE_PATHS } from "@/contexts/images"
+
+// Main page component with Suspense boundary
+export default function ChangePasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#f4f4f5]">
+          <Card className="w-full max-w-[1000px] overflow-hidden shadow-md">
+            <CardContent className="p-8 flex items-center justify-center">
+              <div className="text-center">
+                <div className="mb-8 mx-auto">
+                  <Image
+                    src={IMAGE_PATHS.DEFAULT_FRESHPOINT_LOGO || "/placeholder.svg"}
+                    alt="Freshpoint Logo"
+                    width={180}
+                    height={50}
+                    priority
+                  />
+                </div>
+                <p>Loading...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <ChangePasswordForm />
+    </Suspense>
+  )
+}
+
+// Separate component that uses useSearchParams
+import { useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -12,11 +47,8 @@ import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { LoginAlert, LoginAlertDescription } from "@/components/common/login-alert"
-import { Card, CardContent } from "@/components/ui/card"
 
 import { useAppContext } from "@/contexts/AppContext"
-import { IMAGE_PATHS  } from "@/contexts/images"
-
 import { getUserByToken, refresh_csrf, getUserById, updatePassword } from "@/lib/api"
 
 // Password validation schema
@@ -37,7 +69,7 @@ const passwordSchema = z
 
 type PasswordSchema = z.infer<typeof passwordSchema>
 
-export default function ChangePasswordPage() {
+function ChangePasswordForm() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const { setIsLoggedIn, setUserPermissions, setUserInfo } = useAppContext()
@@ -60,16 +92,16 @@ export default function ChangePasswordPage() {
   const token = searchParams?.get("token")
   const passwordType = searchParams?.get("type") // 改名为 passwordType 避免与 type 关键字冲突
 
-    // 添加参数验证逻辑
-    useEffect(() => {
-      if (!token) {
-        setError("Missing token.")
-        setTimeout(() => {
-          router.replace("/login") // 无 token 时重定向
-        }, 2000)  // 2000ms延迟确保toast已渲染
-        return
-      }
-    }, [router, token])
+  // 添加参数验证逻辑
+  useEffect(() => {
+    if (!token) {
+      setError("Missing token.")
+      setTimeout(() => {
+        router.replace("/login") // 无 token 时重定向
+      }, 2000) // 2000ms延迟确保toast已渲染
+      return
+    }
+  }, [router, token])
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -87,12 +119,14 @@ export default function ChangePasswordPage() {
 
             if (currentTime - tempPasswordTime > fiveMinutesInMs) {
               // 5分钟时效
-              setError("The time limit for each password change is 5 minutes. If the current change request has expired, please re-initiate it.")
+              setError(
+                "The time limit for each password change is 5 minutes. If the current change request has expired, please re-initiate it.",
+              )
               setExpired(true)
               return
             }
           }
-     
+
           setUserData(userData)
         } catch (error) {
           console.error("Error fetching vendor data:", error)
@@ -127,7 +161,9 @@ export default function ChangePasswordPage() {
 
   async function onSubmit(data: PasswordSchema) {
     if (expired) {
-      setError("The time limit for each password change is 5 minutes. If the current change request has expired, please re-initiate it.")
+      setError(
+        "The time limit for each password change is 5 minutes. If the current change request has expired, please re-initiate it.",
+      )
       return
     }
     setIsLoading(true)
@@ -135,12 +171,12 @@ export default function ChangePasswordPage() {
 
     try {
       //: Implement password change API call
-      const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register?from=user-management')
+      const X_CSRF_Token = await refresh_csrf("/auth-srv/pre-register?from=user-management")
       if (X_CSRF_Token) {
         const newUser = {
           token: token,
           type: passwordType,
-          password: data.confirmPassword
+          password: data.confirmPassword,
         }
         await updatePassword(newUser, X_CSRF_Token)
       } else {
@@ -177,7 +213,26 @@ export default function ChangePasswordPage() {
   }
 
   if (loading) {
-    return <div>Loading...</div>
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f4f4f5]">
+        <Card className="w-full max-w-[1000px] overflow-hidden shadow-md">
+          <CardContent className="p-8 flex items-center justify-center">
+            <div className="text-center">
+              <div className="mb-8 mx-auto">
+                <Image
+                  src={IMAGE_PATHS.DEFAULT_FRESHPOINT_LOGO || "/placeholder.svg"}
+                  alt="Freshpoint Logo"
+                  width={180}
+                  height={50}
+                  priority
+                />
+              </div>
+              <p>Loading user data...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
@@ -248,15 +303,21 @@ export default function ChangePasswordPage() {
                 {/* Password requirements */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <CircleCheck className={`h-5 w-5 rounded-full ${lengthValid ? "text-[#15803d]" : "text-[#71717a]"}`} />
+                    <CircleCheck
+                      className={`h-5 w-5 rounded-full ${lengthValid ? "text-[#15803d]" : "text-[#71717a]"}`}
+                    />
                     <span className="text-sm">Enter between 8 to 20 characters</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CircleCheck className={`h-5 w-5 rounded-full ${caseValid ? "text-[#15803d]" : "text-[#71717a]"}`} />
+                    <CircleCheck
+                      className={`h-5 w-5 rounded-full ${caseValid ? "text-[#15803d]" : "text-[#71717a]"}`}
+                    />
                     <span className="text-sm">Use upper and lower case letter</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CircleCheck className={`h-5 w-5 rounded-full ${charValid ? "text-[#15803d]" : "text-[#71717a]"}`} />
+                    <CircleCheck
+                      className={`h-5 w-5 rounded-full ${charValid ? "text-[#15803d]" : "text-[#71717a]"}`}
+                    />
                     <span className="text-sm">Enter at least 1 letter or 1 symbol</span>
                   </div>
                 </div>
@@ -273,7 +334,7 @@ export default function ChangePasswordPage() {
                   className="w-full bg-[#15803d] hover:bg-[#15803d]/90"
                   disabled={isLoading || !form.formState.isValid}
                 >
-                  {isLoading ? "Processing..." : "Login"}
+                  {isLoading ? "Processing..." : "Continue"}
                 </Button>
               </form>
             </Form>
@@ -304,4 +365,3 @@ export default function ChangePasswordPage() {
     </div>
   )
 }
-
