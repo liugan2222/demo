@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
-import { X, CalendarIcon, Edit2, EyeOff, Eye } from 'lucide-react'
+import { X, CalendarIcon, Edit2, EyeOff, Eye, Mail, RotateCw } from 'lucide-react'
 
 import { userformSchema, Userform } from '@/components/tanstack/schema/formSchema/userformSchema'
 import { TextField } from './components/field/text-field'
@@ -21,7 +21,7 @@ import "@/app/globals.css";
 import { MultiSelect } from "@/components/add-dialog/components/user/multi-select"
 
 import { getUserById, updateUser, getRoles, refresh_csrf, userEnabled
-  // , regeneratePassword
+   , getUserLastEmail, forgetPassword
  } from '@/lib/api';
 
 import { useAppContext } from "@/contexts/AppContext"
@@ -52,6 +52,34 @@ interface Role {
   }
 }
 
+// New Alert/OTP component
+const AlertOTP = ({ onResend, isResendDisabled }: { onResend: () => void; isResendDisabled: boolean }) => {
+  return (
+    <div className="w-full bg-white rounded-md outline-1 outline-offset-[-1px] outline-zinc-300 p-4">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <Mail className="h-4 w-4 text-zinc-900" />
+          <div className="text-zinc-900 text-base font-medium leading-normal">
+            Set-up Email Sent
+          </div>
+        </div>
+        <div className="text-zinc-600 text-sm font-normal leading-tight mb-2">
+          An email has been sent to the user with a link to set up their account. The link will expire in 5 minutes.
+        </div>
+        <Button
+          type="button"
+          onClick={onResend}
+          disabled={isResendDisabled}
+          className="h-10 w-full bg-zinc-100 hover:bg-zinc-200 text-zinc-900 outline-1 outline-zinc-900"
+          variant="secondary"
+        >
+          <RotateCw className="h-4 w-4" />
+          Resend
+        </Button>
+      </div>
+    </div>
+  )
+}
 
 export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit }: UserFormProps) {
 
@@ -105,13 +133,43 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
     }
   }, [])    
 
+  const [showAlertOTP, setShowAlertOTP] = useState(false)
+  const [isResendDisabled, setIsResendDisabled] = useState(false) 
+
   useEffect(() => {
     const fetchVendorData = async () => {
       if (selectedItem.id) {
         try {
           setLoading(true)
           fetchBasicdatas();
+
+
+          // Alert / OTP  判断
+          if (selectedItem.id !== 'admin') {
+            const lastInfoData = await getUserLastEmail(selectedItem.id)
+            // Check if password change is required
+            if (lastInfoData.tokenCreatedAt) {
+              // TODO  Alert / OTP  需要显示的判断需要调整
+              setShowAlertOTP(true)
+  
+              // Check if temporary password has expired (5 minutes)
+              if (lastInfoData.tokenCreatedAt) {
+                const tempPasswordTime = new Date(lastInfoData.tokenCreatedAt).getTime()
+                const currentTime = new Date().getTime()
+                const fiveMinutesInMs = 5 * 60 * 1000
+  
+                // Resend 按钮可用
+                setIsResendDisabled(currentTime - tempPasswordTime <= fiveMinutesInMs)
+             
+              }
+            } else {
+              setShowAlertOTP(true)
+              setIsResendDisabled(false)
+            }
+          }
+
           const userData = await getUserById(selectedItem.id)
+
           // roles 处理
           if (userData.groups) {
             // 将 groups 中的 id 转换为字符串数组
@@ -140,6 +198,20 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
     fetchVendorData()
   }, [selectedItem.id, form])
 
+  const handleResend = async () => {
+    try {
+      const X_CSRF_Token = await refresh_csrf("/auth-srv/group-management")
+      if (X_CSRF_Token) {
+        await forgetPassword(selectedItem.id ?? "", X_CSRF_Token)
+        setIsResendDisabled(true)
+        setTimeout(() => setIsResendDisabled(false), 5 * 60 * 1000) // Enable after 5 minutes
+      } else {
+        console.error("Error:", "Failed to get token")
+      }
+    } catch (error) {
+      console.error("Error resending password:", error)
+    }
+  }
 
   const onSubmit = async (data: Userform) => {
     try {
@@ -226,6 +298,8 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
         </div>
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
+
+          {showAlertOTP && <AlertOTP onResend={handleResend} isResendDisabled={isResendDisabled} />}
          
           <FormField
               control={form.control}

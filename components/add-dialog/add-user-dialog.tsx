@@ -20,14 +20,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns"
 import { Calendar } from "@/components/ui/calendar"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+// import {
+//   AlertDialog,
+//   AlertDialogAction,
+//   AlertDialogContent,
+//   AlertDialogFooter,
+//   AlertDialogHeader,
+//   AlertDialogTitle,
+// } from "@/components/ui/alert-dialog"
+
+import {toast } from "sonner"
 
 import { Plus, CalendarIcon } from "lucide-react"
 
@@ -87,8 +89,8 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
 
-  const [apiResponse, setApiResponse] = useState<{ username: string; oneTimePassword: string } | null>(null)
-  const [showResultDialog, setShowResultDialog] = useState(false)
+  // const [apiResponse, setApiResponse] = useState<{ username: string; oneTimePassword: string } | null>(null)
+  // const [showResultDialog, setShowResultDialog] = useState(false)
 
   const fetchBasicdatas = useCallback(async () => {
     try {
@@ -145,22 +147,37 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
     try {
       // 处理 roles
       const groups = data.roles?.map(role => Number(role));
-      // Add API call 
+      // // Add API call 
       const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register?from=user-management')
       if (X_CSRF_Token) {
         const newUser = {
           ...data,
           groupIds: groups
         }
-        const response = await addUser(newUser)
-        const apiResponseData = {
-          username: response.username,
-          oneTimePassword: response.oneTimePassword || 'N/A' // 如果 oneTimePassword 不存在，设置为 'N/A'
-        };
+
+        await addUser(newUser)
+
+        // const response = await addUser(newUser)
+        // const apiResponseData = {
+        //   username: response.username,
+        //   oneTimePassword: response.oneTimePassword || 'N/A' // 如果 oneTimePassword 不存在，设置为 'N/A'
+        // };
         
-        // 保存API响应并显示对话框
-        setApiResponse(apiResponseData)
-        setShowResultDialog(true)
+
+        // TODO  使用 sonner 组件弹出提示消息 7秒后自动消失
+        // Show success toast notification
+        toast.success("New user created", {
+          description: "An email has been sent to the user with instructions to set-up the account.",
+          duration: 7000, // 7 seconds
+          position: "bottom-right",
+        })
+
+        onAdded()
+        handleClose()
+
+        // // 保存API响应并显示对话框
+        // setApiResponse(apiResponseData)
+        // setShowResultDialog(true)
       } else {
         console.error("Error:", 111)
       }
@@ -170,11 +187,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
   }
 
    // 添加确认后的处理函数
-   const handleConfirm = () => {
-    setShowResultDialog(false)
-    onAdded()
-    handleClose()
-  }
+  //  const handleConfirm = () => {
+  //   setShowResultDialog(false)
+  //   onAdded()
+  //   handleClose()
+  // }
  
   const handleClose = useCallback(() => {
     // Check if form is dirty (has been modified)
@@ -193,6 +210,8 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
 
   return (
       <>
+        {/* <Toaster closeButton richColors /> */}
+
         <Dialog
           open={open}
           onOpenChange={(newOpen) => {
@@ -469,7 +488,7 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
           </DialogContent>
         </Dialog>
 
-        <AlertDialog open={showResultDialog} onOpenChange={setShowResultDialog}>
+        {/* <AlertDialog open={showResultDialog} onOpenChange={setShowResultDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>User created successfully</AlertDialogTitle>
@@ -487,7 +506,7 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
               <AlertDialogAction onClick={handleConfirm}>Continue</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
-        </AlertDialog>         
+        </AlertDialog>          */}
 
         {/* Discard confirmation dialog */}
         <UserAlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>

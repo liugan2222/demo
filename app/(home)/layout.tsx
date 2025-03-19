@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useAppContext } from "@/contexts/AppContext"
 
 import { AppSidebar } from "@/components/sidebar/app-sidebar"
+import {Toaster } from "sonner"
 
 import {
   SidebarInset,
@@ -53,6 +54,7 @@ export default function HomeLayout({
 
   return  isLoggedIn ? (
     <div className="flex h-screen w-full overflow-hidden">
+      <Toaster closeButton richColors position="bottom-right" />
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset className="flex flex-col overflow-hidden">{children}</SidebarInset>

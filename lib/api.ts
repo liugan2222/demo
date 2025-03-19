@@ -115,7 +115,7 @@ export async function getUsers() {
   // 转换
   const transformedItems = (content as any[]).map((item: any) => ({
     id: item.username,
-    userNumber:item.employeeNumber,
+    userNumber:item.employeeNumber?item.employeeNumber:item.username,
     roles: item.groups?.map((group: any) => group.groupName).join(', ') || '', // 拼接 groupName
     status:  item.enabled==true?'Active':'Disabled',
     ...item,
@@ -212,23 +212,34 @@ export async function userEnabled(id: string, X_CSRF_Token: string) {
   return response.data
 }
 
-// TODO 用户修改密码
-// export async function updatePassword(username: string) {
-//   const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
-//   const response = await authApi.put<Userform>(`/auth-srv/users/change-password?currentPassword=abc&newPassword=admin`, {}
-//   ,{
-//     headers: {
-//       'x-csrf-token': X_CSRF_Token
-//     }
-//    }
-//   )
-//   return response.data
-// }
 
-// 刷新用户一次性密码
-export async function regeneratePassword(username: string) {
-  const X_CSRF_Token = JSON.parse(localStorage.getItem('X_CSRF_Token') || '');
-  const response = await authApi.put<Userform>(`/auth-srv/users/${username}/regenerate-password`, {}
+// 查询用户上次发送忘记密码的时间
+export async function getUserLastEmail(username: string) {
+  const response = await authApi.get(`/auth-srv/password-tokens/last-token-created-at/${username}`);
+  return response.data;
+}
+
+// 忘记密码按钮
+export async function forgetPassword(item: any, X_CSRF_Token: string) {
+  const response = await authApi.post<Userform>(`/auth-srv/password-tokens/forgot-password`, {"username": item}
+  ,{
+    headers: {
+      'x-csrf-token': X_CSRF_Token
+    }
+   }
+  )
+  return response.data
+}
+
+// 用户发送忘记密码后，根据token查询相关信息
+export async function getUserByToken(token: string) {
+  const response = await authApi.get(`/auth-srv/password-tokens/${token}`);
+  return response.data;
+}
+
+// 根据token 修改密码
+export async function updatePassword(item: any, X_CSRF_Token: string) {
+  const response = await authApi.put<Userform>(`/auth-srv/password-tokens/create-password`, item
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
