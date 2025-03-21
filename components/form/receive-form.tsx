@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { X, Edit2 } from 'lucide-react'
+import { X, Edit2, Plus, FileText, Check, Trash2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -12,13 +12,26 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { format } from "date-fns"
 import "@/app/globals.css";
 
+import {toast } from "sonner"
+
 import { receiveformSchema, Receiveform } from '@/components/tanstack/schema/formSchema/receiveformSchema'
+import { Document } from '@/components/tanstack/schema/formSchema/documentSchema'
 
 import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
-import { getReceiveById, updateReceive, getPos } from '@/lib/api';
+import { getReceiveById, updateReceive, getPos, uploadFile, uploadReceiveFile, updateFileName, deleteFile } from '@/lib/api';
 
 import { useAppContext } from "@/contexts/AppContext"
 import { IMAGE_PATHS  } from "@/contexts/images"
@@ -31,7 +44,7 @@ interface ReceiveFormProps {
   onCancel: () => void
   isEditing: boolean
   onToggleEdit: () => void 
-}
+} 
 
 // Define the Po
 interface Po {
@@ -53,6 +66,12 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
   const { data: weightUom = [] } = useWeightUom(true)
 
   const [pos, setPos] = useState<Po[]>([])
+
+  // Add these state variables inside the ReceiveForm component, after the existing state variables
+  const [fileToDelete, setFileToDelete] = useState<string | null>(null)
+  const [editingFileName, setEditingFileName] = useState<string | null>(null)
+  const [newFileName, setNewFileName] = useState<string>("")
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const form = useForm<Receiveform>({
     resolver: zodResolver(receiveformSchema),
@@ -157,6 +176,138 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
   if (loading) {
     return <div>Loading...</div>
   }
+
+  // Add this function inside the ReceiveForm component, before the return statement
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      console.error("File size exceeds 5MB limit")
+      toast.error("Upload error", {
+        description: "File size exceeds 5MB limit.",
+        duration: 3000, // 3 seconds
+        position: "bottom-right",
+      })
+      return
+    }
+
+    try {
+      // Upload file
+      console.log("Uploading file:", file.name)
+      const response = await uploadFile(file)
+      // response.data.id
+
+      // Simulate successful upload
+      const referenceDocuments = form.getValues("referenceDocuments") || []
+      // 文件上传
+      const newDocument: Document = {
+        // documentId: selectedItem.documentId,
+        contentType: file.type,
+        documentText: file.name,
+        documentLocation: response.data.id,
+      }
+
+      await uploadReceiveFile(selectedItem.documentId??'', newDocument)
+
+      form.setValue("referenceDocuments", [...referenceDocuments, newDocument], {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+    } catch (error) {
+      // Upload file error handling
+      console.error("Error uploading file:", error)
+      toast.error("Upload error", {
+        description: "Please try again.",
+        duration: 3000, // 3 seconds
+        position: "bottom-right",
+      })
+    }
+  }
+
+  const handleEditFileName = (documentId: string, currentName: string) => {
+    setEditingFileName(documentId)
+    setNewFileName(currentName)
+  }
+
+  const saveFileName = (documentId: string) => {
+    const referenceDocuments = form.getValues("referenceDocuments") || []
+    const updatedDocuments = referenceDocuments.map((doc) => {
+      if (doc.documentId === documentId) {
+        const newNameFile = { ...doc, documentText: newFileName }
+        // TODO: Modify name
+        updateFileName(documentId, newNameFile)
+        return newNameFile
+      }
+      return doc
+    })
+
+    form.setValue("referenceDocuments", updatedDocuments, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+
+    setEditingFileName(null)
+  }
+
+  const confirmDeleteFile = (documentId: string) => {
+    setFileToDelete(documentId)
+    setShowDeleteDialog(true)
+  }
+
+  const deleteFilefc = () => {
+    if (!fileToDelete) return
+
+    // TODO: Delete file
+    deleteFile(selectedItem.documentId??'', fileToDelete)
+
+    const referenceDocuments = form.getValues("referenceDocuments") || []
+    const updatedDocuments = referenceDocuments.filter((doc) => doc.documentId !== fileToDelete)
+
+
+    form.setValue("referenceDocuments", updatedDocuments, {
+      shouldValidate: true,
+      shouldDirty: true,
+    })
+
+    setShowDeleteDialog(false)
+    setFileToDelete(null)
+  }
+
+  const downloadFile = (documentLocation: string, documentName: string) => {
+    const url = `https://fp.ablueforce.com/api/files/${documentLocation}/media`
+
+    // Create a temporary link element
+    const link = document.createElement("a")
+    link.href = url
+    link.download = documentName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  const isImageFile = (fileType: string) => {
+    const imageExtensions = ["image/jpg", "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp", "image/svg"]
+    const extension = fileType.toLowerCase()
+    return imageExtensions.includes(extension)
+  }
+
+  // Add this function to truncate file names but preserve extensions
+  const truncateFileName = (fileName: string, maxLength = 25) => {
+    if (fileName.length <= maxLength) return fileName
+
+    const extension = fileName.substring(fileName.lastIndexOf("."))
+    const nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf("."))
+
+    if (extension.length >= maxLength - 3) {
+      return `...${extension}`
+    }
+
+    const truncatedName = nameWithoutExtension.substring(0, maxLength - 3 - extension.length)
+    return `${truncatedName}...${extension}`
+  }
+
 
   const renderReadOnlyItems = () => (
     <Accordion type="single" collapsible className="space-y-4">
@@ -487,6 +638,121 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
               
               {/* Items Section */}
               <div className="space-y-4">{isEditing ? renderEditItems() : renderReadOnlyItems()}</div>
+
+            </div>
+
+            {/* Attachments Section */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Attachments</h3>
+                {isEditing && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById("file-upload")?.click()}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add attachment
+                    <input id="file-upload" type="file" className="hidden" onChange={handleFileUpload} />
+                  </Button>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                {(form.watch("referenceDocuments") || []).length === 0 ? (
+                  <div className="text-sm text-muted-foreground py-2">No attachments</div>
+                ) : (
+                  (form.watch("referenceDocuments") || []).map((doc: Document) => (
+                    <div
+                      key={doc.documentLocation}
+                      className="flex items-center p-2 border rounded-md hover:bg-accent/50 cursor-pointer"
+                      onClick={() =>
+                        !isEditing || editingFileName !== doc.documentId
+                          ? downloadFile(doc.documentLocation??'', doc.documentText??'')
+                          : null
+                      }
+                    >
+                      <div className="w-12 h-12 bg-gray-100 rounded-md mr-3 overflow-hidden flex-shrink-0">
+                        {isImageFile(doc.contentType ??'') ? (
+                          <img
+                            src={`https://fp.ablueforce.com/api/files/${doc.documentLocation}/media`}
+                            alt={doc.documentText??''}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              ;(e.target as HTMLImageElement).src = IMAGE_PATHS.DEFAULT_FILE
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-muted">
+                            <FileText className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        {isEditing && editingFileName === doc.documentId ? (
+                          <div className="flex items-center">
+                            <Input
+                              value={newFileName}
+                              onChange={(e) => setNewFileName(e.target.value)}
+                              className="h-8"
+                              autoFocus
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  saveFileName(doc.documentId ?? '')
+                                }
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="ml-2"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                saveFileName(doc.documentId ?? '')
+                              }}
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="text-sm font-medium truncate">{truncateFileName(doc.documentText ?? '')}</div>
+                        )}
+                      </div>
+
+                      {isEditing && editingFileName !== doc.documentId && (
+                        <div className="flex items-center ml-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleEditFileName(doc.documentId?? '', doc.documentText?? '')
+                            }}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              confirmDeleteFile(doc.documentId?? '')
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
             
           </div>
@@ -498,6 +764,20 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
             <p className="font-medium">{`${totalCases || 0} ${totalCasesUnit}, ${totalQuantity? totalQuantity.toFixed(2):0.00} ${totalWeightUnit}`}</p>
           </div>
         </div>
+
+        {/* Add AlertDialog for file deletion confirmation */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure you want to delete this attachment?</AlertDialogTitle>
+              <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={deleteFilefc}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </form>
     </Form>
   )

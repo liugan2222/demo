@@ -1,5 +1,7 @@
 import { z } from "zod"
 import { receivesonSchema } from '@/components/tanstack/schema/formSchema/receivesonSchema'
+import { documentSchema } from '@/components/tanstack/schema/formSchema/documentSchema'
+
 
 export const receiveformSchema = z.object({
   documentId: z.string().nullable().optional(),       // Receiving Number
@@ -62,6 +64,8 @@ export const receiveformSchema = z.object({
 
   // Add items array
   receivingItems: z.array(receivesonSchema).optional().default([]),
+
+  referenceDocuments: z.array(documentSchema).optional().default([]),
 })
 
 // Derive the TypeScript type

@@ -5,4 +5,5 @@ export const IMAGE_PATHS = {
     DEFAULT_FRESHPOINT_LOGO: "/default_freshpoint_logo.png",
     DEFAULT_LOGIN_PIC: "/default_login_pic.png",
     DEFAULT_BLUEFORCE_LOGO: "/default_blueforce_logo.png",
+    DEFAULT_FILE: "/default_file",
   } as const;

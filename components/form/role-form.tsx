@@ -244,7 +244,7 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       // }
 
       if (selectedItem.id) {
-        const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
+        const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register')
         if (X_CSRF_Token) {
           // const newRole = {
           //   ...data,
@@ -301,7 +301,7 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
   }
 
   const handleDisable = async () => {
-    const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
+    const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register')
     if (X_CSRF_Token) {
       await roleEnabled(selectedItem.id ?? '', X_CSRF_Token)
       await onSave()
@@ -310,7 +310,7 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
     }
   }
   const handleEnable = async () => {
-    const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
+    const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register')
     if (X_CSRF_Token) {
       await roleEnabled(selectedItem.id ?? '', X_CSRF_Token)
       await onSave()

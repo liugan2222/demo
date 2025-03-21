@@ -130,7 +130,8 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
               description: orderItem.product.description,
               quantityUomId: orderItem.product.quantityUomId,
               caseUomId: orderItem.product.caseUomId,
-              smallImageUrl: orderItem.product.smallImageUrl
+              smallImageUrl: orderItem.product.smallImageUrl,
+              quantityIncluded: orderItem.product.quantityIncluded,
             }))
             calculateTotals(poData.orderItems)
           }

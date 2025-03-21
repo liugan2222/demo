@@ -1,5 +1,5 @@
 "use client"
-import React, {useEffect, useState, useCallback } from 'react'
+import React, {useEffect, useState, useCallback, useRef } from 'react'
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -21,7 +21,7 @@ import "@/app/globals.css";
 import { MultiSelect } from "@/components/add-dialog/components/user/multi-select"
 
 import { getUserById, updateUser, getRoles, refresh_csrf, userEnabled
-   , getUserLastEmail, forgetPassword
+   , getUserLastEmail, resend
  } from '@/lib/api';
 
 import { useAppContext } from "@/contexts/AppContext"
@@ -135,8 +135,10 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
 
   const [showAlertOTP, setShowAlertOTP] = useState(false)
   const [isResendDisabled, setIsResendDisabled] = useState(false) 
+  const resendTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
+    let timerId: NodeJS.Timeout | null = null
     const fetchVendorData = async () => {
       if (selectedItem.id) {
         try {
@@ -145,27 +147,38 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
 
 
           // Alert / OTP  判断
-          if (selectedItem.id !== 'admin') {
+          if (selectedItem.id !== "admin" && selectedItem.id !== "user") {
             const lastInfoData = await getUserLastEmail(selectedItem.id)
             // Check if password change is required
-            if (lastInfoData.tokenCreatedAt) {
-              // TODO  Alert / OTP  需要显示的判断需要调整
+            if (!lastInfoData.passwordCreatedAt) {
+              // Check if temporary password has expired (24 hours)
               setShowAlertOTP(true)
+              const tempPasswordTime = new Date(lastInfoData.tokenCreatedAt).getTime()
+              const currentTime = new Date().getTime()
+              const fiveMinutesInMs = 24 * 60 * 60 * 1000
   
-              // Check if temporary password has expired (5 minutes)
-              if (lastInfoData.tokenCreatedAt) {
-                const tempPasswordTime = new Date(lastInfoData.tokenCreatedAt).getTime()
-                const currentTime = new Date().getTime()
-                const fiveMinutesInMs = 5 * 60 * 1000
-  
-                // Resend 按钮可用
-                setIsResendDisabled(currentTime - tempPasswordTime <= fiveMinutesInMs)
-             
+              // Resend 按钮可用 - 动态控制 Resend 按钮
+              const timeRemaining = tempPasswordTime + fiveMinutesInMs - currentTime
+              if (timeRemaining > 0) {
+                setIsResendDisabled(true)
+                // Clear any existing timer
+                if (resendTimerRef.current) {
+                  clearTimeout(resendTimerRef.current)
+                }
+                // Set new timer to enable the button after the remaining time
+                timerId = setTimeout(() => {
+                  setIsResendDisabled(false)
+                }, timeRemaining)
+              } else {
+                setIsResendDisabled(false)
               }
             } else {
-              setShowAlertOTP(true)
-              setIsResendDisabled(false)
+              setShowAlertOTP(false)
+              setIsResendDisabled(true)
             }
+          } else {
+            setShowAlertOTP(false)
+            setIsResendDisabled(true)
           }
 
           const userData = await getUserById(selectedItem.id)
@@ -196,15 +209,35 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       }
     }
     fetchVendorData()
+
+    return () => {
+      if (timerId) {
+        clearTimeout(timerId)
+      }
+      if (resendTimerRef.current) {
+        clearTimeout(resendTimerRef.current)
+      }
+    }
   }, [selectedItem.id, form])
 
   const handleResend = async () => {
     try {
-      const X_CSRF_Token = await refresh_csrf("/auth-srv/group-management")
+      const X_CSRF_Token = await refresh_csrf("/auth-srv/pre-register")
       if (X_CSRF_Token) {
-        await forgetPassword(selectedItem.id ?? "", X_CSRF_Token)
+        await resend(selectedItem.id ?? "", X_CSRF_Token)
         setIsResendDisabled(true)
-        setTimeout(() => setIsResendDisabled(false), 5 * 60 * 1000) // Enable after 5 minutes
+        // Clear any existing timer
+        if (resendTimerRef.current) {
+          clearTimeout(resendTimerRef.current)
+        }
+
+        // Set new timer
+        resendTimerRef.current = setTimeout(
+          () => {
+            setIsResendDisabled(false)
+          },
+          24 * 60 * 60 * 1000,
+        ) // Enable after 24 hours
       } else {
         console.error("Error:", "Failed to get token")
       }
@@ -218,7 +251,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       if (selectedItem.id ) {
         const groups = data.roles?.map(role => Number(role));
         // Add API call 
-        const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
+        const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register')
         if (X_CSRF_Token) {
           const updateUserInfo = {
             ...data,
@@ -241,7 +274,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
   }
 
   const handleDisable = async () => {
-    const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
+    const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register')
     if (X_CSRF_Token) {
       await userEnabled(selectedItem.id ?? '', X_CSRF_Token)
       await onSave()
@@ -250,7 +283,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
     }
   }
   const handleEnable = async () => {
-    const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
+    const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register')
     if (X_CSRF_Token) {
       await userEnabled(selectedItem.id ?? '', X_CSRF_Token)
       await onSave()

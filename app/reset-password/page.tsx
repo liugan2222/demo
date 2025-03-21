@@ -52,6 +52,13 @@ export default function ResetPasswordPage() {
     try {
       // 判断当前是否可以发送邮件
       const lastInfoData = await getUserLastEmail(data.email)
+      // 如果用户未完成注册后第一次修改密码则不允许继续操作忘记密码
+      if (!lastInfoData.passwordCreatedAt) {
+        // 5分钟内不可多次发起密码修改
+        setError("Your account setup is incomplete. Please use the set up link sent to your email. If the link has expired, contact your admin to resend it.")
+        return
+      }
+
       // Check if temporary password has expired (5 minutes)
       if (lastInfoData.tokenCreatedAt) {
         const tempPasswordTime = new Date(lastInfoData.tokenCreatedAt).getTime()
@@ -75,7 +82,6 @@ export default function ResetPasswordPage() {
         setError("Network abnormality, please refresh the page, please try again.")
       }
 
-
       // Optional: redirect back to login after a delay
       // setTimeout(() => {
       //   router.push("/login")
@@ -86,6 +92,8 @@ export default function ResetPasswordPage() {
           setError("This user has been disabled, please contact your admin.")
         } else if (error.response?.data?.detail === "User not found") {
           setError("Incorrect email.")
+        } else if ( error.response?.data?.detail === "Your account setup is incomplete. Please use the set up link sent to your email. If the link has expired, contact your admin to resend it.") {
+          setError("Your account setup is incomplete. Please use the set up link sent to your email. If the link has expired, contact your admin to resend it.")
         } else {
           setError("Network abnormality, please refresh the page, please try again.")
         }

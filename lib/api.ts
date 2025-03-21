@@ -11,7 +11,7 @@ import { Poform } from '@/components/tanstack/schema/formSchema/poformSchema'
 import { Receiveform } from '@/components/tanstack/schema/formSchema/receiveformSchema'
 import { Userform } from '@/components/tanstack/schema/formSchema/userformSchema'
 import { Roleform } from '@/components/tanstack/schema/formSchema/roleformSchema'
-
+import { Document } from '@/components/tanstack/schema/formSchema/documentSchema'
 
 // 全局配置 axios 携带 Cookie
 // axios.defaults.withCredentials = true;
@@ -215,7 +215,7 @@ export async function userEnabled(id: string, X_CSRF_Token: string) {
 
 // 查询用户上次发送忘记密码的时间
 export async function getUserLastEmail(username: string) {
-  const response = await authApi.get(`/auth-srv/password-tokens/last-token-created-at/${username}`);
+  const response = await authApi.get(`/auth-srv/password-tokens/last-register-type-token/?username=${username}`);
   return response.data;
 }
 
@@ -240,6 +240,18 @@ export async function getUserByToken(token: string) {
 // 根据token 修改密码
 export async function updatePassword(item: any, X_CSRF_Token: string) {
   const response = await authApi.put<Userform>(`/auth-srv/password-tokens/create-password`, item
+  ,{
+    headers: {
+      'x-csrf-token': X_CSRF_Token
+    }
+   }
+  )
+  return response.data
+}
+
+// 根据token 修改密码
+export async function resend(username: string, X_CSRF_Token: string) {
+  const response = await authApi.put<Userform>(`/auth-srv/password-tokens/resend-register-email?username=${username}`, {}
   ,{
     headers: {
       'x-csrf-token': X_CSRF_Token
@@ -738,14 +750,31 @@ export async function updateReceive(id: string, item: Partial<Receiveform>) {
   return response.data
 }
 
+// receive file upload single
+export async function uploadReceiveFile(id: string, item: Partial<Document>) {
+  const response = await api.post<Document>(`/proxy/BffReceipts/${id}/ReferenceDocuments`, item)
+  return response.data
+}
+
+// receive file update name
+export async function updateFileName(id: string, item: Partial<Document>) {
+  const response = await api.put<Document>(`/proxy/BffDocuments/${id}`, item)
+  return response.data
+}
+
+// receive file delete
+export async function deleteFile(receiptId: string, documentId: string) {
+  const response = await api.delete(`/proxy/BffReceipts/${receiptId}/ReferenceDocuments/${documentId}`)
+  return response.data
+}
 
 /* file */
 export async function uploadFile(file: File) {
   // check
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-  if (!allowedTypes.includes(file.type)) {
-    throw new Error('Only JPG/PNG/GIF/WEBP format is supported.');
-  }
+  // const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  // if (!allowedTypes.includes(file.type)) {
+  //   throw new Error('Only JPG/PNG/GIF/WEBP format is supported.');
+  // }
 
   //  totest
   // const response = await fetch('/test1.jpg');
