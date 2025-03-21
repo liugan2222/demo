@@ -116,15 +116,28 @@ function ChangePasswordForm() {
             const tempPasswordTime = new Date(userData.tokenCreatedAt).getTime()
             const currentTime = new Date().getTime()
             const fiveMinutesInMs = 5 * 60 * 1000
+            const Hours24 = 24 * 60 * 60 * 1000
 
-            if (currentTime - tempPasswordTime > fiveMinutesInMs) {
-              // 5分钟时效
+           if (passwordType === 'register') {
+            if (currentTime - tempPasswordTime > Hours24) {
+              // 注册是24小时时效
               setError(
-                "The time limit for each password change is 5 minutes. If the current change request has expired, please re-initiate it.",
+                "The time limit for each password change is 24 hours. If the current change request has expired, please re-initiate it.",
               )
               setExpired(true)
               return
             }
+           } else {
+             if (currentTime - tempPasswordTime > fiveMinutesInMs) {
+               // 5分钟时效
+               setError(
+                 "The time limit for each password change is 5 minutes. If the current change request has expired, please re-initiate it.",
+               )
+               setExpired(true)
+               return
+             }
+           }
+
           }
 
           setUserData(userData)
