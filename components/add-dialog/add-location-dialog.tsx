@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, AlertCircle } from 'lucide-react'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -33,11 +33,12 @@ import {
 } from "@/components/ui/accordion"
 
 import { AlertDialog, AlertDialogContent, AlertDialogTitle } from "@/components/common/info-alert-dialog"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 // Import the locationSchema
 import { locationformSchema } from '@/components/tanstack/schema/formSchema/locationformSchema'
 
-import { addLocation, getWarehouseList } from '@/lib/api';
+import { addLocation, getWarehouseList, FacilityLocationNameWhenCreate, FacilityLocationCodeWhenCreate } from '@/lib/api';
 
 // Create a schema for multiple items
 const multipleLocationsSchema = z.object({
@@ -77,6 +78,7 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>(['location-0'])
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const form = useForm<MultipleLocationsSchema>({
     resolver: zodResolver(multipleLocationsSchema),
@@ -103,11 +105,13 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
   useEffect(() => {
     if (open) {
       fetchWarehouses()
+      setFormError(null)
     }
   }, [open, fetchWarehouses])
 
   const onSubmit = useCallback(async (data: MultipleLocationsSchema) => {
     try {
+      setFormError(null)
       await addLocation(data)
       setOpen(false)
       form.reset({
@@ -115,9 +119,11 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
       });
       setExpandedItems(['location-0']);
       onAdded()
-    } catch (error) {
-      console.error('Error adding location:', error)
-      // Handle error (e.g., show error message to user)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred while adding the location"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }, [form, onAdded, setOpen]);
 
@@ -152,6 +158,7 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
     form.reset({
       items: [createEmptyLocation()]
     });
+    setFormError(null)
     setExpandedItems(['location-0']);
   };
 
@@ -187,6 +194,13 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              {/* Form-level error alert */}
+              {formError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{formError}</AlertDescription>
+                </Alert>
+              )}
               <ScrollArea className="h-[60vh] pr-4">
                 <Accordion
                   type="single"
@@ -223,7 +237,38 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Location<span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input 
+                                    {...field} 
+                                    value={field.value ?? ''} 
+                                    onBlur={async (e) => {
+                                      field.onBlur() // Call the original onBlur handler
+                                      // Clear the error if it exists
+                                      form.clearErrors("items.0.locationName")
+                                      const value = e.target.value
+                                      if (value) {
+                                        try {
+                                          await FacilityLocationNameWhenCreate(value)
+                                        } catch (error : any) {
+                                          // Check if the error has a response with status 400
+                                          if (error.response && error.response.status === 400) {
+                                            // Extract the error message from the response
+                                            const errorMessage = "This location name already exists"
+                                            // Set the form error
+                                            form.setError("items.0.locationName", {
+                                              type: "manual",
+                                              message: errorMessage,
+                                            })
+                                          } else {
+                                            // Handle other types of errors
+                                            form.setError("items.0.locationName", {
+                                              type: "manual",
+                                              message: error.response.data?.detail,
+                                            })
+                                          }
+                                        }
+                                      }
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -251,7 +296,38 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Location number</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input 
+                                    {...field} 
+                                    value={field.value ?? ''} 
+                                    onBlur={async (e) => {
+                                      field.onBlur() // Call the original onBlur handler
+                                      // Clear the error if it exists
+                                      form.clearErrors("items.0.locationCode")
+                                      const value = e.target.value
+                                      if (value) {
+                                        try {
+                                          await FacilityLocationCodeWhenCreate(value)
+                                        } catch (error : any) {
+                                          // Check if the error has a response with status 400
+                                          if (error.response && error.response.status === 400) {
+                                            // Extract the error message from the response
+                                            const errorMessage = "This location number already exists"
+                                            // Set the form error
+                                            form.setError("items.0.locationCode", {
+                                              type: "manual",
+                                              message: errorMessage,
+                                            })
+                                          } else {
+                                            // Handle other types of errors
+                                            form.setError("items.0.locationCode", {
+                                              type: "manual",
+                                              message: error.response.data?.detail,
+                                            })
+                                          }
+                                        }
+                                      }
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

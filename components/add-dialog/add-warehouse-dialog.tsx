@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react'
-import { Plus, X, Check, ChevronsUpDown } from 'lucide-react'
+import { Plus, X, Check, ChevronsUpDown, AlertCircle } from 'lucide-react'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/accordion"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 
 // Import the warehouseSchema
@@ -40,7 +41,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogTitle } from "@/components/
 
 
 import { useAppContext } from "@/contexts/AppContext"
-import { getStatesAndProvinces, addWarehouse } from '@/lib/api';
+import { getStatesAndProvinces, addWarehouse, FacilityNumberWhenCreate, FacilityNameWhenCreate } from '@/lib/api';
 
 // Define the Country type
 interface Country {
@@ -90,6 +91,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const [isCountryPopoverOpen, setIsCountryPopoverOpen] = useState(false)
   const [isStatePopoverOpen, setIsStatePopoverOpen] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const { countries = [] } = useAppContext()
 
@@ -125,6 +127,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const onSubmit = useCallback(async (data: MultipleWarehousesSchema) => {
     try {
+      setFormError(null)
       await addWarehouse(data)
       setOpen(false)
       form.reset({
@@ -132,9 +135,11 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
       });
       setExpandedItems(['warehouse-0']);
       onAdded()
-    } catch (error) {
-      console.error('Error adding warehouse:', error)
-      // Handle error (e.g., show error message to user)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred while adding the warehouse"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }, [form, onAdded, setOpen]);
 
@@ -169,6 +174,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
     form.reset({
       items: [createEmptyWarehouse()]
     });
+    setFormError(null)
     setExpandedItems(['warehouse-0']);
   };
 
@@ -211,6 +217,13 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              {/* Form-level error alert */}
+              {formError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{formError}</AlertDescription>
+                </Alert>
+              )}
               <ScrollArea className="h-[60vh] pr-4">
                 <Accordion
                   type="single"
@@ -247,7 +260,38 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Warehouse<span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''}/>
+                                  <Input 
+                                    {...field} 
+                                    value={field.value ?? ''}
+                                    onBlur={async (e) => {
+                                      field.onBlur() // Call the original onBlur handler
+                                      // Clear the error if it exists
+                                      form.clearErrors("items.0.facilityName")
+                                      const value = e.target.value
+                                      if (value) {
+                                        try {
+                                          await FacilityNameWhenCreate(value)
+                                        } catch (error : any) {
+                                          // Check if the error has a response with status 400
+                                          if (error.response && error.response.status === 400) {
+                                            // Extract the error message from the response
+                                            const errorMessage = "This warehouse name already exists"
+                                            // Set the form error
+                                            form.setError("items.0.facilityName", {
+                                              type: "manual",
+                                              message: errorMessage,
+                                            })
+                                          } else {
+                                            // Handle other types of errors
+                                            form.setError("items.0.facilityName", {
+                                              type: "manual",
+                                              message: error.response.data?.detail,
+                                            })
+                                          }
+                                        }
+                                      }
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -275,7 +319,38 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Warehouse number</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input 
+                                    {...field} 
+                                    value={field.value ?? ''} 
+                                    onBlur={async (e) => {
+                                      field.onBlur() // Call the original onBlur handler
+                                      // Clear the error if it exists
+                                      form.clearErrors("items.0.internalId")
+                                      const value = e.target.value
+                                      if (value) {
+                                        try {
+                                          await FacilityNumberWhenCreate(value)
+                                        } catch (error : any) {
+                                          // Check if the error has a response with status 400
+                                          if (error.response && error.response.status === 400) {
+                                            // Extract the error message from the response
+                                            const errorMessage = "This warehouse number already exists"
+                                            // Set the form error
+                                            form.setError("items.0.internalId", {
+                                              type: "manual",
+                                              message: errorMessage,
+                                            })
+                                          } else {
+                                            // Handle other types of errors
+                                            form.setError("items.0.internalId", {
+                                              type: "manual",
+                                              message: error.response.data?.detail,
+                                            })
+                                          }
+                                        }
+                                      }
+                                    }}
+                                />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

@@ -3,11 +3,12 @@ import React, {useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { X, Edit2, EyeOff, Eye } from 'lucide-react'
+import { X, Edit2, EyeOff, Eye, AlertCircle } from 'lucide-react'
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { warehouseformSchema, Warehouseform } from '@/components/tanstack/schema/formSchema/warehouseformSchema'
 import { NumberField } from './components/field/number-field'
@@ -43,6 +44,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing, onTog
 
   const [contactstates, setContactstates] = useState<Country[]>([])
   const [loading, setLoading] = useState(true)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const [isCountryPopoverOpen, setIsCountryPopoverOpen] = useState(false)
   const [isStatePopoverOpen, setIsStatePopoverOpen] = useState(false)
@@ -82,6 +84,7 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing, onTog
       }
     }
     fetchVendorData()
+    setFormError(null)
   }, [selectedItem.facilityId, form]) 
 
   const onSubmit = async (data: Warehouseform) => {
@@ -91,8 +94,11 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing, onTog
       }
       // Call the onSave callback with the form data
       await onSave()
-    } catch (error) {
-      console.error('Error saving item:', error)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred please try again"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }
 
@@ -174,6 +180,15 @@ export function WarehouseForm({ selectedItem, onSave, onCancel, isEditing, onTog
             <X size={16} />
           </Button>
         </div>
+        {/* Form-level error alert */}
+        {formError && (
+          <div className="p-2">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
        

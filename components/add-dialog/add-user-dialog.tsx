@@ -31,7 +31,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 import {toast } from "sonner"
 
-import { Plus, CalendarIcon } from "lucide-react"
+import { Plus, CalendarIcon, AlertCircle } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { UserAlertDialog, UserAlertDialogContent, UserAlertDialogTitle } from "@/components/common/user-alert-dialog"
 
@@ -88,6 +89,7 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
   const [roles, setRoles] = useState<Role[]>([])
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   // const [apiResponse, setApiResponse] = useState<{ username: string; oneTimePassword: string } | null>(null)
   // const [showResultDialog, setShowResultDialog] = useState(false)
@@ -133,6 +135,7 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
   useEffect(() => {
     if (open) {
       fetchBasicdatas();
+      setFormError(null)
     }
   }, [open, fetchBasicdatas]);
 
@@ -145,6 +148,7 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
 
   async function onSubmit(data: Userform) {
     try {
+      setFormError(null)
       // 处理 roles
       const groups = data.roles?.map(role => Number(role));
       // // Add API call 
@@ -179,10 +183,13 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
         // setApiResponse(apiResponseData)
         // setShowResultDialog(true)
       } else {
-        console.error("Error:", 111)
+        setFormError("Network abnormality, please refresh the page, please try again.")
       }
-    } catch (error) {
-      console.error("Error:", error)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred while adding the user"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }
 
@@ -206,6 +213,7 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
   const closeForm = () => {
     setOpen(false);
     form.reset(createEmptyUser());
+    setFormError(null)
   };  
 
   return (
@@ -242,7 +250,14 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <ScrollArea className="h-[60vh] pr-4"> 
+                {/* Form-level error alert */}
+                {formError && (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{formError}</AlertDescription>
+                  </Alert>
+                )}
+                <ScrollArea className="h-[60vh] pr-4">
                   <FormField
                     control={form.control}
                     name="employeeNumber"

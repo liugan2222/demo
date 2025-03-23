@@ -177,6 +177,14 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
     return <div>Loading...</div>
   }
 
+  function getFileExtension(filename) {
+    const parts = filename.split('.');
+    if (parts.length > 1) {
+      return parts.pop();
+    }
+    return ''; // 如果没有 '.'，返回空字符串
+  }
+
   // Add this function inside the ReceiveForm component, before the return statement
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -204,7 +212,7 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
       // 文件上传
       const newDocument: Document = {
         // documentId: selectedItem.documentId,
-        contentType: file.type,
+        contentType: getFileExtension(file.name),
         documentText: file.name,
         documentLocation: response.data.id,
       }
@@ -288,7 +296,7 @@ export function ReceiveForm({ selectedItem, onSave, onCancel, isEditing, onToggl
   }
 
   const isImageFile = (fileType: string) => {
-    const imageExtensions = ["image/jpg", "image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp", "image/svg"]
+    const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "bmp", "svg"]
     const extension = fileType.toLowerCase()
     return imageExtensions.includes(extension)
   }

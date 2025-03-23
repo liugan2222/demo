@@ -11,7 +11,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
-import { X, CalendarIcon, Edit2, EyeOff, Eye, Mail, RotateCw } from 'lucide-react'
+import { X, CalendarIcon, Edit2, EyeOff, Eye, Mail, RotateCw, AlertCircle } from 'lucide-react'
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { userformSchema, Userform } from '@/components/tanstack/schema/formSchema/userformSchema'
 import { TextField } from './components/field/text-field'
@@ -85,6 +86,8 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
 
   const [loading, setLoading] = useState(true)
   const [roles, setRoles] = useState<Role[]>([])
+
+  const [formError, setFormError] = useState<string | null>(null)
 
   const { userPermissions, userInfo } = useAppContext()
   const isUpdate = (userInfo?.username === "admin") || (userPermissions.includes('Users_Update'))
@@ -209,6 +212,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       }
     }
     fetchVendorData()
+    setFormError(null)
 
     return () => {
       if (timerId) {
@@ -247,6 +251,7 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
   }
 
   const onSubmit = async (data: Userform) => {
+    setFormError(null)
     try {
       if (selectedItem.id ) {
         const groups = data.roles?.map(role => Number(role));
@@ -264,8 +269,11 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       }
       // Call the onSave callback with the form data
       await onSave()
-    } catch (error) {
-      console.error('Error saving item:', error)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred please try again"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }
 
@@ -329,6 +337,15 @@ export function UserForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
             <X size={16} />
           </Button>
         </div>
+        {/* Form-level error alert */}
+        {formError && (
+          <div className="p-2">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
 

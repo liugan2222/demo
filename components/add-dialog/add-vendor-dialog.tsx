@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { z } from 'zod'
-import { Plus, Check, ChevronsUpDown, X } from "lucide-react"
+import { Plus, Check, ChevronsUpDown, X, AlertCircle } from "lucide-react"
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -27,9 +27,10 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 
-import { getStatesAndProvinces, addVendor, getSupplierType } from '@/lib/api';
+import { getStatesAndProvinces, addVendor, getSupplierType, VendorNumberWhenCreate } from '@/lib/api';
 import { useAppContext } from "@/contexts/AppContext"
 
 import { AlertDialog, AlertDialogContent, AlertDialogTitle } from "@/components/common/info-alert-dialog"
@@ -150,6 +151,7 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
   const [isStatePopoverOpen, setIsStatePopoverOpen] = useState(false)
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   // Use SWR hooks for data fetching
   const { countries = [] } = useAppContext()
@@ -167,6 +169,7 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
   useEffect(() => {
     if (open) {
       fetchTypes();
+      setFormError(null)
     }
   }, [open, fetchTypes]); 
  
@@ -222,19 +225,24 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
     form.reset({
       items: [createEmptyVendor()]
     });
+    setFormError(null)
   }, [form]);
 
   const onSubmit = useCallback(async (data: MultipleVendorsSchema) => {
     try {
+      // Clear any previous form errors
+      setFormError(null)
       await addVendor(data)
       setOpen(false)
       form.reset({
         items: [createEmptyVendor()]
       });
       onAdded()
-    } catch (error) {
-      console.error('Error adding vendor:', error)
-      // Handle error (e.g., show error message to user)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred while adding the vendor"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }, [form, onAdded]);
 
@@ -267,6 +275,13 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              {/* Form-level error alert */}
+              {formError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{formError}</AlertDescription>
+                </Alert>
+              )}
               <ScrollArea className="h-[60vh] pr-4">
                 <div className="grid grid-cols-2 gap-4 p-4">
             
@@ -305,7 +320,39 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Vendor number</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input 
+                            {...field} 
+                            value={field.value ?? ''} 
+                            onBlur={async (e) => {
+                              field.onBlur() // Call the original onBlur handler
+                              // Clear the error if it exists
+                              form.clearErrors("items.0.internalId")
+                              const value = e.target.value
+                              if (value) {
+                                try {
+                                  await VendorNumberWhenCreate(value)
+                                } catch (error : any) {
+                                  // Check if the error has a response with status 400
+                                  if (error.response && error.response.status === 400) {
+                                    // Extract the error message from the response
+                                    const errorMessage = "This vendor number already exists"
+                                    // Set the form error
+                                    form.setError("items.0.internalId", {
+                                      type: "manual",
+                                      message: errorMessage,
+                                    })
+                                  } else {
+                                    // Handle other types of errors
+                                    console.error("Error checking vendor number:", error)
+                                    form.setError("items.0.internalId", {
+                                      type: "manual",
+                                      message: error.response.data?.detail,
+                                    })
+                                  }
+                                }
+                              }
+                            }}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

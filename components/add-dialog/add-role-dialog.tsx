@@ -17,8 +17,9 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-import { Plus } from "lucide-react"
+import { Plus, AlertCircle } from "lucide-react"
 
 import { roleformSchema, Roleform } from '@/components/tanstack/schema/formSchema/roleformSchema'
 
@@ -40,6 +41,7 @@ interface AddDialogProps {
 export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const [open, setOpen] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
 
@@ -49,6 +51,7 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
   })
 
   async function onSubmit(data: Roleform) {
+    setFormError(null)
     try {
       // Add API call 
       const X_CSRF_Token = await refresh_csrf('/auth-srv/group-management')
@@ -60,10 +63,13 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
         await addRole(data)
         onAdded()
       } else {
-        console.error("Error:", 'Failed to get token')
+        setFormError("'Failed to get token, please refresh the page, please try again.")
       }
-    } catch (error) {
-      console.error("Error:", error)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred while adding the role"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }
 
@@ -80,6 +86,7 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
   const closeForm = () => {
     setOpen(false);
     form.reset(createEmptyRole());
+    setFormError(null)
   };  
 
   return (
@@ -114,6 +121,13 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Form-level error alert */}
+                {formError && (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{formError}</AlertDescription>
+                  </Alert>
+                )}
                 <FormField
                   control={form.control}
                   name="groupName"

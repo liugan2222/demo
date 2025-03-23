@@ -15,8 +15,9 @@ import { Card } from "@/components/ui/card"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
-import { Plus, X, CalendarIcon, Edit2 } from "lucide-react"
+import { Plus, X, CalendarIcon, Edit2, AlertCircle } from "lucide-react"
 
 import { format } from "date-fns"
 
@@ -69,6 +70,7 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
   const [totalWeight, setTotalWeight] = useState(0);
   const [totalCasesUnit, setTotalCasesUnit] = useState('Units');
   const [totalWeightUnit, setTotalWeightUnit] = useState('Units');
+  const [formError, setFormError] = useState<string | null>(null)
   
   const calculateTotals = useCallback((items: Poform['orderItems']) => {
     let cases = 0;
@@ -150,20 +152,25 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
         setLoading(false)
       }
     }
+    setFormError(null)
     fetchVendors()
     fetchPoData()
   }, [selectedItem.orderId, form, fetchVendors])
 
 
   const onSubmit = async (data: Poform) => {
+    setFormError(null)
     try {
       if (data.orderId) {
         await updatePo(data.orderId, data)
       }
       // Call the onSave callback with the form data
       await onSave()
-    } catch (error) {
-      console.error('Error saving item:', error)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred please try again"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }
 
@@ -474,6 +481,15 @@ export function PoForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit
             <X size={16} />
           </Button>
         </div>
+        {/* Form-level error alert */}
+        {formError && (
+          <div className="p-2">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         <ScrollArea className="flex-grow">
           <div className="space-y-6 p-6">
             {/* Header Information */}

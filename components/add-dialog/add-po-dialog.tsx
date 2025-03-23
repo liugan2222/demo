@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Plus, X, CalendarIcon } from "lucide-react"
+import { Plus, X, CalendarIcon, AlertCircle } from "lucide-react"
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { format } from "date-fns"
@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   Accordion,
   AccordionContent,
@@ -98,6 +99,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>(['item-0'])
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const { data: packageType = [] } = usePackageType(true)
   const { data: weightUom = [] } = useWeightUom(true)
@@ -126,19 +128,23 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
         }
       }
       fetchData()
+      setFormError(null)
     }
   }, [open])
 
   const onSubmit = useCallback(async (data: Poform) => {
+    setFormError(null)
     try {
       await addPo(data)
       setOpen(false)
       form.reset(createEmptyPo());
       setExpandedItems(['item-0']);
       onAdded()
-    } catch (error) {
-      console.error('Error adding PO:', error)
-      // Handle error (e.g., show error message to user)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred while adding the PO"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }, [form, onAdded, setOpen]);
 
@@ -242,6 +248,13 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              {/* Form-level error alert */}
+              {formError && (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{formError}</AlertDescription>
+                  </Alert>
+                )}
               <ScrollArea className="h-[60vh] pr-4">
                 <div className="mb-6 p-4 border rounded-lg relative">
                   <div className="grid grid-cols-2 gap-4">

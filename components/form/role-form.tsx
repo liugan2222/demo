@@ -4,11 +4,12 @@ import React, {useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { X, Edit2, EyeOff, Eye } from 'lucide-react'
+import { X, Edit2, EyeOff, Eye, AlertCircle } from 'lucide-react'
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { roleformSchema, Roleform } from '@/components/tanstack/schema/formSchema/roleformSchema'
 import { Badge } from "@/components/ui/badge"
@@ -148,6 +149,7 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
   const [roleMembers, setRoleMembers] = useState<string[]>([])
   const [permissions, setPermissions] = useState<Permission[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [formError, setFormError] = useState<string | null>(null)
 
   const { userPermissions, userInfo } = useAppContext()
   const isDisable = (userInfo?.username === "admin") || (userPermissions.includes('Roles_Disable'))
@@ -223,6 +225,7 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       }
     }
     fetchVendorData()
+    setFormError(null)
   }, [selectedItem.id, form])
 
   const handleMembersChange = (members: string[]) => {
@@ -242,7 +245,7 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
       //   });
       //   return;
       // }
-
+      setFormError(null)
       if (selectedItem.id) {
         const X_CSRF_Token = await refresh_csrf('/auth-srv/pre-register')
         if (X_CSRF_Token) {
@@ -257,13 +260,11 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
         }
       }
       // Call the onSave callback with the form data
-    } catch (error) {
-      console.error('Error saving item:', error);
-      // 显示错误提示
-      form.setError('root', {
-        type: 'manual',
-        message: 'Failed to save changes',
-      });
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred please try again"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }
 
@@ -361,6 +362,15 @@ export function RoleForm({ selectedItem, onSave, onCancel, isEditing, onToggleEd
             <X size={16} />
           </Button>
         </div>
+        {/* Form-level error alert */}
+        {formError && (
+          <div className="p-2">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
 

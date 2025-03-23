@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Plus, X } from 'lucide-react'
+import { Plus, X, AlertCircle } from 'lucide-react'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -37,9 +37,10 @@ import { ItemImage } from "@/components/common/item/item-image"
 import { itemformSchema } from '@/components/tanstack/schema/formSchema/itemformSchema'
 
 import { AlertDialog, AlertDialogContent, AlertDialogTitle } from "@/components/common/info-alert-dialog"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { usePackageType, useWeightUom } from "@/hooks/use-cached-data"
-import { addItem, getVendorList, uploadFile } from '@/lib/api';
+import { addItem, getVendorList, uploadFile, ItemNumberWhenCreate } from '@/lib/api';
 
 // Define the Uom
 interface Uom {
@@ -101,6 +102,7 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>(['item-0'])
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const { data: packageType = [] } = usePackageType(true)
   const { data: weightUom = [] } = useWeightUom(true)
@@ -130,11 +132,13 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
   useEffect(() => {
     if (open) {
       fetchVendors();
+      setFormError(null)
     }
   }, [open, fetchVendors]);
 
   const onSubmit = useCallback(async (data: MultipleItemsSchema) => {
     try {
+      setFormError(null)
       await addItem(data)
       setOpen(false)
       form.reset({
@@ -142,9 +146,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
       });
       setExpandedItems(['item-0']);
       onAdded()
-    } catch (error) {
-      console.error('Error adding item:', error)
-      // Handle error (e.g., show error message to user)
+    } catch (error:any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred while adding the item"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }, [form, onAdded, setOpen]);
 
@@ -179,6 +185,7 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
     form.reset({
       items: [createEmptyItem()]
     });
+    setFormError(null)
     setExpandedItems(['item-0']);
   };
 
@@ -214,6 +221,13 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              {/* Form-level error alert */}
+              {formError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{formError}</AlertDescription>
+                </Alert>
+              )}
               <ScrollArea className="h-[60vh] pr-4">
                 <Accordion
                   type="single"
@@ -347,7 +361,38 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Item number<span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input 
+                                    {...field} 
+                                    value={field.value ?? ''} 
+                                    onBlur={async (e) => {
+                                      field.onBlur() // Call the original onBlur handler
+                                      // Clear the error if it exists
+                                      form.clearErrors("items.0.internalId")
+                                      const value = e.target.value
+                                      if (value) {
+                                        try {
+                                          await ItemNumberWhenCreate(value)
+                                        } catch (error : any) {
+                                          // Check if the error has a response with status 400
+                                          if (error.response && error.response.status === 400) {
+                                            // Extract the error message from the response
+                                            const errorMessage = "This item number already exists"
+                                            // Set the form error
+                                            form.setError("items.0.internalId", {
+                                              type: "manual",
+                                              message: errorMessage,
+                                            })
+                                          } else {
+                                            // Handle other types of errors
+                                            form.setError("items.0.internalId", {
+                                              type: "manual",
+                                              message: error.response.data?.detail,
+                                            })
+                                          }
+                                        }
+                                      }
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

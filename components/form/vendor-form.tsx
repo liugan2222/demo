@@ -3,7 +3,7 @@ import React, {useEffect, useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { X, Edit2, EyeOff, Eye } from 'lucide-react'
+import { X, Edit2, EyeOff, Eye, AlertCircle } from 'lucide-react'
 
 import { Check, ChevronsUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { cn } from "@/lib/utils"
 
 import { TextField } from './components/field/text-field'
@@ -64,6 +65,7 @@ export function VendorForm({ selectedItem, onSave, onCancel, isEditing, onToggle
   const [isCurrencyPopoverOpen, setIsCurrencyPopoverOpen] = useState(false)
   const [isCountryPopoverOpen, setIsCountryPopoverOpen] = useState(false)
   const [isStatePopoverOpen, setIsStatePopoverOpen] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const form = useForm<Vendorform>({
     resolver: zodResolver(vendorformSchema),
@@ -120,19 +122,24 @@ useEffect(() => {
       }
     }
   }
+  setFormError(null)
   fetchVendorData()
 }, [selectedItem.supplierId, form])
 
 
   const onSubmit = async (data: Vendorform) => {
+    setFormError(null)
     try {
       if (data.supplierId) {
         await updateVendor(data.supplierId, data)
       }
       // Call the onSave callback with the form data
       await onSave()
-    } catch (error) {
-      console.error('Error saving item:', error)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred please try again"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }
 
@@ -237,6 +244,15 @@ useEffect(() => {
             <X size={16} />
           </Button>
         </div>
+        {/* Form-level error alert */}
+        {formError && (
+          <div className="p-2">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
             <TextField form={form} name="supplierShortName" label="Vendor" required isEditing={isEditing} />

@@ -599,7 +599,9 @@ export async function updateWarehouse(id: string, warehouse: Partial<Warehousefo
 export async function getLocations() {
   const response =  await api.get(`/proxy/BffLists/Locations`)
   const content = response.data || [];
-  const transformedItems = (content as any[]).map((item: any) => ({
+  // 筛选掉 locationName 为 '-' 的项
+  const filteredContent = content.filter((item: any) => item.locationName !== '-');
+  const transformedItems = (filteredContent as any[]).map((item: any) => ({
     id: item.locationSeqId,
     location: item.locationName,
     locationNumber: item.locationCode,
@@ -808,4 +810,110 @@ export async function uploadFile(file: File) {
     }, 
     transformRequest: (data) => data,
   });
+}
+
+
+/* Validations */
+// 更新Vendor(Supplier)的时候验证其Number不能重复
+export async function VendorNumberWhenUpdate(supplierId: string, internalId: string) {
+  const params = {} as Record<string, any>;
+  params.supplierId = supplierId;
+  params.internalId = internalId;
+  const response = await api.get(`/proxy/BffValidations/VendorNumberWhenUpdate`, { params });
+  return response.data;
+}
+
+// 创建Vendor(Supplier)的时候验证其Number不能重复
+export async function VendorNumberWhenCreate(internalId: string) {
+  const params = {} as Record<string, any>;
+  params.internalId = internalId;
+  const response = await api.get(`/proxy/BffValidations/VendorNumberWhenCreate`, { params });
+  return response.data;
+}
+
+// 更新Item的时候验证其Number不能重复
+export async function ItemNumberWhenUpdate(productId: string, internalId: string) {
+  const params = {} as Record<string, any>;
+  params.productId = productId;
+  params.internalId = internalId;
+  const response = await api.get(`/proxy/BffValidations/ItemNumberWhenUpdate`, { params });
+  return response.data;
+}
+
+// 创建Item的时候验证其Number不能重复
+export async function ItemNumberWhenCreate(internalId: string) {
+  const params = {} as Record<string, any>;
+  params.internalId = internalId;
+  const response = await api.get(`/proxy/BffValidations/ItemNumberWhenCreate`, { params });
+  return response.data;
+}
+
+// 更新Facility的时候验证其Number不能重复
+export async function FacilityNumberWhenUpdate(facilityId: string, internalId: string) {
+  const params = {} as Record<string, any>;
+  params.facilityId = facilityId;
+  params.internalId = internalId;
+  const response = await api.get(`/proxy/BffValidations/FacilityNumberWhenUpdate`, { params });
+  return response.data;
+}
+
+// 创建Facility的时候验证其Number不能重复
+export async function FacilityNumberWhenCreate(internalId: string) {
+  const params = {} as Record<string, any>;
+  params.internalId = internalId;
+  const response = await api.get(`/proxy/BffValidations/FacilityNumberWhenCreate`, { params });
+  return response.data;
+}
+
+// 更新Facility的时候验证其name不能重复
+export async function FacilityNameWhenUpdate(facilityId: string, facilityName: string) {
+  const params = {} as Record<string, any>;
+  params.facilityId = facilityId;
+  params.facilityName = facilityName;
+  const response = await api.get(`/proxy/BffValidations/FacilityNameWhenUpdate`, { params });
+  return response.data;
+}
+
+// 创建Facility的时候验证其Number不能重复
+export async function FacilityNameWhenCreate(facilityName: string) {
+  const params = {} as Record<string, any>;
+  params.facilityName = facilityName;
+  const response = await api.get(`/proxy/BffValidations/FacilityNameWhenCreate`, { params });
+  return response.data;
+}
+
+// 更新Location的时候验证其name不能重复
+export async function FacilityLocationNameWhenUpdate(facilityId: string, locationSeqId: string, locationName: string) {
+  const params = {} as Record<string, any>;
+  params.facilityId = facilityId;
+  params.locationSeqId = locationSeqId;
+  params.locationName = locationName;
+  const response = await api.get(`/proxy/BffValidations/FacilityLocationNameWhenUpdate`, { params });
+  return response.data;
+}
+
+// 创建Location的时候验证其name不能重复
+export async function FacilityLocationNameWhenCreate(locationName: string) {
+  const params = {} as Record<string, any>;
+  params.locationName = locationName;
+  const response = await api.get(`/proxy/BffValidations/FacilityLocationNameWhenCreate`, { params });
+  return response.data;
+}
+
+// 更新Location的时候验证其code不能重复
+export async function FacilityLocationCodeWhenUpdate(facilityId: string, locationSeqId: string, locationCode: string) {
+  const params = {} as Record<string, any>;
+  params.facilityId = facilityId;
+  params.locationSeqId = locationSeqId;
+  params.locationCode = locationCode;
+  const response = await api.get(`/proxy/BffValidations/FacilityLocationCodeWhenUpdate`, { params });
+  return response.data;
+}
+
+// 创建Location的时候验证其Code不能重复
+export async function FacilityLocationCodeWhenCreate(locationCode: string) {
+  const params = {} as Record<string, any>;
+  params.locationCode = locationCode;
+  const response = await api.get(`/proxy/BffValidations/FacilityLocationCodeWhenCreate`, { params });
+  return response.data;
 }

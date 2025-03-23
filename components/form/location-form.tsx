@@ -4,11 +4,12 @@ import React, {useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { X, Edit2, EyeOff, Eye } from 'lucide-react'
+import { X, Edit2, EyeOff, Eye, AlertCircle } from 'lucide-react'
 
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { locationformSchema, Locationform } from '@/components/tanstack/schema/formSchema/locationformSchema'
 import { TextField } from './components/field/text-field'
@@ -30,6 +31,7 @@ interface LocationFormProps {
 export function LocationForm({ selectedItem, onSave, onCancel, isEditing, onToggleEdit }: LocationFormProps) {
 
   const [loading, setLoading] = useState(true)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const { userPermissions, userInfo } = useAppContext()
   const isUpdate = (userInfo?.username === "admin") || (userPermissions.includes('Locations_Update'))
@@ -62,10 +64,12 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing, onTogg
       }
     }
     fetchVendorData()
+    setFormError(null)
   }, [selectedItem.facilityId, selectedItem.locationSeqId, form])
 
 
   const onSubmit = async (data: Locationform) => {
+    setFormError(null)
     try {
       console.log('Form submitted with data:', data)
       if (data.facilityId && data.locationSeqId) {
@@ -73,8 +77,11 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing, onTogg
       }
       // Call the onSave callback with the form data
       await onSave()
-    } catch (error) {
-      console.error('Error saving item:', error)
+    } catch (error: any) {
+      // Extract error message from the response
+      const errorMessage = error.response?.data?.detail || "An error occurred please try again"
+      // Set a form-level error message
+      setFormError(errorMessage)
     }
   }
 
@@ -130,6 +137,15 @@ export function LocationForm({ selectedItem, onSave, onCancel, isEditing, onTogg
             <X size={16} />
           </Button>
         </div>
+        {/* Form-level error alert */}
+        {formError && (
+          <div className="p-2">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          </div>
+        )}
         <ScrollArea className="flex-grow">
           <div className="space-y-4 p-4">
 
