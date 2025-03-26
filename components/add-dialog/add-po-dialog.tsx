@@ -181,6 +181,31 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
   };
 
   const handleProductSelect = (index: number, productId: string) => {
+    const currentItems = form.getValues().orderItems;
+  
+    // 检查是否已存在相同的productId（排除当前项）
+    const isDuplicate = currentItems.some(
+      (item, idx) => idx !== index && item.productId === productId
+    );
+  
+    if (isDuplicate) {
+      // 清空当前项的所有相关字段并显示错误
+      form.setValue(`orderItems.${index}.productId`, '');
+      // form.setValue(`orderItems.${index}.productName`, null);
+      // form.setValue(`orderItems.${index}.caseUomId`, null);
+      // form.setValue(`orderItems.${index}.quantityUomId`, null);
+      // form.setValue(`orderItems.${index}.quantityIncluded`, null);
+      
+      // 设置字段级别的错误
+      form.setError(`orderItems.${index}.productId`, {
+        type: 'manual',
+        message: 'Item already exists in PO'
+      });
+      return;
+    }
+  
+
+
     const product = products.find((p) => p.productId === productId)
     if (product) {
       form.setValue(`orderItems.${index}.productName`, product.name)
@@ -400,7 +425,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                                       }}
                                     >
                                       <FormControl>
-                                        <SelectTrigger>
+                                        <SelectTrigger className={form.formState.errors?.orderItems?.[index]?.productId ? 'border-red-500' : ''}>
                                           <SelectValue placeholder="Select a product" />
                                         </SelectTrigger>
                                       </FormControl>

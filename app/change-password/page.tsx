@@ -6,6 +6,59 @@ import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { IMAGE_PATHS } from "@/contexts/images"
 
+const readPermissions = [
+  {
+    title: "Vendors",
+    url: "/database/vendors",
+    permissionId: 'Vendors_Read'
+  },
+  {
+    title: "Items",
+    url: "/database/items",
+    permissionId: 'Items_Read'
+  },
+  {
+    title: "Warehouses",
+    url: "/database/warehouses",
+    permissionId: 'Warehouses_Read'
+  },
+  {
+    title: "Locations",
+    url: "/database/locations",
+    permissionId: 'Locations_Read'
+  },
+  {
+    title: "Procurement",
+    url: "/procurement",
+    permissionId: 'Procurement_Read'
+  },
+  {
+    title: "Receiving",
+    url: "/receiving",
+    permissionId: 'Receiving_Read'
+  },
+  // {
+  //   title: "QA",
+  //   url: "/qa",
+  //   icon: ListChecks,
+  //   permissionId: 'QA_Read'
+  // },
+  {
+    title: "Users",
+    url: "/admin/users",
+    permissionId: 'Users_Read'
+  },
+  {
+    title: "Roles",
+    url: "/admin/roles",
+    permissionId: 'Roles_Read'
+  },
+  // {
+  //   title: "Logbook",
+  //   url: "/admin/logbook",
+  // },
+]
+
 // Main page component with Suspense boundary
 export default function ChangePasswordPage() {
   return (
@@ -211,8 +264,23 @@ function ChangePasswordForm() {
         setUserInfo(userInfo)
         setIsLoggedIn(true)
 
+        // 通过对 userData.permissions 中存在的string 与 readPermissions中的permissionId进行比对，
+        // 按照readPermissions的顺序如果userData.permissions中存在相应的 permissionId,则进行相应路由跳转 router.replace(url)
+          
+        for (const permission of readPermissions) {
+          // 检查 userData.permissions 是否包含当前 permissionId
+          if (userData.permissions?.includes(permission.permissionId)) {
+            // 如果包含，跳转到对应的 url
+            router.replace(permission.url);
+            return; // 跳出循环，避免继续检查其他权限
+          }
+        }
+
+        // 如果没有任何匹配的权限，则报错
+        // router.replace("/dashboard");
+        setError("This user does not have access to the web, please contact the administrator.")
         // Redirect to dashboard
-        router.replace("/dashboard")
+        // router.replace("/dashboard")
       }
     } catch (error: any) {
       if (error.response?.status === 400) {
