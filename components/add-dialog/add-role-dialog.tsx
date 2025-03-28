@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -45,6 +45,9 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
 
+  // Create refs for all form fields to manage tab navigation
+  const formFieldRefs = useRef<Record<string, HTMLElement | null>>({})
+
   const form = useForm<z.infer<typeof roleformSchema>>({
     resolver: zodResolver(roleformSchema),
     defaultValues: createEmptyRole(),
@@ -87,7 +90,33 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
     setOpen(false);
     form.reset(createEmptyRole());
     setFormError(null)
-  };  
+  }
+
+  // Function to focus the next element in the tab order
+  const focusNextElement = (currentFieldName: string) => {
+    // Define the tab order for form fields within each location
+    const tabOrder = [
+      `groupName`,
+      `description`,
+      `permissions`,
+    ]
+    const currentIndex = tabOrder.indexOf(currentFieldName)
+    if (currentIndex !== -1 && currentIndex < tabOrder.length - 1) {
+      const nextFieldName = tabOrder[currentIndex + 1]
+      const nextElement = formFieldRefs.current[nextFieldName]
+      if (nextElement) {
+        nextElement.focus()
+      }
+    }
+  }
+
+  // Handle key down events for form fields
+  const handleKeyDown = (e: React.KeyboardEvent, fieldName: string) => {
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault()
+      focusNextElement(fieldName)
+    }
+  }
 
   return (
       <>
@@ -135,7 +164,11 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
                     <FormItem>
                       <FormLabel>Role<span className="text-red-500">*</span></FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value ?? ''} />
+                        <Input {...field} value={field.value ?? ''} 
+                          onKeyDown={(e) => handleKeyDown(e, "groupName")}
+                          ref={(el: HTMLInputElement | null) => {
+                            formFieldRefs.current["groupName"] = el;
+                          }}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -149,7 +182,11 @@ export function AddRoleDialog({ onAdded: onAdded }: AddDialogProps) {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea {...field} value={field.value ?? ''} />
+                        <Textarea {...field} value={field.value ?? ''} 
+                          onKeyDown={(e) => handleKeyDown(e, "description")}
+                          ref={(el: HTMLTextAreaElement | null) => {
+                            formFieldRefs.current["description"] = el;
+                          }}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

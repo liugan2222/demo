@@ -111,7 +111,44 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
     if (!geoId) return 'Select a country';
     const country = countries.find(country => country.geoId === geoId);
     return country ? country.geoName : 'Select a country';
-  }  
+  }
+
+  // Create refs for all form fields to manage tab navigation
+  const formFieldRefs = React.useRef<Record<string, HTMLElement | null>>({})  
+
+  // Function to focus the next element in the tab order within a facility
+  const focusNextElement = (currentFieldName: string, facilityIndex: number) => {
+    // Define the tab order for form fields within each facility
+    const tabOrder = [
+      `items.0.facilities.${facilityIndex}.facilityName`,
+      `items.0.facilities.${facilityIndex}.businessContacts.0.telecomCountryCode`,
+      `items.0.facilities.${facilityIndex}.businessContacts.0.phoneNumber`,
+      `items.0.facilities.${facilityIndex}.businessContacts.0.countryGeoId`,
+      `items.0.facilities.${facilityIndex}.businessContacts.0.physicalLocationAddress`,
+      `items.0.facilities.${facilityIndex}.businessContacts.0.city`,
+      `items.0.facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`,
+      `items.0.facilities.${facilityIndex}.businessContacts.0.zipCode`,
+      `items.0.facilities.${facilityIndex}.ffrn`,
+      `items.0.facilities.${facilityIndex}.gln`,
+    ]
+
+    const currentIndex = tabOrder.indexOf(currentFieldName)
+    if (currentIndex !== -1 && currentIndex < tabOrder.length - 1) {
+      const nextFieldName = tabOrder[currentIndex + 1]
+      const nextElement = formFieldRefs.current[nextFieldName]
+      if (nextElement) {
+        nextElement.focus()
+      }
+    }
+  }
+
+  // Handle key down events for form fields
+  const handleKeyDown = (e: React.KeyboardEvent, fieldName: string, facilityIndex: number) => {
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault()
+      focusNextElement(fieldName, facilityIndex)
+    }
+  }
 
   return (
     <Accordion type="multiple" defaultValue={["facilities"]} className="w-full">
@@ -149,7 +186,13 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                 Facility name<span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
-                                <Input {...field} value={field.value ?? ""} />
+                                <Input {...field} value={field.value ?? ""} 
+                                  onKeyDown={(e) =>
+                                    handleKeyDown(e, `items.0.facilities.${facilityIndex}.facilityName`, facilityIndex)
+                                  }
+                                  ref={(el: HTMLInputElement | null) => {
+                                    formFieldRefs.current[`items.0.facilities.${facilityIndex}.facilityName`] = el
+                                  }}/>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -165,7 +208,19 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                               <div className="grid grid-cols-4 gap-4">
                                 <div className="col-span-1">
                                   <FormControl>
-                                    <Input {...telField} value={telField.value ?? ""}/>
+                                    <Input {...telField} value={telField.value ?? ""}
+                                      onKeyDown={(e) =>
+                                        handleKeyDown(
+                                          e,
+                                          `items.0.facilities.${facilityIndex}.businessContacts.0.telecomCountryCode`,
+                                          facilityIndex,
+                                        )
+                                      }
+                                      ref={(el: HTMLInputElement | null) => {
+                                        formFieldRefs.current[
+                                          `items.0.facilities.${facilityIndex}.businessContacts.0.telecomCountryCode`
+                                        ] = el
+                                      }}/>
                                   </FormControl>
                                 </div>
                                 <div className="col-span-3">
@@ -174,7 +229,31 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                     name={`items.0.facilities.${facilityIndex}.businessContacts.0.phoneNumber`}
                                     render={({ field: mobileField }) => (
                                       <FormControl>
-                                        <Input {...mobileField} value={mobileField.value ?? ""} />
+                                        <Input {...mobileField} value={mobileField.value ?? ""} 
+                                          onKeyDown={(e) => {
+                                            if (e.key === "Tab" && !e.shiftKey) {
+                                              e.preventDefault()
+                                              // Directly focus the country button
+                                              const countryButton =
+                                                formFieldRefs.current[
+                                                  `items.0.facilities.${facilityIndex}.businessContacts.0.countryGeoId`
+                                                ]
+                                              if (countryButton) {
+                                                countryButton.focus()
+                                              }
+                                            } else {
+                                              handleKeyDown(
+                                                e,
+                                                `items.0.facilities.${facilityIndex}.businessContacts.0.phoneNumber`,
+                                                facilityIndex,
+                                              )
+                                            }
+                                          }}
+                                          ref={(el: HTMLInputElement | null) => {
+                                            formFieldRefs.current[
+                                              `items.0.facilities.${facilityIndex}.businessContacts.0.phoneNumber`
+                                            ] = el
+                                          }}/>
                                       </FormControl>
                                     )}
                                   />
@@ -205,13 +284,42 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                           variant="outline"
                                           role="combobox"
                                           className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
+                                          tabIndex={0}
+                                          name={`items.0.facilities.${facilityIndex}.businessContacts.0.countryGeoId`}
+                                          onKeyDown={(e) => {
+                                            if (e.key === "Tab" && !e.shiftKey) {
+                                              e.preventDefault()
+                                              focusNextElement(
+                                                `items.0.facilities.${facilityIndex}.businessContacts.0.countryGeoId`,
+                                                facilityIndex,
+                                              )
+                                            } else if (e.key === "Enter" || e.key === " ") {
+                                              e.preventDefault()
+                                              toggleCountryPopover(facilityIndex, true)
+                                            }
+                                          }}
+                                          ref={(el: HTMLButtonElement | null) => {
+                                            formFieldRefs.current[
+                                              `items.0.facilities.${facilityIndex}.businessContacts.0.countryGeoId`
+                                            ] = el
+                                          }}
                                         >
                                           {findCountryName(field.value, countries)}
                                         </Button>
                                       </FormControl>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-full p-0">
-                                      <Command>
+                                      <Command
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Tab") {
+                                            e.preventDefault()
+                                            toggleCountryPopover(facilityIndex, false)
+                                            focusNextElement(
+                                              `items.0.facilities.${facilityIndex}.businessContacts.0.countryGeoId`,
+                                              facilityIndex,
+                                            )
+                                          }
+                                        }}>
                                         <CommandInput placeholder="Search country..." />
                                         <CommandList>
                                           <CommandEmpty>No country found.</CommandEmpty>
@@ -224,6 +332,14 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                                   field.onChange(country.geoId)
                                                   handleCountryChange(country.geoId)
                                                   toggleCountryPopover(facilityIndex, false)
+                                                  setTimeout(
+                                                    () =>
+                                                      focusNextElement(
+                                                        `items.0.facilities.${facilityIndex}.businessContacts.0.countryGeoId`,
+                                                        facilityIndex,
+                                                      ),
+                                                    0,
+                                                  )
                                                 }}
                                               >
                                                 <Check
@@ -273,7 +389,19 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                 Address<span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
-                                <Input {...field} value={field.value ?? ""} />
+                                <Input {...field} value={field.value ?? ""} 
+                                  onKeyDown={(e) =>
+                                    handleKeyDown(
+                                      e,
+                                      `items.0.facilities.${facilityIndex}.businessContacts.0.physicalLocationAddress`,
+                                      facilityIndex,
+                                    )
+                                  }
+                                  ref={(el: HTMLInputElement | null) => {
+                                    formFieldRefs.current[
+                                      `items.0.facilities.${facilityIndex}.businessContacts.0.physicalLocationAddress`
+                                    ] = el
+                                  }}/>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -289,7 +417,31 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                 City<span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
-                                <Input {...field} value={field.value ?? ""} />
+                                <Input {...field} value={field.value ?? ""} 
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Tab" && !e.shiftKey) {
+                                      e.preventDefault()
+                                      // Directly focus the state button
+                                      const stateButton =
+                                        formFieldRefs.current[
+                                          `items.0.facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`
+                                        ]
+                                      if (stateButton) {
+                                        stateButton.focus()
+                                      }
+                                    } else {
+                                      handleKeyDown(
+                                        e,
+                                        `items.0.facilities.${facilityIndex}.businessContacts.0.city`,
+                                        facilityIndex,
+                                      )
+                                    }
+                                  }}
+                                  ref={(el: HTMLInputElement | null) => {
+                                    formFieldRefs.current[
+                                      `items.0.facilities.${facilityIndex}.businessContacts.0.city`
+                                    ] = el
+                                  }}/>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -316,13 +468,42 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                           variant="outline"
                                           role="combobox"
                                           className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
+                                          tabIndex={0}
+                                          name={`items.0.facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`}
+                                          onKeyDown={(e) => {
+                                            if (e.key === "Tab" && !e.shiftKey) {
+                                              e.preventDefault()
+                                              focusNextElement(
+                                                `items.0.facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`,
+                                                facilityIndex,
+                                              )
+                                            } else if (e.key === "Enter" || e.key === " ") {
+                                              e.preventDefault()
+                                              toggleStatePopover(facilityIndex, true)
+                                            }
+                                          }}
+                                          ref={(el: HTMLButtonElement | null) => {
+                                            formFieldRefs.current[
+                                              `items.0.facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`
+                                            ] = el
+                                          }}
                                         >
                                           {field.value ?? "Select a state"}
                                         </Button>
                                       </FormControl>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-full p-0">
-                                      <Command>
+                                      <Command
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Tab") {
+                                            e.preventDefault()
+                                            toggleStatePopover(facilityIndex, false)
+                                            focusNextElement(
+                                              `items.0.facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`,
+                                              facilityIndex,
+                                            )
+                                          }
+                                        }}>
                                         <CommandInput placeholder="Search state/province..." />
                                         <CommandList>
                                           <CommandEmpty>No state/province found.</CommandEmpty>
@@ -334,6 +515,14 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                                 onSelect={() => {
                                                   field.onChange(state.geoId)
                                                   toggleStatePopover(facilityIndex, false)
+                                                  setTimeout(
+                                                    () =>
+                                                      focusNextElement(
+                                                        `items.0.facilities.${facilityIndex}.businessContacts.0.stateProvinceGeoId`,
+                                                        facilityIndex,
+                                                      ),
+                                                    0,
+                                                  )
                                                 }}
                                               >
                                                 <Check
@@ -383,7 +572,19 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                                 Postal code<span className="text-red-500">*</span>
                               </FormLabel>
                               <FormControl>
-                                <Input {...field} value={field.value ?? ""} />
+                                <Input {...field} value={field.value ?? ""} 
+                                  onKeyDown={(e) =>
+                                    handleKeyDown(
+                                      e,
+                                      `items.0.facilities.${facilityIndex}.businessContacts.0.zipCode`,
+                                      facilityIndex,
+                                    )
+                                  }
+                                  ref={(el: HTMLInputElement | null) => {
+                                    formFieldRefs.current[
+                                      `items.0.facilities.${facilityIndex}.businessContacts.0.zipCode`
+                                    ] = el
+                                  }}/>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -397,7 +598,13 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                             <FormItem>
                               <FormLabel>FFRN</FormLabel>
                               <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
+                                <Input {...field} value={field.value ?? ''} 
+                                  onKeyDown={(e) =>
+                                    handleKeyDown(e, `items.0.facilities.${facilityIndex}.ffrn`, facilityIndex)
+                                  }
+                                  ref={(el: HTMLInputElement | null) => {
+                                    formFieldRefs.current[`items.0.facilities.${facilityIndex}.ffrn`] = el
+                                  }}/>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -411,7 +618,13 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
                             <FormItem>
                               <FormLabel>GLN</FormLabel>
                               <FormControl>
-                                <Input {...field} value={field.value ?? ''} />
+                                <Input {...field} value={field.value ?? ''} 
+                                  onKeyDown={(e) =>
+                                    handleKeyDown(e, `items.0.facilities.${facilityIndex}.gln`, facilityIndex)
+                                  }
+                                  ref={(el: HTMLInputElement | null) => {
+                                    formFieldRefs.current[`items.0.facilities.${facilityIndex}.gln`] = el
+                                  }}/>
                               </FormControl>
                               <FormMessage />
                             </FormItem>

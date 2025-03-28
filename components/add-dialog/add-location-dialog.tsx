@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Plus, X, AlertCircle } from 'lucide-react'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -80,6 +80,9 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
+  // Create refs for all form fields to manage tab navigation
+  const formFieldRefs = useRef<Record<string, HTMLElement | null>>({})
+
   const form = useForm<MultipleLocationsSchema>({
     resolver: zodResolver(multipleLocationsSchema),
     defaultValues: {
@@ -160,7 +163,37 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
     });
     setFormError(null)
     setExpandedItems(['location-0']);
-  };
+  }
+
+  // Function to focus the next element in the tab order
+  const focusNextElement = (currentFieldName: string, index: number) => {
+    // Define the tab order for form fields within each location
+    const tabOrder = [
+      `items.${index}.locationName`,
+      `items.${index}.gln`,
+      `items.${index}.locationCode`,
+      `items.${index}.facilityId`,
+      `items.${index}.areaId`,
+      `items.${index}.description`,
+    ]
+
+    const currentIndex = tabOrder.indexOf(currentFieldName)
+    if (currentIndex !== -1 && currentIndex < tabOrder.length - 1) {
+      const nextFieldName = tabOrder[currentIndex + 1]
+      const nextElement = formFieldRefs.current[nextFieldName]
+      if (nextElement) {
+        nextElement.focus()
+      }
+    }
+  }
+
+  // Handle key down events for form fields
+  const handleKeyDown = (e: React.KeyboardEvent, fieldName: string, index: number) => {
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault()
+      focusNextElement(fieldName, index)
+    }
+  }
 
   return (
     <>
@@ -237,13 +270,17 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Location<span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    value={field.value ?? ''} 
+                                  <Input
+                                    {...field}
+                                    value={field.value ?? ""}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.locationName`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.locationName`] = el
+                                    }}
                                     onBlur={async (e) => {
                                       field.onBlur() // Call the original onBlur handler
                                       // Clear the error if it exists
-                                      form.clearErrors("items.0.locationName")
+                                      form.clearErrors(`items.${index}.locationName`)
                                       const value = e.target.value
                                       if (value) {
                                         try {
@@ -254,13 +291,13 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                                             // Extract the error message from the response
                                             const errorMessage = "This location name already exists"
                                             // Set the form error
-                                            form.setError("items.0.locationName", {
+                                            form.setError(`items.${index}.locationName`, {
                                               type: "manual",
                                               message: errorMessage,
                                             })
                                           } else {
                                             // Handle other types of errors
-                                            form.setError("items.0.locationName", {
+                                            form.setError(`items.${index}.locationName`, {
                                               type: "manual",
                                               message: error.response.data?.detail,
                                             })
@@ -282,7 +319,14 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>GLN</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input
+                                    {...field}
+                                    value={field.value ?? ""}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.gln`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.gln`] = el
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -297,12 +341,16 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                                 <FormLabel>Location number</FormLabel>
                                 <FormControl>
                                   <Input 
-                                    {...field} 
-                                    value={field.value ?? ''} 
+                                    {...field}
+                                    value={field.value ?? ""}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.locationCode`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.locationCode`] = el
+                                    }}
                                     onBlur={async (e) => {
                                       field.onBlur() // Call the original onBlur handler
                                       // Clear the error if it exists
-                                      form.clearErrors("items.0.locationCode")
+                                      form.clearErrors(`items.${index}.locationCode`)
                                       const value = e.target.value
                                       if (value) {
                                         try {
@@ -313,13 +361,13 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                                             // Extract the error message from the response
                                             const errorMessage = "This location number already exists"
                                             // Set the form error
-                                            form.setError("items.0.locationCode", {
+                                            form.setError(`items.${index}.locationCode`, {
                                               type: "manual",
                                               message: errorMessage,
                                             })
                                           } else {
                                             // Handle other types of errors
-                                            form.setError("items.0.locationCode", {
+                                            form.setError(`items.${index}.locationCode`, {
                                               type: "manual",
                                               message: error.response.data?.detail,
                                             })
@@ -343,10 +391,24 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                                 <FormLabel>Warehouse<span className="text-red-500">*</span></FormLabel>
                                 <Select
                                   value={field.value ?? undefined}
-                                  onValueChange={field.onChange}
+                                  onValueChange={(value) => {
+                                    field.onChange(value)
+                                    setTimeout(() => focusNextElement(`items.${index}.facilityId`, index), 0)
+                                  }}
                                 >
                                   <FormControl>
-                                    <SelectTrigger>
+                                    <SelectTrigger
+                                      tabIndex={0}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Tab" && !e.shiftKey) {
+                                          e.preventDefault()
+                                          focusNextElement(`items.${index}.facilityId`, index)
+                                        }
+                                      }}
+                                      ref={(el: HTMLButtonElement | null) => {
+                                        formFieldRefs.current[`items.${index}.facilityId`] = el
+                                      }}
+                                    >
                                       <SelectValue placeholder="Select a warehouse" />
                                     </SelectTrigger>
                                   </FormControl>
@@ -370,7 +432,13 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Warehouse zone</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input
+                                    {...field}
+                                    value={field.value ?? ""}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.areaId`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.areaId`] = el
+                                    }} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -384,7 +452,12 @@ export function AddLocationDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                  <Textarea {...field} value={field.value ?? ''} />
+                                  <Textarea
+                                    {...field}
+                                    value={field.value ?? ""}
+                                    ref={(el: HTMLTextAreaElement | null) => {
+                                      formFieldRefs.current[`items.${index}.description`] = el
+                                    }} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

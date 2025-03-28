@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { z } from 'zod'
 import { Plus, Check, ChevronsUpDown, X, AlertCircle } from "lucide-react"
 import { useForm } from 'react-hook-form'
@@ -157,6 +157,9 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
   const { countries = [] } = useAppContext()
   const { currencies = [] } = useAppContext()
 
+  // Create refs for all form fields to manage tab navigation
+  const formFieldRefs = useRef<Record<string, HTMLElement | null>>({})
+
   const fetchTypes = useCallback(async () => {
     try {
       const vendorTypeList = await getSupplierType('SUPPLIER_TYPE_ENUM')
@@ -246,6 +249,54 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
     }
   }, [form, onAdded]);
 
+  // Function to focus the next element in the tab order
+  const focusNextElement = (currentFieldName: string) => {
+    // Define the tab order for form fields
+    const tabOrder = [
+      "items.0.supplierShortName",
+      "items.0.supplierName",
+      "items.0.internalId",
+      "items.0.telephone",
+      "items.0.email",
+      "items.0.gs1CompanyPrefix",
+      "items.0.gln",
+      "items.0.preferredCurrencyUomId",
+      "items.0.taxId",
+      "items.0.supplierTypeEnumId",
+      "items.0.bankAccountInformation",
+      "items.0.certificationCodes",
+      "items.0.supplierProductTypeDescription",
+      "items.0.tpaNumber",
+      "items.0.webSite",
+      "items.0.businessContacts.0.businessName",
+      "items.0.businessContacts.0.phoneNumber",
+      "items.0.businessContacts.0.countryGeoId",
+      "items.0.businessContacts.0.physicalLocationAddress",
+      "items.0.businessContacts.0.city",
+      "items.0.businessContacts.0.stateProvinceGeoId",
+      "items.0.businessContacts.0.zipCode",
+      "items.0.businessContacts.0.contactRole",
+      "items.0.businessContacts.0.email",
+    ]
+
+    const currentIndex = tabOrder.indexOf(currentFieldName)
+    if (currentIndex !== -1 && currentIndex < tabOrder.length - 1) {
+      const nextFieldName = tabOrder[currentIndex + 1]
+      const nextElement = document.querySelector(`[name="${nextFieldName}"]`) as HTMLElement
+      if (nextElement) {
+        nextElement.focus()
+      }
+    }
+  }
+
+  // Handle key down events for form fields
+  const handleKeyDown = (e: React.KeyboardEvent, fieldName: string) => {
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault()
+      focusNextElement(fieldName)
+    }
+  }
+
   return (
     <>
       <Dialog
@@ -292,7 +343,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Vendor<span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.supplierShortName")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.supplierShortName"] = el;
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -306,7 +361,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Full name<span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''}
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.supplierName")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.supplierName"] = el;
+                            }} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -323,6 +382,10 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                           <Input 
                             {...field} 
                             value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.internalId")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.internalId"] = el;
+                            }}
                             onBlur={async (e) => {
                               field.onBlur() // Call the original onBlur handler
                               // Clear the error if it exists
@@ -366,7 +429,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Tel<span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''}
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.telephone")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.telephone"] = el;
+                            }} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -380,7 +447,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.email")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.email"] = el;
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -394,7 +465,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>GCP</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.gs1CompanyPrefix")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.gs1CompanyPrefix"] = el;
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -408,7 +483,22 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>GLN</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => {
+                              if (e.key === "Tab" && !e.shiftKey) {
+                                e.preventDefault()
+                                // Directly focus the currency button
+                                const currencyButton = formFieldRefs.current["items.0.preferredCurrencyUomId"]
+                                if (currencyButton) {
+                                  currencyButton.focus()
+                                }
+                              } else {
+                                handleKeyDown(e, "items.0.gln")
+                              }
+                            }}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.gln"] = el
+                            }}/> 
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -435,6 +525,21 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                                     type="button"
                                     variant="outline"
                                     role="combobox"
+                                    tabIndex={0}
+                                    id="currency-button"
+                                    name="items.0.preferredCurrencyUomId"
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Tab" && !e.shiftKey) {
+                                        e.preventDefault()
+                                        focusNextElement("items.0.preferredCurrencyUomId")
+                                      } else if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault()
+                                        setIsCurrencyPopoverOpen(true)
+                                      }
+                                    }}
+                                    ref={(el: HTMLButtonElement | null) => {
+                                      formFieldRefs.current["items.0.preferredCurrencyUomId"] = el;
+                                    }}
                                     className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
                                   >
                                     {field.value
@@ -445,7 +550,14 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                                 </FormControl>
                               </PopoverTrigger>
                               <PopoverContent className="w-full p-0">
-                                <Command>
+                                <Command
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Tab") {
+                                      e.preventDefault()
+                                      setIsCurrencyPopoverOpen(false)
+                                      focusNextElement("items.0.preferredCurrencyUomId")
+                                    }
+                                  }}>
                                   <CommandInput placeholder="Search currency..." />
                                   <CommandList>
                                     <CommandEmpty>No currency found.</CommandEmpty>
@@ -457,6 +569,7 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                                           onSelect={() => {
                                             field.onChange(currency.uomId)
                                             setIsCurrencyPopoverOpen(false) // 选择后关闭下拉
+                                            setTimeout(() => focusNextElement("items.0.preferredCurrencyUomId"), 0)
                                           }}
                                         >
                                           <Check
@@ -509,7 +622,22 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Tax ID / VAT number</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => {
+                              if (e.key === "Tab" && !e.shiftKey) {
+                                e.preventDefault()
+                                // Directly focus the currency button
+                                const currencyButton = formFieldRefs.current["items.0.supplierTypeEnumId"]
+                                if (currencyButton) {
+                                  currencyButton.focus()
+                                }
+                              } else {
+                                handleKeyDown(e, "items.0.taxId")
+                              }
+                            }}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.taxId"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -522,9 +650,24 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Type</FormLabel>
-                        <Select value={field.value ?? undefined} onValueChange={field.onChange}>
+                        <Select value={field.value ?? undefined} 
+                          onValueChange={(value) => {
+                            field.onChange(value)
+                            setTimeout(() => focusNextElement("items.0.supplierTypeEnumId"), 0)
+                          }}>
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Tab" && !e.shiftKey) {
+                                    e.preventDefault()
+                                    focusNextElement("items.0.supplierTypeEnumId")
+                                  }
+                                }}
+                                ref={(el: HTMLButtonElement | null) => {
+                                  formFieldRefs.current["items.0.supplierTypeEnumId"] = el;
+                                }}
+                              >
                               <SelectValue placeholder="Select a type" />
                             </SelectTrigger>
                           </FormControl>
@@ -548,7 +691,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Bank account information</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.bankAccountInformation")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.bankAccountInformation"] = el;
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -562,7 +709,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Certification codes</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.certificationCodes")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.certificationCodes"] = el;
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -576,7 +727,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Relationship</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.supplierProductTypeDescription")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.supplierProductTypeDescription"] = el;
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -590,7 +745,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Trade partner agreement number</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.tpaNumber")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.tpaNumber"] = el;
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -604,7 +763,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Website</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.webSite")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.webSite"] = el;
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -618,7 +781,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Contact name</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.businessContacts.0.businessName")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.businessContacts.0.businessName"] = el;
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -632,7 +799,22 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Contact phone</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                              onKeyDown={(e) => {
+                                if (e.key === "Tab" && !e.shiftKey) {
+                                  e.preventDefault()
+                                  // Directly focus the currency button
+                                  const currencyButton = formFieldRefs.current["items.0.businessContacts.0.countryGeoId"]
+                                  if (currencyButton) {
+                                    currencyButton.focus()
+                                  }
+                                } else {
+                                  handleKeyDown(e, "items.0.businessContacts.0.phoneNumber")
+                                }
+                              }}
+                              ref={(el: HTMLInputElement | null) => {
+                                formFieldRefs.current["items.0.businessContacts.0.phoneNumber"] = el
+                              }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -660,6 +842,20 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                                         variant="outline"
                                         role="combobox"
                                         className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
+                                        tabIndex={0}
+                                        name="items.0.businessContacts.0.countryGeoId"
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Tab" && !e.shiftKey) {
+                                            e.preventDefault()
+                                            focusNextElement("items.0.businessContacts.0.countryGeoId")
+                                          } else if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault()
+                                            setIsCountryPopoverOpen(true)
+                                          }
+                                        }}
+                                        ref={(el: HTMLButtonElement | null) => {
+                                          formFieldRefs.current["items.0.businessContacts.0.countryGeoId"] = el;
+                                        }}
                                       >
                                         {/* {field.value ?? "Select a country"} */}
                                         {findCountryName(field.value??'', countries) ?? "Select a country"}
@@ -668,7 +864,14 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                                     </FormControl>
                                   </PopoverTrigger>
                                   <PopoverContent className="w-full p-0">
-                                    <Command>
+                                    <Command
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Tab") {
+                                          e.preventDefault()
+                                          setIsCountryPopoverOpen(false)
+                                          focusNextElement("items.0.businessContacts.0.countryGeoId")
+                                        }
+                                      }}>
                                       <CommandInput placeholder="Search country..." />
                                       <CommandList>
                                         <CommandEmpty>No country found.</CommandEmpty>
@@ -681,6 +884,7 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                                                 field.onChange(country.geoId)
                                                 handleContactCountryChange(country.geoId)
                                                 setIsCountryPopoverOpen(false) // 选择后关闭下拉
+                                                setTimeout(() => focusNextElement("items.0.businessContacts.0.countryGeoId"), 0)
                                               }}
                                             >
                                               <Check
@@ -732,7 +936,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Address</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ""} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "items.0.businessContacts.0.physicalLocationAddress")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["items.0.businessContacts.0.physicalLocationAddress"] = el;
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -746,7 +954,22 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>City</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ""} />
+                          <Input {...field} value={field.value ?? ''} 
+                              onKeyDown={(e) => {
+                                if (e.key === "Tab" && !e.shiftKey) {
+                                  e.preventDefault()
+                                  // Directly focus the currency button
+                                  const currencyButton = formFieldRefs.current["items.0.businessContacts.0.stateProvinceGeoId"]
+                                  if (currencyButton) {
+                                    currencyButton.focus()
+                                  }
+                                } else {
+                                  handleKeyDown(e, "items.0.businessContacts.0.city")
+                                }
+                              }}
+                              ref={(el: HTMLInputElement | null) => {
+                                formFieldRefs.current["items.0.businessContacts.0.city"] = el
+                              }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -772,6 +995,20 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                                     variant="outline"
                                     role="combobox"
                                     className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
+                                    tabIndex={0}
+                                    name="items.0.businessContacts.0.stateProvinceGeoId"
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Tab" && !e.shiftKey) {
+                                        e.preventDefault()
+                                        focusNextElement("items.0.businessContacts.0.stateProvinceGeoId")
+                                      } else if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault()
+                                        setIsStatePopoverOpen(true)
+                                      }
+                                    }}
+                                    ref={(el: HTMLButtonElement | null) => {
+                                      formFieldRefs.current["items.0.businessContacts.0.stateProvinceGeoId"] = el;
+                                    }}
                                   >
                                     {field.value ?? "Select a state"}
                                     {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
@@ -779,7 +1016,14 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                                 </FormControl>
                               </PopoverTrigger>
                               <PopoverContent className="w-full p-0">
-                                <Command>
+                                <Command
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Tab") {
+                                        e.preventDefault()
+                                        setIsStatePopoverOpen(false)
+                                        focusNextElement("items.0.businessContacts.0.stateProvinceGeoId")
+                                      }
+                                    }}>
                                   <CommandInput placeholder="Search state/province..." />
                                   <CommandList>
                                     <CommandEmpty>No state/province found.</CommandEmpty>
@@ -791,6 +1035,7 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                                           onSelect={() => {
                                             field.onChange(state.geoId)
                                             setIsStatePopoverOpen(false) // 选择后关闭下拉
+                                            setTimeout(() => focusNextElement("items.0.businessContacts.0.stateProvinceGeoId"), 0)
                                           }}
                                         >
                                           <Check
@@ -842,7 +1087,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Postal code</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ""} />
+                          <Input {...field} value={field.value ?? ''} 
+                              onKeyDown={(e) => handleKeyDown(e, "items.0.businessContacts.0.zipCode")}
+                              ref={(el: HTMLInputElement | null) => {
+                                formFieldRefs.current["items.0.businessContacts.0.zipCode"] = el;
+                              }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -856,7 +1105,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Contact role</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                              onKeyDown={(e) => handleKeyDown(e, "items.0.businessContacts.0.contactRole")}
+                              ref={(el: HTMLInputElement | null) => {
+                                formFieldRefs.current["items.0.businessContacts.0.contactRole"] = el;
+                              }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -871,7 +1124,11 @@ export function AddVendorDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Contact email</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                              onKeyDown={(e) => handleKeyDown(e, "items.0.businessContacts.0.email")}
+                              ref={(el: HTMLInputElement | null) => {
+                                formFieldRefs.current["items.0.businessContacts.0.email"] = el;
+                              }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>

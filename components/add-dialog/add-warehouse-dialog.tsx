@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import { Plus, X, Check, ChevronsUpDown, AlertCircle } from 'lucide-react'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -93,6 +93,9 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
   const [isStatePopoverOpen, setIsStatePopoverOpen] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
 
+  // Create refs for all form fields to manage tab navigation
+  const formFieldRefs = useRef<Record<string, HTMLElement | null>>({})
+
   const { countries = [] } = useAppContext()
 
   // Contact Handle country change and fetch states/provinces
@@ -183,6 +186,39 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
     if (!geoId) return 'Select a country';
     const country = countries.find(country => country.geoId === geoId);
     return country ? country.geoName : 'Select a country';
+  }
+
+  // Function to focus the next element in the tab order
+  const focusNextElement = (currentFieldName: string, index: number) => {
+    // Define the tab order for form fields within each location
+    const tabOrder = [
+      `items.${index}.facilityName`,
+      `items.${index}.gln`,
+      `items.${index}.internalId`,
+      `items.${index}.facilitySize`,
+      `items.${index}.businessContacts.0.countryGeoId`,
+      `items.${index}.businessContacts.0.physicalLocationAddress`,
+      `items.${index}.businessContacts.0.city`,
+      `items.${index}.businessContacts.0.stateProvinceGeoId`,
+      `items.${index}.businessContacts.0.zipCode`,
+    ]
+
+    const currentIndex = tabOrder.indexOf(currentFieldName)
+    if (currentIndex !== -1 && currentIndex < tabOrder.length - 1) {
+      const nextFieldName = tabOrder[currentIndex + 1]
+      const nextElement = formFieldRefs.current[nextFieldName]
+      if (nextElement) {
+        nextElement.focus()
+      }
+    }
+  }
+
+  // Handle key down events for form fields
+  const handleKeyDown = (e: React.KeyboardEvent, fieldName: string, index: number) => {
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault()
+      focusNextElement(fieldName, index)
+    }
   }  
 
   return (
@@ -263,10 +299,14 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                   <Input 
                                     {...field} 
                                     value={field.value ?? ''}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.facilityName`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.facilityName`] = el
+                                    }}
                                     onBlur={async (e) => {
                                       field.onBlur() // Call the original onBlur handler
                                       // Clear the error if it exists
-                                      form.clearErrors("items.0.facilityName")
+                                      form.clearErrors(`items.${index}.facilityName`)
                                       const value = e.target.value
                                       if (value) {
                                         try {
@@ -277,13 +317,13 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                             // Extract the error message from the response
                                             const errorMessage = "This warehouse name already exists"
                                             // Set the form error
-                                            form.setError("items.0.facilityName", {
+                                            form.setError(`items.${index}.facilityName`, {
                                               type: "manual",
                                               message: errorMessage,
                                             })
                                           } else {
                                             // Handle other types of errors
-                                            form.setError("items.0.facilityName", {
+                                            form.setError(`items.${index}.facilityName`, {
                                               type: "manual",
                                               message: error.response.data?.detail,
                                             })
@@ -305,7 +345,11 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>GLN</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.gln`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.gln`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -322,10 +366,14 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                   <Input 
                                     {...field} 
                                     value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.internalId`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.internalId`] = el
+                                    }}
                                     onBlur={async (e) => {
                                       field.onBlur() // Call the original onBlur handler
                                       // Clear the error if it exists
-                                      form.clearErrors("items.0.internalId")
+                                      form.clearErrors(`items.${index}.internalId`)
                                       const value = e.target.value
                                       if (value) {
                                         try {
@@ -336,13 +384,13 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                             // Extract the error message from the response
                                             const errorMessage = "This warehouse number already exists"
                                             // Set the form error
-                                            form.setError("items.0.internalId", {
+                                            form.setError(`items.${index}.internalId`, {
                                               type: "manual",
                                               message: errorMessage,
                                             })
                                           } else {
                                             // Handle other types of errors
-                                            form.setError("items.0.internalId", {
+                                            form.setError(`items.${index}.internalId`, {
                                               type: "manual",
                                               message: error.response.data?.detail,
                                             })
@@ -368,6 +416,21 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                     {...field} 
                                     type="number" 
                                     value={field.value ?? ''} 
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Tab" && !e.shiftKey) {
+                                        e.preventDefault()
+                                        // Directly focus the currency button
+                                        const currencyButton = formFieldRefs.current[`items.${index}.businessContacts.0.countryGeoId`]
+                                        if (currencyButton) {
+                                          currencyButton.focus()
+                                        }
+                                      } else {
+                                        handleKeyDown(e, `items.${index}.facilitySize`, index)
+                                      }
+                                    }}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.facilitySize`] = el
+                                    }}
                                     onChange={(e) => {
                                       const value = e.target.value ? parseFloat(e.target.value) : null;
                                       field.onChange(value);
@@ -400,6 +463,20 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                             variant="outline"
                                             role="combobox"
                                             className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
+                                            tabIndex={0}
+                                            name={`items.${index}.businessContacts.0.countryGeoId`}
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Tab" && !e.shiftKey) {
+                                                e.preventDefault()
+                                                focusNextElement(`items.${index}.businessContacts.0.countryGeoId`, index)
+                                              } else if (e.key === "Enter" || e.key === " ") {
+                                                e.preventDefault()
+                                                setIsCountryPopoverOpen(true)
+                                              }
+                                            }}
+                                            ref={(el: HTMLButtonElement | null) => {
+                                              formFieldRefs.current[`items.${index}.businessContacts.0.countryGeoId`] = el;
+                                            }}
                                           >
                                             {findCountryName(field.value??'', countries) ?? "Select a country"}
                                             {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
@@ -407,7 +484,14 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                         </FormControl>
                                       </PopoverTrigger>
                                       <PopoverContent className="w-full p-0">
-                                        <Command>
+                                      <Command
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Tab") {
+                                            e.preventDefault()
+                                            setIsCountryPopoverOpen(false)
+                                            focusNextElement(`items.${index}.businessContacts.0.countryGeoId`, index)
+                                          }
+                                        }}>
                                           <CommandInput placeholder="Search country..." />
                                           <CommandList>
                                             <CommandEmpty>No country found.</CommandEmpty>
@@ -420,6 +504,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                                     field.onChange(country.geoId)
                                                     handleContactCountryChange(country.geoId)
                                                     setIsCountryPopoverOpen(false) // 选择后关闭下拉
+                                                    setTimeout(() => focusNextElement(`items.${index}.businessContacts.0.countryGeoId`, index), 0)
                                                   }}
                                                 >
                                                   <Check
@@ -471,7 +556,11 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Address<span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ""} />
+                                  <Input {...field} value={field.value ?? ""} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.businessContacts.0.physicalLocationAddress`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.businessContacts.0.physicalLocationAddress`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -485,7 +574,22 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>City<span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ""} />
+                                  <Input {...field} value={field.value ?? ""} 
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Tab" && !e.shiftKey) {
+                                        e.preventDefault()
+                                        // Directly focus the currency button
+                                        const currencyButton = formFieldRefs.current[`items.${index}.businessContacts.0.stateProvinceGeoId`]
+                                        if (currencyButton) {
+                                          currencyButton.focus()
+                                        }
+                                      } else {
+                                        handleKeyDown(e, `items.${index}.businessContacts.0.city`, index)
+                                      }
+                                    }}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.businessContacts.0.city`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -512,6 +616,20 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                               variant="outline"
                                               role="combobox"
                                               className={cn("w-full justify-between pr-10", !field.value && "text-muted-foreground")}
+                                              tabIndex={0}
+                                              name={`items.${index}.businessContacts.0.stateProvinceGeoId`}
+                                              onKeyDown={(e) => {
+                                                if (e.key === "Tab" && !e.shiftKey) {
+                                                  e.preventDefault()
+                                                  focusNextElement(`items.${index}.businessContacts.0.stateProvinceGeoId`, index)
+                                                } else if (e.key === "Enter" || e.key === " ") {
+                                                  e.preventDefault()
+                                                  setIsStatePopoverOpen(true)
+                                                }
+                                              }}
+                                              ref={(el: HTMLButtonElement | null) => {
+                                                formFieldRefs.current[`items.${index}.businessContacts.0.stateProvinceGeoId`] = el;
+                                              }}
                                             >
                                               {field.value ?? "Select a state"}
                                               {/* <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" /> */}
@@ -519,7 +637,14 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                           </FormControl>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-full p-0">
-                                          <Command>
+                                          <Command
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Tab") {
+                                                e.preventDefault()
+                                                setIsStatePopoverOpen(false)
+                                                focusNextElement(`items.${index}.businessContacts.0.stateProvinceGeoId`, index)
+                                              }
+                                            }}>
                                             <CommandInput placeholder="Search state/province..." />
                                             <CommandList>
                                               <CommandEmpty>No state/province found.</CommandEmpty>
@@ -531,6 +656,7 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                                                     onSelect={() => {
                                                       field.onChange(state.geoId)
                                                       setIsStatePopoverOpen(false) // 选择后关闭下拉
+                                                      setTimeout(() => focusNextElement(`items.${index}.businessContacts.0.stateProvinceGeoId`, index), 0)
                                                     }}
                                                   >
                                                     <Check
@@ -582,7 +708,11 @@ export function AddWarehouseDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Postal code<span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ""} />
+                                  <Input {...field} value={field.value ?? ""} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.businessContacts.0.zipCode`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.businessContacts.0.zipCode`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

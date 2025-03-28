@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -90,6 +90,9 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
+
+  // Create refs for all form fields to manage tab navigation
+  const formFieldRefs = useRef<Record<string, HTMLElement | null>>({})
 
   // const [apiResponse, setApiResponse] = useState<{ username: string; oneTimePassword: string } | null>(null)
   // const [showResultDialog, setShowResultDialog] = useState(false)
@@ -214,7 +217,45 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
     setOpen(false);
     form.reset(createEmptyUser());
     setFormError(null)
-  };  
+  }
+
+  // Function to focus the next element in the tab order
+  const focusNextElement = (currentFieldName: string) => {
+    // Define the tab order for form fields
+    const tabOrder = [
+      "employeeNumber",
+      "firstName",
+      "lastName",
+      "username",
+      "roles",
+      "directManagerName",
+      "telephoneNumber",
+      "mobileNumber",
+      "fromDate",
+      "employeeContractNumber",
+      "certificationDescription",
+      "skillSetDescription",
+      "languageSkills",
+      "associatedGln",
+    ]
+
+    const currentIndex = tabOrder.indexOf(currentFieldName)
+    if (currentIndex !== -1 && currentIndex < tabOrder.length - 1) {
+      const nextFieldName = tabOrder[currentIndex + 1]
+      const nextElement = formFieldRefs.current[nextFieldName]
+      if (nextElement) {
+        nextElement.focus()
+      }
+    }
+  }
+
+  // Handle key down events for form fields
+  const handleKeyDown = (e: React.KeyboardEvent, fieldName: string) => {
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault()
+      focusNextElement(fieldName)
+    }
+  }  
 
   return (
       <>
@@ -265,7 +306,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>User number<span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "employeeNumber")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["employeeNumber"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -279,7 +324,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>First name<span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "firstName")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["firstName"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -293,7 +342,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Last name<span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "lastName")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["lastName"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -307,7 +360,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Email<span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "username")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["username"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -321,15 +378,32 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Roles<span className="text-red-500">*</span></FormLabel>
                         <FormControl>
-                          <MultiSelect
-                            options={roles}
-                            onValueChange={field.onChange}
-                            defaultValue={field.value ?? []}
-                            placeholder="Select roles"
-                            variant="inverted"
-                            animation={2}
-                            maxCount={5}
-                          />
+                          <div
+                            ref={(el) => {
+                              formFieldRefs.current["roles"] = el
+                            }}
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Tab" && !e.shiftKey) {
+                                e.preventDefault()
+                                focusNextElement("roles")
+                              }
+                            }}
+                          >
+                            <MultiSelect
+                              options={roles}
+                              onValueChange={(value) => {
+                                field.onChange(value)
+                                // After selection, we can optionally focus the next field
+                                setTimeout(() => focusNextElement("roles"), 0)
+                              }}
+                              defaultValue={field.value ?? []}
+                              placeholder="Select roles"
+                              variant="inverted"
+                              animation={2}
+                              maxCount={5}
+                            />
+                          </div>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -345,7 +419,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Direct manager</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "directManagerName")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["directManagerName"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -361,7 +439,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                         <div className="grid grid-cols-4 gap-4">
                           <div className="col-span-1">
                             <FormControl>
-                              <Input {...telField} value={telField.value ?? ""}/>
+                              <Input {...telField} value={telField.value ?? ""}
+                                onKeyDown={(e) => handleKeyDown(e, "telephoneNumber")}
+                                ref={(el: HTMLInputElement | null) => {
+                                  formFieldRefs.current["telephoneNumber"] = el
+                                }}/>
                             </FormControl>
                           </div>
                           <div className="col-span-3">
@@ -370,7 +452,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                               name="mobileNumber"
                               render={({ field: mobileField }) => (
                                 <FormControl>
-                                  <Input {...mobileField} value={mobileField.value ?? ""} />
+                                  <Input {...mobileField} value={mobileField.value ?? ""} 
+                                    onKeyDown={(e) => handleKeyDown(e, "mobileNumber")}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current["mobileNumber"] = el
+                                    }}/>
                                 </FormControl>
                               )}
                             />
@@ -392,7 +478,17 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
-                              <Button type="button" variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
+                              <Button type="button" variant={"outline"} 
+                                className={"w-full pl-3 text-left font-normal"}
+                                ref={(el: HTMLButtonElement | null) => {
+                                  formFieldRefs.current["fromDate"] = el
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Tab" && !e.shiftKey) {
+                                    e.preventDefault()
+                                    focusNextElement("fromDate")
+                                  }
+                                }}>
                                 {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -408,6 +504,7 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                                   date.setMinutes(now.getMinutes());
                                   date.setSeconds(now.getSeconds());
                                   field.onChange(date.toISOString());
+                                  setTimeout(() => focusNextElement("fromDate"), 100)
                                 }
                               }}
                               initialFocus
@@ -426,7 +523,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Contract number</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "employeeContractNumber")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["employeeContractNumber"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -440,7 +541,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Certifications</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "certificationDescription")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["certificationDescription"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -454,7 +559,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Skill set</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "skillSetDescription")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["skillSetDescription"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -468,7 +577,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Language proficiency</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "languageSkills")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["languageSkills"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -482,7 +595,11 @@ export function AddUserDialog({ onAdded: onAdded }: AddDialogProps) {
                       <FormItem>
                         <FormLabel>Linked GLN</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ''} />
+                          <Input {...field} value={field.value ?? ''} 
+                            onKeyDown={(e) => handleKeyDown(e, "associatedGln")}
+                            ref={(el: HTMLInputElement | null) => {
+                              formFieldRefs.current["associatedGln"] = el
+                            }}/>
                         </FormControl>
                         <FormMessage />
                       </FormItem>

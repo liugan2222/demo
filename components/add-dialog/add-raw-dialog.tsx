@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Plus, X, AlertCircle } from 'lucide-react'
 import { z } from 'zod'
 import { useForm, useFieldArray } from 'react-hook-form'
@@ -77,7 +77,7 @@ const createEmptyItem = () => ({
   hsCode: null,
   organicCertifications: null,
   description: null,
-  dimensionsDescription: null,  // TODO
+  dimensionsDescription: null,
   materialCompositionDescription: null,
   countryOfOrigin: null,
   certificationCodes: null,
@@ -106,6 +106,9 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
 
   const { data: packageType = [] } = usePackageType(true)
   const { data: weightUom = [] } = useWeightUom(true)
+
+  // Create refs for all form fields to manage tab navigation
+  const formFieldRefs = useRef<Record<string, HTMLElement | null>>({})
 
   const form = useForm<MultipleItemsSchema>({
     resolver: zodResolver(multipleItemsSchema),
@@ -187,7 +190,52 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
     });
     setFormError(null)
     setExpandedItems(['item-0']);
-  };
+  }
+
+  // Function to focus the next element in the tab order
+  const focusNextElement = (currentFieldName: string, index: number) => {
+    // Define the tab order for form fields within each location
+    const tabOrder = [
+      `items.${index}.productName`,
+      `items.${index}.gtin`,
+      `items.${index}.supplierId`,
+      `items.${index}.internalId`,
+      `items.${index}.caseUomId`,
+      `items.${index}.individualsPerPackage`,
+      `items.${index}.quantityUomId`,
+      `items.${index}.quantityIncluded`,
+      `items.${index}.productWeight`,
+      `items.${index}.brandName`,
+      `items.${index}.produceVariety`,
+      `items.${index}.hsCode`,
+      `items.${index}.organicCertifications`,
+      `items.${index}.description`,
+      `items.${index}.dimensionsDescription`,
+      `items.${index}.materialCompositionDescription`,
+      `items.${index}.countryOfOrigin`,
+      `items.${index}.certificationCodes`,
+      `items.${index}.shelfLifeDescription`,
+      `items.${index}.handlingInstructions`,
+      `items.${index}.storageConditions`,
+      ]
+
+    const currentIndex = tabOrder.indexOf(currentFieldName)
+    if (currentIndex !== -1 && currentIndex < tabOrder.length - 1) {
+      const nextFieldName = tabOrder[currentIndex + 1]
+      const nextElement = formFieldRefs.current[nextFieldName]
+      if (nextElement) {
+        nextElement.focus()
+      }
+    }
+  }
+
+  // Handle key down events for form fields
+  const handleKeyDown = (e: React.KeyboardEvent, fieldName: string, index: number) => {
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault()
+      focusNextElement(fieldName, index)
+    }
+  }  
 
   return (
     <>
@@ -262,11 +310,20 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                             <ItemImage
                               form={form}
                               isEditing={true}
+                              fieldName={`items.${index}.smallImageUrl`} // 添加fieldName
                               onImageChange={async (file) => {
                                 try {
                                   form.setValue(`items.${index}.smallImageUrl`, "uploading...")
                                   const pictureObj = await uploadFile(file)
-                                  form.setValue(`items.${index}.smallImageUrl`, pictureObj.data.id)
+                                  // form.setValue(`items.${index}.smallImageUrl`, pictureObj.data.id, {
+                                  //   shouldDirty: true,
+                                  //   shouldValidate: true
+                                  // })
+                                  form.setValue(`items`, [
+                                    ...form.getValues().items.map((item, i) => 
+                                      i === index ? { ...item, smallImageUrl: pictureObj.data.id } : item
+                                    )
+                                  ], { shouldDirty: true, shouldValidate: true })
                                 } catch (error) {
                                   form.setValue(`items.${index}.smallImageUrl`, null)
                                   form.setError(`items.${index}.picture`, {
@@ -305,7 +362,14 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Item<span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input
+                                    {...field}
+                                    value={field.value ?? ""}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.productName`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.productName`] = el
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -319,7 +383,14 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>GTIN</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input
+                                    {...field}
+                                    value={field.value ?? ""}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.gtin`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.gtin`] = el
+                                    }}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -334,10 +405,24 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                                 <FormLabel>Vendor<span className="text-red-500">*</span></FormLabel>
                                 <Select
                                   value={field.value ?? undefined}
-                                  onValueChange={field.onChange}
+                                  onValueChange={(value) => {
+                                    field.onChange(value)
+                                    setTimeout(() => focusNextElement(`items.${index}.supplierId`, index), 0)
+                                  }}
                                 >
                                   <FormControl>
-                                    <SelectTrigger>
+                                    <SelectTrigger
+                                      tabIndex={0}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Tab" && !e.shiftKey) {
+                                          e.preventDefault()
+                                          focusNextElement(`items.${index}.supplierId`, index)
+                                        }
+                                      }}
+                                      ref={(el: HTMLButtonElement | null) => {
+                                        formFieldRefs.current[`items.${index}.supplierId`] = el
+                                      }}
+                                    >
                                       <SelectValue placeholder="Select a vendor" />
                                     </SelectTrigger>
                                   </FormControl>
@@ -362,12 +447,16 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                                 <FormLabel>Item number<span className="text-red-500">*</span></FormLabel>
                                 <FormControl>
                                   <Input 
-                                    {...field} 
-                                    value={field.value ?? ''} 
+                                    {...field}
+                                    value={field.value ?? ""}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.internalId`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.internalId`] = el
+                                    }}
                                     onBlur={async (e) => {
                                       field.onBlur() // Call the original onBlur handler
                                       // Clear the error if it exists
-                                      form.clearErrors("items.0.internalId")
+                                      form.clearErrors(`items.${index}.internalId`)
                                       const value = e.target.value
                                       if (value) {
                                         try {
@@ -378,13 +467,13 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                                             // Extract the error message from the response
                                             const errorMessage = "This item number already exists"
                                             // Set the form error
-                                            form.setError("items.0.internalId", {
+                                            form.setError(`items.${index}.internalId`, {
                                               type: "manual",
                                               message: errorMessage,
                                             })
                                           } else {
                                             // Handle other types of errors
-                                            form.setError("items.0.internalId", {
+                                            form.setError(`items.${index}.internalId`, {
                                               type: "manual",
                                               message: error.response.data?.detail,
                                             })
@@ -407,10 +496,24 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                                 <FormLabel>Packaging type<span className="text-red-500">*</span></FormLabel>
                                 <Select
                                   value={field.value ?? undefined}
-                                  onValueChange={field.onChange}
+                                  onValueChange={(value) => {
+                                    field.onChange(value)
+                                    setTimeout(() => focusNextElement(`items.${index}.caseUomId`, index), 0)
+                                  }}
                                 >
                                   <FormControl>
-                                    <SelectTrigger>
+                                    <SelectTrigger
+                                      tabIndex={0}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Tab" && !e.shiftKey) {
+                                          e.preventDefault()
+                                          focusNextElement(`items.${index}.caseUomId`, index)
+                                        }
+                                      }}
+                                      ref={(el: HTMLButtonElement | null) => {
+                                        formFieldRefs.current[`items.${index}.caseUomId`] = el
+                                      }}
+                                    >
                                       <SelectValue placeholder="Select packaging type" />
                                     </SelectTrigger>
                                   </FormControl>
@@ -438,6 +541,10 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                                     {...field} 
                                     type="number" 
                                     value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.individualsPerPackage`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.individualsPerPackage`] = el
+                                    }}
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       // Ensure only integer values are allowed
@@ -460,10 +567,24 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                                 <FormLabel>Weight units<span className="text-red-500">*</span></FormLabel>
                                 <Select
                                   value={field.value ?? undefined}
-                                  onValueChange={field.onChange}
+                                  onValueChange={(value) => {
+                                    field.onChange(value)
+                                    setTimeout(() => focusNextElement(`items.${index}.facilityId`, index), 0)
+                                  }}
                                 >
                                   <FormControl>
-                                    <SelectTrigger>
+                                    <SelectTrigger
+                                      tabIndex={0}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Tab" && !e.shiftKey) {
+                                          e.preventDefault()
+                                          focusNextElement(`items.${index}.quantityUomId`, index)
+                                        }
+                                      }}
+                                      ref={(el: HTMLButtonElement | null) => {
+                                        formFieldRefs.current[`items.${index}.quantityUomId`] = el
+                                      }}
+                                    >
                                       <SelectValue placeholder="Select weight units" />
                                     </SelectTrigger>
                                   </FormControl>
@@ -492,6 +613,10 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                                     type="number" 
                                     step="0.01"
                                     value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.quantityIncluded`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.quantityIncluded`] = el
+                                    }}
                                     onChange={(e) => {
                                       const value = e.target.value ? parseFloat(e.target.value) : null;
                                       field.onChange(value);
@@ -514,6 +639,10 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                                     {...field} 
                                     type="number" 
                                     value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.productWeight`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.productWeight`] = el
+                                    }}
                                     onChange={(e) => {
                                       const value = e.target.value ? parseFloat(e.target.value) : null;
                                       field.onChange(value);
@@ -532,7 +661,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Brand</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.brandName`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.brandName`] = el
+                                    }} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -546,7 +679,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Produce variety</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.produceVariety`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.produceVariety`] = el
+                                    }} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -560,7 +697,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>HS code</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''}
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.hsCode`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.hsCode`] = el
+                                    }} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -574,7 +715,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Organic certification</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.organicCertifications`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.organicCertifications`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -588,7 +733,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Description</FormLabel>
                                 <FormControl>
-                                  <Textarea {...field} value={field.value ?? ''} />
+                                  <Textarea {...field} value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.description`, index)}
+                                    ref={(el: HTMLTextAreaElement | null) => {
+                                      formFieldRefs.current[`items.${index}.description`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -603,7 +752,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Dimensions</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.dimensionsDescription`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.dimensionsDescription`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -617,7 +770,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Material composition</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.materialCompositionDescription`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.materialCompositionDescription`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -631,7 +788,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Country of origin</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.countryOfOrigin`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.countryOfOrigin`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -645,7 +806,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Certification code</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.certificationCodes`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.certificationCodes`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -659,7 +824,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Shelf life</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.shelfLifeDescription`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.shelfLifeDescription`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -673,7 +842,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Handling instructions</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.handlingInstructions`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.handlingInstructions`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -687,7 +860,11 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                               <FormItem>
                                 <FormLabel>Storage conditions</FormLabel>
                                 <FormControl>
-                                  <Input {...field} value={field.value ?? ''} />
+                                  <Input {...field} value={field.value ?? ''} 
+                                    onKeyDown={(e) => handleKeyDown(e, `items.${index}.storageConditions`, index)}
+                                    ref={(el: HTMLInputElement | null) => {
+                                      formFieldRefs.current[`items.${index}.storageConditions`] = el
+                                    }}/>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>

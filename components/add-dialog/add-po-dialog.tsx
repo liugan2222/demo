@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Plus, X, CalendarIcon, AlertCircle } from "lucide-react"
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -104,6 +104,9 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
   const { data: packageType = [] } = usePackageType(true)
   const { data: weightUom = [] } = useWeightUom(true)
 
+  // Create refs for all form fields to manage tab navigation
+  const formFieldRefs = useRef<Record<string, HTMLElement | null>>({})
+
   const form = useForm<Poform>({
     resolver: zodResolver(poformSchema),
     defaultValues: createEmptyPo(),
@@ -162,7 +165,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
     setOpen(false);
     form.reset(createEmptyPo());
     setExpandedItems(['item-0']);
-  };
+  }
 
   const handleAddAnotherItem = async () => {
     const currentValues = form.getValues().orderItems;
@@ -178,7 +181,7 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
       // Keep the current item expanded to show validation errors
       setExpandedItems([`item-${lastIndex}`]);
     }
-  };
+  }
 
   const handleProductSelect = (index: number, productId: string) => {
     const currentItems = form.getValues().orderItems;
@@ -203,8 +206,6 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
       });
       return;
     }
-  
-
 
     const product = products.find((p) => p.productId === productId)
     if (product) {
@@ -239,7 +240,36 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
       console.error('Error fetching states/provinces:', error);
       // Handle error (e.g., show error message to user)
     }
-  }, []);  
+  }, [])
+
+
+   // Function to focus the next element in the tab order
+   const focusNextElement = (currentFieldName: string) => {
+    // Define the tab order for form fields
+    const tabOrder = [
+      "orderId",
+      "orderDate",
+      "supplierId",
+      "memo",
+    ]
+
+    const currentIndex = tabOrder.indexOf(currentFieldName)
+    if (currentIndex !== -1 && currentIndex < tabOrder.length - 1) {
+      const nextFieldName = tabOrder[currentIndex + 1]
+      const nextElement = formFieldRefs.current[nextFieldName]
+      if (nextElement) {
+        nextElement.focus()
+      }
+    }
+  }
+
+  // Handle key down events for form fields
+  const handleKeyDown = (e: React.KeyboardEvent, fieldName: string) => {
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault()
+      focusNextElement(fieldName)
+    }
+  } 
 
   return (
     <>
@@ -290,7 +320,11 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                         <FormItem>
                           <FormLabel>PO #<span className="text-red-500">*</span></FormLabel>
                           <FormControl>
-                            <Input {...field} value={field.value ?? ''} />
+                            <Input {...field} value={field.value ?? ''} 
+                              onKeyDown={(e) => handleKeyDown(e, "orderId")}
+                              ref={(el: HTMLInputElement | null) => {
+                                formFieldRefs.current["orderId"] = el
+                              }}/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -306,7 +340,17 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
-                                <Button type="button" variant={"outline"} className={"w-full pl-3 text-left font-normal"}>
+                                <Button type="button" variant={"outline"} 
+                                  className={"w-full pl-3 text-left font-normal"}
+                                  ref={(el: HTMLButtonElement | null) => {
+                                    formFieldRefs.current["orderDate"] = el
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Tab" && !e.shiftKey) {
+                                      e.preventDefault()
+                                      focusNextElement("orderDate")
+                                    }
+                                  }}>
                                   {field.value ? format(new Date(field.value), "PPP") : <span>Pick a date</span>}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
@@ -344,10 +388,22 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                             onValueChange={(value) => {
                               field.onChange(value);
                               handleVendorChange(value);
+                              setTimeout(() => focusNextElement("supplierId"), 0)
                             }}
                           >
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Tab" && !e.shiftKey) {
+                                    e.preventDefault()
+                                    focusNextElement("supplierId")
+                                  }
+                                }}
+                                ref={(el: HTMLButtonElement | null) => {
+                                  formFieldRefs.current["supplierId"] = el;
+                                }}
+                              >
                                 <SelectValue placeholder="Select a vendor" />
                               </SelectTrigger>
                             </FormControl>
@@ -371,7 +427,11 @@ export function AddPoDialog({ onAdded: onAdded }: AddDialogProps) {
                         <FormItem>
                           <FormLabel>Order notes</FormLabel>
                           <FormControl>
-                            <Textarea {...field} value={field.value ?? ''} />
+                            <Textarea {...field} value={field.value ?? ''} 
+                              onKeyDown={(e) => handleKeyDown(e, "memo")}
+                              ref={(el: HTMLTextAreaElement | null) => {
+                                formFieldRefs.current["memo"] = el;
+                              }}/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
