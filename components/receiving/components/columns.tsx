@@ -49,6 +49,25 @@ export const columns: ColumnDef<Receivepation>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Receiving Date" />
     ),
+    filterFn: (row, columnId, filterValue) => {
+      const rowDateStr = row.getValue(columnId) as string;
+      if (!rowDateStr) return false;
+      
+      const rowDate = new Date(rowDateStr);
+      if (isNaN(rowDate.getTime())) return false;
+
+      // 解析过滤值
+      const { from, to } = filterValue || {};
+      if (!from && !to) return true;
+
+      const fromDate = from ? new Date(from) : null;
+      const toDate = to ? new Date(to) : null;
+
+      return (
+        (!fromDate || rowDate >= fromDate) &&
+        (!toDate || rowDate <= toDate)
+      );
+    },
     cell: ({ row }) => {
       const dateStr = row.getValue("receivingDate") as string
       if (!dateStr) return <div>-</div>

@@ -1,19 +1,14 @@
 "use client"
 
-import React, { useEffect, useState, useCallback } from "react"
-import { AspectRatio } from "@/components/ui/aspect-ratio"
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ItempicAlert, ItempicAlertDescription } from "@/components/common/itempic-alert"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { AlertCircle, Upload, RefreshCw, Trash2 } from "lucide-react"
-// import Image from "next/image"
 import { useDropzone } from "react-dropzone"
 import ReactCrop, { type Crop } from "react-image-crop"
 import "react-image-crop/dist/ReactCrop.css"
-
-import { useWatch, useFormContext } from "react-hook-form"
-
+import { useWatch } from "react-hook-form"
 import { IMAGE_PATHS } from "@/contexts/images"
 
 // Define a default image path
@@ -22,23 +17,17 @@ const DEFAULT_IMAGE = IMAGE_PATHS.DEFAULT_ITEM
 // Maximum file size in bytes (2MB)
 const MAX_FILE_SIZE = 2 * 1024 * 1024
 
-interface ItemImageProps {
+interface UserImageUploadProps {
   form: any
   isEditing: boolean
-  onImageChange?: (file: File) => Promise<void>
+  onImageChange: (file: File) => Promise<void>
   fieldName?: string
 }
 
-export function ItemImage({ form, isEditing, onImageChange, fieldName = "smallImageUrl"}: ItemImageProps) {
-  const [imageUrl, setImageUrl] = useState<string>("")
+export function ImageUpload({ form, isEditing, onImageChange, fieldName = "smallImageUrl" }: UserImageUploadProps) {
+  const [imageUrl, setImageUrl] = useState<string>(DEFAULT_IMAGE)
   const [error, setError] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
-  const [isCropping, setIsCropping] = useState(false)
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [uniqueKey, setUniqueKey] = useState(Date.now());
-  
-
-  // Crop related states
   const [cropDialogOpen, setCropDialogOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -46,20 +35,20 @@ export function ItemImage({ form, isEditing, onImageChange, fieldName = "smallIm
     unit: "%",
     width: 50,
     height: 50,
-    x: 0,
-    y: 0,
+    x: 25,
+    y: 25,
   })
   const [completedCrop, setCompletedCrop] = useState<Crop | null>(null)
-  const imgRef = React.useRef<HTMLImageElement>(null)
-  const imageContainerRef = React.useRef<HTMLDivElement>(null)
+  const [isCropping, setIsCropping] = useState(false)
+  const [uniqueKey, setUniqueKey] = useState(Date.now())
 
-  const formContext = useFormContext()
-  // Watch the correct field path
+  const imgRef = React.useRef<HTMLImageElement>(null)
+
+  // Watch the smallImageUrl field
   const smallImageUrl = useWatch({
     control: form.control,
     name: fieldName,
-    exact: true // 添加精确匹配
-  });
+  })
 
   // Update image URL when smallImageUrl changes
   useEffect(() => {
@@ -69,45 +58,30 @@ export function ItemImage({ form, isEditing, onImageChange, fieldName = "smallIm
     }
 
     setIsUploading(false)
-    setImageLoaded(false)
-
-    console.log(imageLoaded)
 
     if (smallImageUrl) {
-      setUniqueKey(Date.now() + Math.random())
       try {
         const baseUrl = `https://fp.ablueforce.com/api/files/${smallImageUrl}/media`
         // Add timestamp to avoid caching
         const cacheBuster = Date.now().toString(36) + Math.random().toString(36).substr(2, 5)
         const newImageUrl = `${baseUrl}?v=${cacheBuster}`
+
+        console.log("Setting image URL:", newImageUrl)
         setImageUrl(newImageUrl)
 
-        // // Preload the image to ensure it's in the browser cache
-        // const preloadImage = new globalThis.Image()
-        // preloadImage.crossOrigin = "anonymous"
-        // preloadImage.src = newImageUrl
-        // preloadImage.onload = () => {
-        //   // Force a re-render when the image is successfully loaded
-        //   setForceUpdate((prev) => prev + 1)
-        // }
-        // preloadImage.onerror = () => {
-        //   console.error("Preload image failed:", newImageUrl)
-        //   setImageUrl(DEFAULT_IMAGE)
-        // }
-
-        // Increment the key to force a complete re-render of the Image component
+        // Force a re-render with a new key
+        setUniqueKey(Date.now())
       } catch (error) {
         console.error("Error setting image URL:", error)
         setImageUrl(DEFAULT_IMAGE)
       }
- 
     } else {
       setImageUrl(DEFAULT_IMAGE)
     }
   }, [smallImageUrl])
 
   // Handle file drop
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = React.useCallback((acceptedFiles: File[]) => {
     setError(null)
 
     if (acceptedFiles.length === 0) return
@@ -150,7 +124,7 @@ export function ItemImage({ form, isEditing, onImageChange, fieldName = "smallIm
   })
 
   // Process and upload the cropped image
-  const handleCropComplete = useCallback(async () => {
+  const handleCropComplete = React.useCallback(async () => {
     if (!selectedFile || !completedCrop || !imgRef.current || isCropping) {
       return
     }
@@ -185,8 +159,7 @@ export function ItemImage({ form, isEditing, onImageChange, fieldName = "smallIm
       )
 
       // Set form value to "uploading..." to show loading state
-      const formToUse = formContext || form
-      formToUse.setValue(fieldName, "uploading...")
+      form.setValue(fieldName, "uploading...")
 
       // Convert canvas to blob
       const blob = await new Promise<Blob | null>((resolve) => {
@@ -206,10 +179,6 @@ export function ItemImage({ form, isEditing, onImageChange, fieldName = "smallIm
       // Upload the cropped image
       await onImageChange(croppedFile)
 
-      // setTimeout(() => {
-      //   setForceUpdate((prev) => prev + 1)
-      // }, 1000)
-
       // Close dialog and clean up
       setCropDialogOpen(false)
       if (previewUrl) {
@@ -218,16 +187,14 @@ export function ItemImage({ form, isEditing, onImageChange, fieldName = "smallIm
     } catch (error) {
       console.error("Error uploading cropped image:", error)
       setError("Failed to upload image")
-      const formToUse = formContext || form
-      formToUse.setValue(fieldName, null)
-      // setForceUpdate(prev => prev + 1) // 强制刷新
+      form.setValue(fieldName, null)
     } finally {
       setIsCropping(false)
     }
-  }, [selectedFile, completedCrop, onImageChange, previewUrl, form, formContext, isCropping, fieldName])
+  }, [selectedFile, completedCrop, onImageChange, previewUrl, form, fieldName, isCropping])
 
   // Handle replace image
-  const handleReplace = useCallback(() => {
+  const handleReplace = React.useCallback(() => {
     setError(null)
     // Trigger file input click
     const fileInput = document.createElement("input")
@@ -253,23 +220,17 @@ export function ItemImage({ form, isEditing, onImageChange, fieldName = "smallIm
   }, [])
 
   // Handle remove image
-  const handleRemove = useCallback(() => {
-    const formToUse = formContext || form
-    formToUse.setValue(fieldName, null)
+  const handleRemove = React.useCallback(() => {
+    form.setValue(fieldName, null)
     setImageUrl(DEFAULT_IMAGE)
-    // setForceUpdate((prev) => prev + 1)
-  }, [form, formContext, fieldName])
-
-  // Handle image load success
-  const handleImageLoad = useCallback(() => {
-    setImageLoaded(true)
-  }, [])
+    setUniqueKey(Date.now())
+  }, [form, fieldName])
 
   return (
-    <div className="space-y-4">
-      <div className="relative" ref={imageContainerRef}>
-        {/* Always render the AspectRatio container to ensure consistent layout */}
-        <AspectRatio ratio={1} className="bg-muted rounded-md overflow-hidden">
+    <div className="space-y-4 w-full">
+      <div className="text-sm font-medium mb-2">Item image</div>
+      <div className="flex flex-row gap-4">
+        <div className="relative bg-muted rounded-md overflow-hidden flex" style={{ width: "50%", height: "50%" }}>
           {isUploading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-background/80">
               <div className="flex flex-col items-center gap-2">
@@ -278,96 +239,85 @@ export function ItemImage({ form, isEditing, onImageChange, fieldName = "smallIm
               </div>
             </div>
           ) : (
-            <img
-              key={`image-${uniqueKey}`}
-              src={imageUrl || DEFAULT_IMAGE}
-              alt="Item image"
-              className="w-full h-full object-cover"
-              crossOrigin="anonymous"
-              onLoad={handleImageLoad}
-              onError={(e) => {
-                console.error('Image load failed:', imageUrl);
-                (e.target as HTMLImageElement).src = DEFAULT_IMAGE;
-              }}
-            />
+            <div className="flex w-full h-full"> 
+              <div className="flex-1 relative">
+                <img
+                  key={`user-image-${uniqueKey}`}
+                  src={imageUrl || "/placeholder.svg"}
+                  alt="Item image"
+                  className="w-full h-full object-cover"
+                  crossOrigin="anonymous"
+                  onError={(e) => {
+                    console.error("Image load failed:", imageUrl)
+                    ;(e.target as HTMLImageElement).src = DEFAULT_IMAGE
+                  }}
+                />
+              </div>
+              {/* TODO 放到 img的右边 根据img的高度剧中显示 */}
+              <div className="flex flex-col justify-center items-center p-2 space-y-3 border-l">
+                {isEditing && smallImageUrl ? (
+                  <>
+                    <Button type="button" 
+                      size="sm" 
+                      variant="secondary" 
+                      className="w-full shadow-sm hover:bg-background"
+                      onClick={handleReplace}>
+                      <RefreshCw className="h-4 w-4 mr-1" />
+                      Replace
+                    </Button>
+                    <Button 
+                      type="button" 
+                      size="sm" 
+                      variant="destructive" 
+                      className="w-full  hover:bg-foreground" 
+                      onClick={handleRemove}>
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Remove
+                    </Button>
+                  </>
+                ) : (
+                  <div
+                    {...getRootProps()}
+                    className={`border-2 border-dashed rounded-md p-6 cursor-pointer transition-colors mt-4
+                      ${isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/20"}
+                      hover:border-primary hover:bg-primary/5`}
+                  >
+                    <input {...getInputProps()} />
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <Upload className="h-6 w-6 text-muted-foreground" />
+                      <p className="text-sm font-medium">{isDragActive ? "Drop the image here" : "Drag & drop an image here"}</p>
+                      <p className="text-xs text-muted-foreground">or click to select (JPEG, PNG, GIF, WEBP, max 2MB)</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
-        </AspectRatio>
-
-        {/* Position buttons vertically on the right side */}
-        {isEditing && smallImageUrl && !isUploading && (
-          <div className="absolute top-2 right-2 flex flex-col gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              className="h-8 px-2 bg-white/80 hover:bg-white"
-              onClick={handleReplace}
-            >
-              <RefreshCw className="h-4 w-4 mr-1" />
-              Replace
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="destructive"
-              className="h-8 px-2 bg-white/80 hover:bg-white text-destructive hover:text-destructive"
-              onClick={handleRemove}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Remove
-            </Button>
-          </div>
-        )}
+        </div>
       </div>
 
-      {/* {!isEditing && (
-        <AspectRatio ratio={1} className="bg-muted">
-          <Image
-            src={imageUrl || DEFAULT_IMAGE}
-            alt="Item image"
-            fill
-            className="rounded-md object-cover"
-            unoptimized={true}
-            crossOrigin="anonymous"
-          />
-        </AspectRatio>
+
+      {/* {isEditing && !smallImageUrl && (
+        <div
+          {...getRootProps()}
+          className={`border-2 border-dashed rounded-md p-6 cursor-pointer transition-colors mt-4
+            ${isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/20"}
+            hover:border-primary hover:bg-primary/5`}
+        >
+          <input {...getInputProps()} />
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Upload className="h-10 w-10 text-muted-foreground" />
+            <p className="text-sm font-medium">{isDragActive ? "Drop the image here" : "Drag & drop an image here"}</p>
+            <p className="text-xs text-muted-foreground">or click to select (JPEG, PNG, GIF, WEBP, max 2MB)</p>
+          </div>
+        </div>
       )} */}
 
-      {isEditing && !smallImageUrl && (
-        <FormField
-          control={formContext?.control || form.control}
-          name={fieldName}
-          render={() => (
-            <FormItem>
-              <FormLabel>Picture</FormLabel>
-              <FormControl>
-                <div
-                  {...getRootProps()}
-                  className={`border-2 border-dashed rounded-md p-6 cursor-pointer transition-colors
-                    ${isDragActive ? "border-primary bg-primary/5" : "border-muted-foreground/20"}
-                    hover:border-primary hover:bg-primary/5`}
-                >
-                  <input {...getInputProps()} />
-                  <div className="flex flex-col items-center gap-2 text-center">
-                    <Upload className="h-10 w-10 text-muted-foreground" />
-                    <p className="text-sm font-medium">
-                      {isDragActive ? "Drop the image here" : "Drag & drop an image here"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">or click to select (JPEG, PNG, GIF, WEBP, max 2MB)</p>
-                  </div>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )}
-
       {error && (
-        <ItempicAlert variant="destructive" className="mt-2">
+        <Alert variant="destructive" className="mt-2">
           <AlertCircle className="h-4 w-4" />
-          <ItempicAlertDescription>{error}</ItempicAlertDescription>
-        </ItempicAlert>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Image Cropping Dialog */}
@@ -394,7 +344,7 @@ export function ItemImage({ form, isEditing, onImageChange, fieldName = "smallIm
                 crop={crop}
                 onChange={(c) => setCrop(c)}
                 onComplete={(c) => setCompletedCrop(c)}
-                aspect={1} // This is passed to ReactCrop component, not to the crop state
+                aspect={1}
                 circularCrop={false}
                 keepSelection
               >

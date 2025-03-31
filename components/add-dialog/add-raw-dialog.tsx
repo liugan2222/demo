@@ -32,7 +32,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 
-import { ItemImage } from "@/components/common/item/item-image"
+import { ImageUpload } from "@/components/common/upload/image-upload"
 // Import the itemSchema
 import { itemformSchema } from '@/components/tanstack/schema/formSchema/itemformSchema'
 
@@ -306,8 +306,8 @@ export function AddRawDialog({ onAdded: onAdded }: AddDialogProps) {
                             </FormDescription>
                           </FormItem> */}
 
-                          <div className="col-span-2 flex justify-center items-center">
-                            <ItemImage
+                          <div className="col-span-2 flex justify-start items-start mb-4">
+                            <ImageUpload
                               form={form}
                               isEditing={true}
                               fieldName={`items.${index}.smallImageUrl`} // 添加fieldName

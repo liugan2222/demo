@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import { Table } from "@tanstack/react-table"
-// import { Calendar } from "lucide-react"
-// import { format } from "date-fns"
+import { Calendar } from "lucide-react"
+import { format } from "date-fns"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,8 +11,8 @@ import { DataTableViewOptions } from "./data-table-view-options"
 import { DataTableFacetedFilter } from "./data-table-faceted-filter"
 import { DataTableColumnSelector } from "./data-table-column-selector"
 
-// import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-// import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 
 import { AddRawDialog } from "@/components/add-dialog/add-raw-dialog"
 import { AddVendorDialog } from "@/components/add-dialog/add-vendor-dialog"
@@ -128,9 +128,9 @@ export function DataTableToolbar<TData>({
     setSelectedColumns([])
 
     // 如果是receivings类型，也重置日期范围
-    // if (dataType === "receivings") {
-    //   setDateRange({ from: undefined, to: undefined })
-    // }
+    if (dataType === "receivings") {
+      setDateRange({ from: undefined, to: undefined })
+    }
   }
 
   const isFiltered = table.getState().columnFilters.length > 0
@@ -273,10 +273,114 @@ export function DataTableToolbar<TData>({
     }
   } 
 
-  // const [dateRange, setDateRange] = React.useState<{ from: Date | undefined; to: Date | undefined }>({
-  //   from: undefined,
-  //   to: undefined,
-  // })
+  const [dateRange, setDateRange] = React.useState<{
+    from?: Date;
+    to?: Date;
+  }>({ from: undefined, to: undefined });
+
+  const handleDateRangeSelect = (range?: { from?: Date; to?: Date }) => {
+    if (!range) {
+      setDateRange({ from: undefined, to: undefined });
+      return;
+    }
+  
+    // 调整时间边界
+    const adjustedFrom = range.from ? new Date(range.from) : undefined;
+    const adjustedTo = range.to ? new Date(range.to) : undefined;
+  
+    if (adjustedFrom) adjustedFrom.setHours(0, 0, 0, 0);
+    if (adjustedTo) adjustedTo.setHours(23, 59, 59, 999);
+  
+    setDateRange({
+      from: adjustedFrom,
+      to: adjustedTo,
+    });
+  }  
+
+  React.useEffect(() => {
+    if (dataType === "receivings") {
+      const dateColumn = table.getColumn("receivingDate");
+      if (dateColumn) {
+        // 当日期范围有效时设置过滤值
+        if (dateRange.from && dateRange.to) {
+          dateColumn.setFilterValue({
+            from: dateRange.from.toISOString(),
+            to: dateRange.to.toISOString(),
+          });
+        } else {
+          dateColumn.setFilterValue(undefined);
+        }
+      }
+    }
+  }, [dataType, dateRange, table])
+
+  // const handleDateSelect = (selectedDate: Date | undefined) => {
+  //   if (selectedDate) {
+  //     const adjustedDate = new Date(selectedDate);
+  //     adjustedDate.setHours(0, 0, 0, 0);
+      
+  //     setDateRange(prev => {
+  //       if (!prev.from) {
+  //         return { from: adjustedDate, to: undefined };
+  //       } else if (!prev.to && adjustedDate > prev.from) {
+  //         return { 
+  //           from: prev.from, 
+  //           to: new Date(adjustedDate.setHours(23, 59, 59, 999))
+  //         };
+  //       } else {
+  //         return { from: adjustedDate, to: undefined };
+  //       }
+  //     });
+  //   }
+  // }; 
+  
+  const renderDateRangeComponent = () => {
+    if (dataType !== "receivings") return null;
+  
+    return (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="h-8 border-dashed">
+            <Calendar className="mr-2 h-4 w-4" />
+            {dateRange.from ? (
+              dateRange.to ? (
+                <>
+                  {format(dateRange.from, "MMM dd, yyyy")} -{" "}
+                  {format(dateRange.to, "MMM dd, yyyy")}
+                </>
+              ) : (
+                format(dateRange.from, "MMM dd, yyyy")
+              )
+            ) : (
+              <span>Receiving Date</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <div className="p-2">
+            <CalendarComponent
+              mode="range"
+              selected={{ from: dateRange.from, to: dateRange.to }}
+              onSelect={(range) => handleDateRangeSelect(range)}
+              numberOfMonths={2}
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  handleDateRangeSelect(undefined);
+                  table.getColumn("receivingDate")?.setFilterValue(undefined);
+                }}
+              >
+                Reset
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    );
+  }  
 
   // // Function to handle date selection
   // const handleDateSelect = (selectedDate: Date | undefined) => {
@@ -333,7 +437,8 @@ export function DataTableToolbar<TData>({
   //   }
   // }, [dataType, dateRange, table])
 
-  // // Render date range component
+
+  // Render date range component
   // const renderDateRangeComponent = () => {
   //   if (dataType !== "receivings") return null
 
@@ -417,7 +522,6 @@ export function DataTableToolbar<TData>({
   //   )
   // }
 
-
   return (
     <div className="flex items-center justify-between">
       <div className="flex flex-1 items-center space-x-2">
@@ -473,7 +577,7 @@ export function DataTableToolbar<TData>({
         })}     
 
         {/* TODO 日期查询组件 */}
-        {/* {renderDateRangeComponent()} */}
+        {renderDateRangeComponent()}
 
         {isFiltered && (
           <Button

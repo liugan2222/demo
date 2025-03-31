@@ -40,6 +40,7 @@
     --neutral-warning: 21 90% 48%;
     --positive-background: 141 84% 93%;
     --destructive-background: 0 93% 94%;
+    /* --test-color: rgba(210, 30, 210, 0.7); */
   }
   
   .dark {
@@ -82,19 +83,19 @@
 
   /* 统一映射 border-radius 变量 */
   .rounded-sm {
-    border-radius: calc(var(--radius) - 4px);
+    border-radius: 2px;
   }
   .rounded {
-    border-radius: var(--radius);
+    border-radius: 4px;
   }
   .rounded-md {
-    border-radius: calc(var(--radius) - 2px);
+    border-radius: 4px;
   }
   .rounded-lg {
-    border-radius: var(--radius);
+    border-radius: 6px;
   }
   .rounded-xl {
-    border-radius: calc(var(--radius) + 2px);
+    border-radius: 6px;
   }
   .rounded-full {
     border-radius: 9999px;
@@ -190,6 +191,11 @@ body {
 .badge-disabled {
   color: #DC2626;
 }
+
+/* TODO 使用CSS 变量 */
+/* .test {
+  color: var(--test-color);
+} */
 
 /* form */
 .font-common {
